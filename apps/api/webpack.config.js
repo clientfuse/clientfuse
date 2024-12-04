@@ -7,6 +7,7 @@ module.exports = {
   },
   plugins: [
     new NxAppWebpackPlugin({
+      sourceMap: true,
       target: 'node',
       compiler: 'tsc',
       main: './src/main.ts',

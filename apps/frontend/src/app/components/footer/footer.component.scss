@@ -1,0 +1,11 @@
+@import "variables";
+
+:host {
+  display: block;
+}
+
+footer {
+  padding: var(--spacing-8) 0;
+  border-top: 1px solid $dark-40;
+  text-align: center;
+}

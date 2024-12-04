@@ -1,0 +1,83 @@
+@use "sass:math";
+
+@function rem($px) {
+  @return math.div($px, 16px) + 0rem;
+}
+
+@mixin media($size) {
+  @media screen and (max-width: $size) {
+    @content;
+  }
+}
+
+@mixin laptopAndLower {
+  @media screen and (max-width: 1500px) {
+    @content;
+  }
+}
+
+@mixin tabletsAndLower {
+  @media screen and (max-width: 1100px) {
+    @content;
+  }
+}
+
+@mixin phonesAndLower {
+  @media screen and (max-width: 550px) {
+    @content;
+  }
+}
+
+@mixin mouseOrTrackpadNavigation {
+  @media (hover: hover) and (pointer: fine) {
+    @content;
+  }
+}
+
+@mixin touchscreenNavigation {
+  @media (hover: none) and (pointer: coarse) {
+    @content;
+  }
+}
+
+@mixin keyboardNavigation {
+  @media (hover: none) and (pointer: none) {
+    @content;
+  }
+}
+
+@mixin orientationPortrait {
+  @media (orientation: portrait) {
+    @content;
+  }
+}
+
+@mixin orientationLandscape {
+  @media (orientation: landscape) {
+    @content;
+  }
+}
+
+@mixin reduceMotion {
+  @media (prefers-reduced-motion: no-preference) {
+    @content;
+  }
+}
+
+@mixin prefersReducedTransparency {
+  @media (prefers-reduced-transparency: reduce) {
+    @content;
+  }
+}
+
+@mixin systemColorSchemeDark {
+  @media (prefers-color-scheme: dark) {
+    @content;
+  }
+}
+
+@mixin iosDevices() {
+  @supports (-webkit-touch-callout: none) {
+    @content;
+  }
+}

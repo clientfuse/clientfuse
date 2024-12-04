@@ -1,0 +1,39 @@
+@mixin link-style($baseColor, $hoverColor, $activeColor) {
+  color: $baseColor;
+  text-decoration: underline;
+
+  &:not([disabled]):not(.disabled):not(:disabled) {
+    @include mouseOrTrackpadNavigation {
+      cursor: pointer;
+    }
+
+    &:hover {
+      color: $hoverColor;
+    }
+
+    &:active {
+      color: $activeColor;
+    }
+  }
+
+  [disabled], &:disabled, &.disabled {
+    color: $basic-shaft-60;
+    pointer-events: none;
+  }
+}
+
+.link {
+  background: none;
+  border: none;
+  padding: 0;
+  text-decoration: none;
+  @extend .link-medium;
+}
+
+.link-blue {
+  @include link-style($system-freedom-60, $system-freedom-100, $system-freedom-80);
+}
+
+.link-red {
+  @include link-style($red-500, $red-300, $red-700);
+}

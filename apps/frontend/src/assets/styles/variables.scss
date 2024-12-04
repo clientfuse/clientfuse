@@ -1,0 +1,13 @@
+@import "mixins";
+
+// Basic
+$cloud: #fbfbfb;
+$dark-100: #191919;
+$dark-80: #393939;
+$dark-60: #a3a3a3;
+$dark-40: #e4e4e4;
+$dark-20: #f1f1f1;
+
+$standard-easing: cubic-bezier(0.4, 0.0, 0.2, 1);
+$incoming-easing: cubic-bezier(0.0, 0.0, 0.2, 1);
+$exiting-easing: cubic-bezier(0.4, 0.0, 1, 1);

@@ -1,0 +1,196 @@
+/*
+* By default the button is in medium state
+*/
+@import "fonts";
+
+.button {
+  padding: 8px 32px;
+  border-radius: var(--br-4);
+  border: 2px solid transparent;
+  background: $cta-energizing-100;
+  color: $basic-shaft-20;
+  text-decoration: none;
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  @extend .button-medium;
+
+  &.button-lg {
+    padding: 12px 32px;
+    @extend .button-large;
+  }
+
+  &.button-sm {
+    padding: 4px 32px;
+    border-radius: var(--br-3);
+  }
+
+  .button-hint {
+    @extend .body-very-small;
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    display: block;
+    max-width: max-content;
+    padding: 2px 6px;
+    background: $cta-energizing-80;
+    color: $basic-shaft-80;
+    border-radius: rem(6px);
+    box-shadow: 2px 2px 0 0 #464646;
+  }
+
+  &.button-secondary {
+    background: transparent;
+    color: $basic-shaft-100;
+    border-color: $basic-shaft-100;
+
+    .button-hint {
+      background: $basic-shaft-80;
+      color: $basic-shaft-20;
+      box-shadow: 2px 2px 0 0 $basic-shaft-60;
+    }
+  }
+
+  &:disabled, &[disabled], &.disabled {
+    background: $basic-shaft-40;
+    color: $basic-shaft-60;
+    pointer-events: none;
+
+    .button-hint {
+      background: $basic-shaft-60;
+      color: $basic-shaft-40;
+    }
+
+    &.button-secondary {
+      background-color: transparent;
+      color: $basic-shaft-60;
+      border-color: $basic-shaft-60;
+
+      .button-hint {
+        background: $basic-shaft-40;
+        color: $basic-shaft-60;
+      }
+    }
+  }
+
+  &:not(:disabled):not([disabled]):not(.disabled) {
+    cursor: pointer;
+
+    &:hover {
+      background: $cta-energizing-80;
+      color: $basic-shaft-100;
+
+      .button-hint {
+        background: $cta-energizing-100;
+        color: $basic-shaft-20;
+      }
+    }
+
+    &:active {
+      background: $cta-energizing-80;
+      color: $cta-energizing-100;
+
+      .button-hint {
+        background: $cta-energizing-100;
+        color: $basic-shaft-80;
+        box-shadow: none;
+      }
+    }
+
+    &:focus-visible {
+      background-color: $cta-energizing-60;
+      color: $basic-shaft-100;
+      border-color: $cta-energizing-80;
+      outline: none;
+    }
+
+    &.button-secondary {
+      &:hover {
+        background: $basic-shaft-100;
+        color: $basic-shaft-20;
+
+        .button-hint {
+          background: $basic-shaft-80;
+          color: $basic-shaft-20;
+        }
+      }
+
+      &:active {
+        background: $basic-shaft-80;
+        color: $basic-shaft-20;
+
+        .button-hint {
+          background: $basic-shaft-20;
+          color: $basic-shaft-80;
+          box-shadow: none;
+        }
+      }
+
+      &:focus-visible {
+        background-color: $basic-shaft-100;
+        color: $basic-shaft-20;
+        border-color: $basic-shaft-60;
+        outline: none;
+
+        .button-hint {
+          background: $basic-shaft-80;
+          color: $basic-shaft-20;
+        }
+      }
+    }
+  }
+}
+
+.icon-button {
+  background: $basic-shaft-20;
+  border: 2px solid $basic-shaft-40;
+  padding: var(--spacing-4);
+  border-radius: var(--br-4);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+
+  .mat-icon svg {
+    fill: $basic-shaft-100;
+  }
+
+  &:disabled, &[disabled], &.disabled {
+    background: $basic-shaft-20;
+    border-color: $basic-shaft-20;
+    pointer-events: none;
+
+    .mat-icon svg {
+      fill: $basic-shaft-60;
+    }
+  }
+
+  &:not(:disabled):not([disabled]):not(.disabled) {
+    &:hover {
+      background: $basic-shaft-80;
+      border-color: $basic-shaft-40;
+
+      .mat-icon svg {
+        fill: $basic-shaft-20;
+      }
+    }
+
+    &:active {
+      background: $basic-shaft-60;
+      border-color: $basic-shaft-40;
+
+      .mat-icon svg {
+        fill: $basic-shaft-100;
+      }
+    }
+
+    &:focus-visible { // todo change styles when it will be in design system
+      background: $basic-shaft-40;
+      border-color: $basic-shaft-60;
+      outline: none;
+
+      .mat-icon svg {
+        fill: $basic-shaft-100;
+      }
+    }
+  }
+}

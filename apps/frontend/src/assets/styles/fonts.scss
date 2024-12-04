@@ -1,0 +1,155 @@
+.h5, h5 {
+  font-family: inherit;
+  font-style: normal;
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-20);
+  line-height: 1.25;
+}
+
+.h6, h6 {
+  font-family: inherit;
+  font-style: normal;
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-16);
+  line-height: 1.25;
+  letter-spacing: 0.0015em;
+}
+
+.body-2 {
+  font-family: inherit;
+  font-style: normal;
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-14);
+  line-height: 1.51;
+  letter-spacing: 0.0025em;
+}
+
+.caption {
+  font-family: inherit;
+  font-style: normal;
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-12);
+  line-height: 1.51;
+  letter-spacing: 0.004em;
+}
+
+
+// Title
+.title-hero-text {
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-64);
+  line-height: var(--fs-64-lh);
+  letter-spacing: -2%;
+}
+
+.title-heading-1 {
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-56);
+  line-height: var(--fs-56-lh);
+  letter-spacing: -2%;
+}
+
+.title-heading-2 {
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-40);
+  line-height: var(--fs-40-lh);
+  letter-spacing: -2%;
+}
+
+.title-heading-3 {
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-24);
+  line-height: var(--fs-24-lh);
+  letter-spacing: -2%;
+}
+
+.subtitle-medium {
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-20);
+  line-height: var(--fs-20-lh);
+}
+
+// Body
+.body-small-uppercase {
+  font-weight: var(--fw-semi-bold);
+  font-size: var(--fs-14);
+  line-height: var(--fs-14-lh);
+  text-transform: uppercase;
+}
+
+.body {
+  font-size: var(--fs-16);
+  line-height: var(--fs-18-lh);
+}
+
+.body-strong {
+  font-weight: var(--fw-semi-bold);
+  font-size: var(--fs-18);
+  line-height: var(--fs-18-lh);
+}
+
+.body-smaller-text {
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-14);
+  line-height: var(--fs-14-lh);
+}
+
+.body-smaller-strong {
+  font-weight: var(--fw-semi-bold);
+  font-size: var(--fs-14);
+  line-height: var(--fs-14-lh);
+}
+
+.body-smaller-uppercase {
+  font-weight: var(--fw-semi-bold);
+  font-size: var(--fs-12);
+  line-height: var(--fs-12-lh);
+  text-transform: uppercase;
+}
+
+.body-very-small {
+  font-weight: var(--fw-semi-bold);
+  font-size: var(--fs-12);
+  line-height: var(--fs-12-lh-sm);
+}
+
+// Button
+.button-large {
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-20);
+  line-height: var(--fs-20-lh);
+}
+
+.button-medium {
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-18);
+  line-height: var(--fs-18-lh);
+}
+
+// Link
+.link-medium {
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-18);
+  line-height: var(--fs-18-lh);
+  text-decoration: underline;
+}
+
+// Card
+.card-title-large {
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-24);
+  line-height: var(--fs-24-lh);
+}
+
+.card-title-medium {
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-18);
+  line-height: var(--fs-18-lh);
+}
+
+// Tag
+.tag-name-small {
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-16);
+  line-height: var(--fs-16-lh);
+}

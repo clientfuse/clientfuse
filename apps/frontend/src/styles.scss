@@ -1,1 +1,92 @@
-/* You can add global styles to this file, and also import other style files */
+@import "assets/styles/mixins";
+@import "assets/styles/variables";
+@import "assets/styles/reset";
+@import "assets/styles/utilities";
+@import "assets/styles/fonts";
+
+:root {
+  --container-width: 1200px;
+
+  --spacing-1: #{rem(4px)};
+  --spacing-2: #{rem(8px)};
+  --spacing-3: #{rem(12px)};
+  --spacing-4: #{rem(16px)};
+  --spacing-5: #{rem(20px)};
+  --spacing-6: #{rem(24px)};
+  --spacing-7: #{rem(28px)};
+  --spacing-8: #{rem(32px)};
+
+  --fs-10: #{rem(10px)};
+  --fs-28: #{rem(28px)};
+  --fs-32: #{rem(32px)};
+
+  // Title
+  --fs-64: #{rem(64px)}; // 4rem
+  --fs-64-lh: #{rem(80px)}; // 5rem
+
+  --fs-56: #{rem(56px)}; // 3.5rem
+  --fs-56-lh: #{rem(72px)}; // 4.5rem
+
+  --fs-40: #{rem(40px)}; // 2.5rem
+  --fs-40-lh: #{rem(56px)}; // 3.5rem
+
+  --fs-24: #{rem(24px)}; // 1.5rem
+  --fs-24-lh: #{rem(32px)}; // 2rem
+
+  --fs-20: #{rem(20px)}; // 1.25rem
+  --fs-20-lh: #{rem(32px)}; // 2rem
+
+  // Body
+  --fs-14: #{rem(14px)}; // 0.875rem
+  --fs-14-lh: #{rem(24px)}; // 1.5rem
+
+  --fs-18: #{rem(18px)}; // 1.125rem
+  --fs-18-lh: #{rem(28px)}; // 1.75rem
+
+  --fs-12: #{rem(12px)}; // 0.75rem
+  --fs-12-lh: #{rem(16px)}; // 1rem
+
+  --fs-12-lh-sm: #{rem(12px)}; // 0.75rem
+
+  --fs-16: #{rem(16px)}; // 1rem
+  --fs-16-lh: #{rem(24px)}; // 1.5rem
+
+  --fw-medium: 500;
+  --fw-semi-bold: 600;
+  --fw-bold: 700;
+
+  --br-1: 4px;
+  --br-2: 8px;
+  --br-3: 12px;
+  --br-4: 16px;
+}
+
+body {
+  @extend .body;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  color: $dark-100;
+  background: $cloud;
+  overflow-x: hidden;
+}
+
+.container {
+  margin: 0 auto;
+  max-width: var(--container-width);
+  width: 100%;
+  padding: 0 var(--spacing-4);
+}
+
+ul, ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

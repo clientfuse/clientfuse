@@ -1,0 +1,22 @@
+@import "variables";
+
+:host {
+  display: block;
+}
+
+header {
+  background: $dark-20;
+  padding: var(--spacing-4) 0;
+
+  .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-4);
+  }
+}
+
+.header-menu {
+  display: flex;
+  gap: var(--spacing-4);
+}
