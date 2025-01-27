@@ -2,7 +2,15 @@ import { ApiEnv } from '@connectly/models';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, Profile } from 'passport-facebook';
+import { Profile, Strategy } from 'passport-facebook';
+
+export type IFacebookUser = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  facebookUserId: string;
+  accessToken: string;
+}
 
 @Injectable()
 export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
@@ -14,7 +22,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
       clientSecret: configService.get(ApiEnv.FACEBOOK_CLIENT_SECRET),
       callbackURL: configService.get(ApiEnv.FACEBOOK_CALLBACK_URL),
       scope: 'email',
-      profileFields: ['emails', 'name'],
+      profileFields: ['emails', 'name']
     });
   }
 
@@ -22,14 +30,15 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     accessToken: string,
     refreshToken: string,
     profile: Profile,
-    done: Function,
+    done: Function
   ): Promise<any> {
-    const { name, emails } = profile;
+    const {name, emails} = profile;
     const user = {
       email: emails[0].value,
       firstName: name.givenName,
       lastName: name.familyName,
-      accessToken,
+      facebookProfileId: profile.id,
+      accessToken
     };
     done(null, user);
   }

@@ -1,4 +1,4 @@
-import { ApiEnv } from '@connectly/models';
+import { ApiEnv, IUserResponse } from '@connectly/models';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
@@ -17,6 +17,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    return {userId: payload.sub, username: payload.username};
+    return payload.sub as IUserResponse;
   }
 }
