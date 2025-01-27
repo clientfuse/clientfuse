@@ -1,0 +1,15 @@
+<div class="login-page">
+  <h1>Welcome!</h1>
+
+  <app-island class="login-page-main">
+    <div class="login-page-main-content">
+      <div>Connect to Clientfuse right now with:</div>
+
+      <div class="login-page-buttons">
+        <button mat-flat-button (click)="authStoreService.loginWithGoogle()">Google</button>
+        <div>or</div>
+        <button mat-flat-button (click)="authStoreService.loginWithFacebook()">Facebook</button>
+      </div>
+    </div>
+  </app-island>
+</div>

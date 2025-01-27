@@ -1,0 +1,9 @@
+:host {
+  display: block;
+}
+
+.login-callback-page {
+  display: grid;
+  place-items: center;
+  gap: var(--spacing-8);
+}

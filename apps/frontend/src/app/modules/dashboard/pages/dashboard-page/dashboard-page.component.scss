@@ -1,3 +1,51 @@
+@import "variables";
+
 :host {
   display: block;
+}
+
+.dashboard-content {
+  display: grid;
+  gap: var(--spacing-8);
+
+  ::ng-deep .mat-mdc-tab-body-content {
+    overflow: hidden;
+  }
+}
+
+.tab-content {
+  padding: var(--spacing-4) 0;
+  max-width: 50%;
+  display: grid;
+  gap: var(--spacing-4);
+
+  &.w-100 {
+    max-width: 100%;
+  }
+
+  a:not(:disabled) {
+    color: $blue;
+  }
+
+  table {
+    border: 1px solid $dark-60;
+    border-collapse: collapse;
+    width: 100%;
+    text-align: left;
+
+    th, td {
+      padding: var(--spacing-2);
+      border: 1px solid $dark-60;
+    }
+  }
+}
+
+.connect-link-row {
+  display: flex;
+  gap: var(--spacing-2);
+  align-items: baseline;
+
+  > .mat-mdc-icon-button {
+    transform: translateY(6px);
+  }
 }

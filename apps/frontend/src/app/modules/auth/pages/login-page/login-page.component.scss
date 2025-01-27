@@ -1,0 +1,24 @@
+@import "variables";
+
+:host {
+  display: block;
+}
+
+.login-page {
+  text-align: center;
+}
+
+.login-page-main {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.login-page-main-content {
+  display: grid;
+  gap: var(--spacing-6);
+}
+
+.login-page-buttons {
+  display: grid;
+  gap: var(--spacing-2);
+}

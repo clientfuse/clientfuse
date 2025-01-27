@@ -3,6 +3,7 @@
 @import "assets/styles/reset";
 @import "assets/styles/utilities";
 @import "assets/styles/fonts";
+@import "material-overrides/mat-form-field";
 
 :root {
   --container-width: 1200px;
@@ -52,7 +53,7 @@
   --fs-16-lh: #{rem(24px)}; // 1.5rem
 
   --fw-medium: 500;
-  --fw-semi-bold: 600;
+  --fw-semi-bold: 500;
   --fw-bold: 700;
 
   --br-1: 4px;
@@ -65,7 +66,6 @@ body {
   @extend .body;
   font-family: Roboto, "Helvetica Neue", sans-serif;
   color: $dark-100;
-  background: $cloud;
   overflow-x: hidden;
 }
 
@@ -86,7 +86,10 @@ a {
   color: inherit;
   text-decoration: none;
 
-  &:hover {
-    text-decoration: underline;
+  &:not(:disabled) {
+    &:hover {
+      cursor: pointer;
+      text-decoration: underline;
+    }
   }
 }
