@@ -11,8 +11,8 @@ export class ProfileStoreService {
   private _profile = signal<IUserResponse | null>(null);
   profile = this._profile.asReadonly();
 
-  getProfile() {
-    this.profileApiService.getProfile$()
+  getProfile$() {
+    return this.profileApiService.getProfile$()
       .pipe(tap((data) => this.setProfile(data.payload)));
   }
 
@@ -23,5 +23,9 @@ export class ProfileStoreService {
   updateProfile(partial: Partial<IUserResponse>) {
     const updatedProfile = {...this.profile(), ...partial} as IUserResponse;
     this._profile.set(updatedProfile);
+  }
+
+  clearProfile() {
+    this._profile.set(null);
   }
 }

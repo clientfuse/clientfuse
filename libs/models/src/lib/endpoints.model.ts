@@ -13,8 +13,8 @@ export const ENDPOINTS = {
       callback: 'facebook/callback'
     }
   },
-  user: {
-    root: 'user',
+  users: {
+    root: 'users',
     profile: 'profile',
     getUsers: 'get-users'
   }

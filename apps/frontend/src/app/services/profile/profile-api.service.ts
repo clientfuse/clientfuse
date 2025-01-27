@@ -4,12 +4,14 @@ import { ENDPOINTS, IResponse, IUserResponse } from '@connectly/models';
 import { Observable, shareReplay } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class ProfileApiService {
   private httpClient = inject(HttpClient);
 
   getProfile$(): Observable<IResponse<IUserResponse>> {
-    return this.httpClient.get<IResponse<IUserResponse>>(`${environment.API_URL}/${ENDPOINTS.user.root}/${ENDPOINTS.user.profile}`)
+    return this.httpClient.get<IResponse<IUserResponse>>(`${environment.API_URL}/${ENDPOINTS.users.root}/${ENDPOINTS.users.profile}`)
       .pipe(shareReplay(1));
   }
 }
