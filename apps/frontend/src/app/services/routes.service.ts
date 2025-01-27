@@ -8,7 +8,7 @@ export class RoutesService {
     auth: {
       root: 'auth',
       login: 'login',
-      registration: 'registration'
+      loginCallback: 'login-callback',
     },
     dashboard: '',
     settings: {
@@ -28,10 +28,6 @@ export class RoutesService {
 
   login(): string {
     return `/${RoutesService.routes.auth.root}/${RoutesService.routes.auth.login}`;
-  }
-
-  registration(): string {
-    return `/${RoutesService.routes.auth.root}/${RoutesService.routes.auth.registration}`;
   }
 
   dashboard(): string {
