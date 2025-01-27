@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AuthStoreService } from '../../services/auth/auth-store.service';
 import { RoutesService } from '../../services/routes.service';
 
 @Component({
@@ -13,10 +14,12 @@ import { RoutesService } from '../../services/routes.service';
 export class HeaderComponent {
 
   private routesService = inject(RoutesService);
+  protected authStoreService = inject(AuthStoreService);
 
   menuItems: {
     label: string;
     link: string;
+    action?: Function;
   }[] = [
     {
       label: 'Dashboard',
@@ -28,7 +31,8 @@ export class HeaderComponent {
     },
     {
       label: 'Logout',
-      link: '/logout'
+      link: '/logout',
+      action: () => this.authStoreService.logout()
     }
   ];
 

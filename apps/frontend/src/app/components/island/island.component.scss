@@ -1,0 +1,13 @@
+@import "variables";
+
+:host {
+  display: block;
+}
+
+.island {
+  padding: var(--spacing-6);
+  border-radius: var(--br-4);
+  width: 100%;
+  border: 1px solid $dark-40;
+  background: $cloud;
+}

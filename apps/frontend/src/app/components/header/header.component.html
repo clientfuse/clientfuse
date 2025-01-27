@@ -1,15 +1,19 @@
 <header>
   <div class="container">
-    <div class="header-logo">
-      logo
-    </div>
+    <div class="header-logo">Clientfuse Logo</div>
 
-    <ul class="header-menu">
-      @for (item of menuItems; track item.label) {
-        <li>
-          <a class="click-target-helper" [routerLink]=" item.link">{{ item.label }}</a>
-        </li>
-      }
-    </ul>
+    @if (authStoreService.isLoggedIn()) {
+      <ul class="header-menu">
+        @for (item of menuItems; track item.label) {
+          <li>
+            @if (item.action) {
+              <a class="click-target-helper" (click)="item.action()">{{ item.label }}</a>
+            } @else {
+              <a class="click-target-helper" [routerLink]=" item.link">{{ item.label }}</a>
+            }
+          </li>
+        }
+      </ul>
+    }
   </div>
 </header>
