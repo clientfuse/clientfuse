@@ -9,7 +9,7 @@
             @if (item.action) {
               <a class="click-target-helper" (click)="item.action()">{{ item.label }}</a>
             } @else {
-              <a class="click-target-helper" [routerLink]=" item.link">{{ item.label }}</a>
+              <a class="click-target-helper" [routerLink]=" item.url">{{ item.label }}</a>
             }
           </li>
         }

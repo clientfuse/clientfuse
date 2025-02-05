@@ -1,6 +1,7 @@
+@import "variables";
+
 @mixin link-style($baseColor, $hoverColor, $activeColor) {
   color: $baseColor;
-  text-decoration: underline;
 
   &:not([disabled]):not(.disabled):not(:disabled) {
     @include mouseOrTrackpadNavigation {
@@ -9,6 +10,7 @@
 
     &:hover {
       color: $hoverColor;
+      text-decoration: underline;
     }
 
     &:active {
@@ -17,7 +19,7 @@
   }
 
   [disabled], &:disabled, &.disabled {
-    color: $basic-shaft-60;
+    color: $dark-60;
     pointer-events: none;
   }
 }
@@ -31,9 +33,9 @@
 }
 
 .link-blue {
-  @include link-style($system-freedom-60, $system-freedom-100, $system-freedom-80);
+  @include link-style($blue-100, $blue-60, $blue-80);
 }
 
 .link-red {
-  @include link-style($red-500, $red-300, $red-700);
+  @include link-style($red-100, $red-60, $red-80);
 }

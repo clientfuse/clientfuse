@@ -1,3 +1,12 @@
-<p>settings-page works!</p>
+<h3 class="title-heading-3">Your account</h3>
 
-<router-outlet></router-outlet>
+<nav mat-tab-nav-bar [tabPanel]="tabPanel">
+  @for (link of links; track link) {
+    <a mat-tab-link [routerLink]="link.url" [active]="currentUrl() == link.url"> {{ link.label }} </a>
+  }
+</nav>
+<mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
+
+<div class="settings-content-wrapper">
+  <router-outlet></router-outlet>
+</div>

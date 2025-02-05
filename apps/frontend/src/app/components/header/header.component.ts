@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ILink } from '../../models/navigation.model';
 import { AuthStoreService } from '../../services/auth/auth-store.service';
 import { RoutesService } from '../../services/routes.service';
 
@@ -16,24 +17,10 @@ export class HeaderComponent {
   private routesService = inject(RoutesService);
   protected authStoreService = inject(AuthStoreService);
 
-  menuItems: {
-    label: string;
-    link: string;
-    action?: Function;
-  }[] = [
-    {
-      label: 'Dashboard',
-      link: this.routesService.dashboard()
-    },
-    {
-      label: 'Settings',
-      link: this.routesService.settingsUser()
-    },
-    {
-      label: 'Logout',
-      link: '/logout',
-      action: () => this.authStoreService.logout()
-    }
+  menuItems: ILink[] = [
+    {label: 'Dashboard', url: this.routesService.dashboard()},
+    {label: 'Settings', url: this.routesService.settingsUser()},
+    {label: 'Logout', url: '/logout', action: () => this.authStoreService.logout()}
   ];
 
 }

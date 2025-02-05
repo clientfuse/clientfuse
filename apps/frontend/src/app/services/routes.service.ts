@@ -18,7 +18,7 @@ export class RoutesService {
       teams: 'teams',
       whiteLabeling: 'white-labeling',
       integrations: 'integrations',
-      affilate: 'affilate',
+      affiliate: 'affiliate',
       webhooks: 'webhooks'
     },
     errors: {
@@ -58,8 +58,8 @@ export class RoutesService {
     return `/${RoutesService.routes.settings.root}/${RoutesService.routes.settings.integrations}`;
   }
 
-  settingsAffilate(): string {
-    return `/${RoutesService.routes.settings.root}/${RoutesService.routes.settings.affilate}`;
+  settingsAffiliate(): string {
+    return `/${RoutesService.routes.settings.root}/${RoutesService.routes.settings.affiliate}`;
   }
 
   settingsWebhooks(): string {

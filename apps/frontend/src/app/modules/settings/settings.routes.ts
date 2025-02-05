@@ -40,7 +40,7 @@ export const SETTINGS_ROUTES: Routes = [
         component: SettingsIntegrationsPageComponent
       },
       {
-        path: RoutesService.routes.settings.affilate,
+        path: RoutesService.routes.settings.affiliate,
         component: SettingsAffilatePageComponent
       },
       {
