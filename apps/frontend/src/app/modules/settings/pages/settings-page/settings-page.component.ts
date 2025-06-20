@@ -20,7 +20,7 @@ export class SettingsPageComponent {
 
   links: ILink[] = [
     {label: 'General', url: this.routesService.settingsUser()},
-    {label: 'Profile', url: this.routesService.settingsBilling()},
+    {label: 'Billing', url: this.routesService.settingsBilling()},
     {label: 'Teams', url: this.routesService.settingsTeams()},
     {label: 'White-labeling', url: this.routesService.settingsWhiteLabeling()},
     {label: 'Integrations', url: this.routesService.settingsIntegrations()},

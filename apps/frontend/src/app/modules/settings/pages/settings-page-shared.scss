@@ -1,0 +1,25 @@
+@import "fonts";
+
+.settings-content {
+  display: grid;
+  gap: var(--spacing-5);
+}
+
+.subtitle-medium {
+  margin-bottom: var(--spacing-2);
+}
+
+.settings-content-stack {
+  display: grid;
+  gap: var(--spacing-4);
+}
+
+.settings-content-row {
+  display: grid;
+  gap: var(--spacing-1);
+  align-items: center;
+
+  .settings-content-row-label {
+    @extend .body-smaller-uppercase;
+  }
+}

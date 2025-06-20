@@ -1,29 +1,5 @@
-@import "fonts";
+@import "../settings-page-shared";
 
 :host {
   display: block;
-}
-
-.settings-content {
-  display: grid;
-  gap: var(--spacing-5);
-}
-
-.subtitle-medium {
-  margin-bottom: var(--spacing-2);
-}
-
-.login-details {
-  display: grid;
-  gap: var(--spacing-4);
-}
-
-.settings-content-row {
-  display: grid;
-  gap: var(--spacing-2);
-  align-items: center;
-
-  .settings-content-row-label {
-    @extend .body-smaller-uppercase;
-  }
 }

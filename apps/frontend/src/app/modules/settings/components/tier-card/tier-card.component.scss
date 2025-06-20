@@ -1,0 +1,54 @@
+@import "variables";
+@import "fonts";
+
+:host {
+  display: block;
+}
+
+.tier-card {
+  border: 2px solid $dark-40;
+  border-radius: var(--br-3);
+  padding: var(--spacing-8) var(--spacing-4);
+  display: grid;
+  gap: var(--spacing-5);
+  position: relative;
+
+  .chip {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: $green-100;
+    color: $cloud;
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--br-4);
+    min-width: max-content;
+    @extend .body-smaller-uppercase
+  }
+}
+
+.tier-card-title {
+  text-align: center;
+}
+
+.tier-card-price-container {
+  text-align: center;
+}
+
+.tier-card-features {
+  display: grid;
+  gap: var(--spacing-3);
+}
+
+.tier-card-feature {
+  display: flex;
+  gap: var(--spacing-2);
+
+  .mat-icon {
+    flex: 0 0 auto;
+  }
+
+  .tier-card-feature-text {
+    text-wrap: pretty;
+  }
+}
