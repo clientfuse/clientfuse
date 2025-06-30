@@ -5,3 +5,5 @@ export * from './lib/env.model';
 export * from './lib/message.model';
 export * from './lib/storage.model';
 export * from './lib/user.model';
+export * from './lib/google.model';
+export * from './lib/facebook.model';

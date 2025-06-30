@@ -1,14 +1,12 @@
 import { ENDPOINTS, IUserResponse } from '@connectly/models';
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req } from '@nestjs/common';
-import { forkJoin, map } from 'rxjs';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
 
 @Controller(ENDPOINTS.users.root)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {
-  }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
@@ -21,13 +19,13 @@ export class UsersController {
   }
 
   @Get(ENDPOINTS.users.profile)
-  getProfile(@Req() req) {
+  async getProfile(@Req() req) {
     const userId: string = req.user._id;
-    return forkJoin([
-      this.usersService.findUser({_id: userId}),
-      this.usersService.updateLastSeenDate(userId)
-    ])
-      .pipe(map(([user]) => user));
+    const res = await Promise.all([
+      this.usersService.findUser({ _id: userId }),
+      this.usersService.updateLastSeenDate(userId),
+    ]);
+    return res[0];
   }
 
   @Get(':id')

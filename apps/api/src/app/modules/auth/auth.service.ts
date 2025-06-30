@@ -1,10 +1,18 @@
-import { IAccessToken, IUserResponse, LocalStorageKey, ServerErrorCode } from '@connectly/models';
+import {
+  IAccessToken,
+  IUserResponse,
+  LocalStorageKey,
+  ServerErrorCode,
+} from '@connectly/models';
 import { generateStrongPassword } from '@connectly/utils';
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcryptJs from 'bcryptjs';
 import { DateTime } from 'luxon';
-import { from, map, Observable, switchMap } from 'rxjs';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { encryptPassword } from '../users/utils/user.utils';
@@ -14,140 +22,144 @@ import { IGoogleUser } from './strategies/google.strategy';
 
 @Injectable()
 export class AuthService {
-
   constructor(
     private jwtService: JwtService,
     private usersService: UsersService
-  ) {
-  }
+  ) {}
 
-  login(credentials: LoginDto): Observable<IAccessToken> {
-    return this.usersService.findUserWithPassword({email: credentials.email})
-      .pipe(
-        switchMap((user) => {
-          if (!user) {
-            throw new UnauthorizedException(ServerErrorCode.INCORRECT_USER_OR_PASSWORD);
-          }
+  async login(credentials: LoginDto): Promise<IAccessToken> {
+    const user = await this.usersService.findUserWithPassword({
+      email: credentials.email,
+    });
 
-          return this.checkPassword(credentials.password, user.password)
-            .pipe(
-              map((isPasswordCorrect: boolean) => {
-                if (!isPasswordCorrect) {
-                  throw new UnauthorizedException(ServerErrorCode.INCORRECT_USER_OR_PASSWORD);
-                }
-                return this.generateAccessToken(user);
-              })
-            );
-
-        })
+    if (!user) {
+      throw new UnauthorizedException(
+        ServerErrorCode.INCORRECT_USER_OR_PASSWORD
       );
-  }
+    }
 
-  loginWithGoogle(user: IGoogleUser): Observable<IAccessToken> {
-    return this.usersService.findUser({email: user.email})
-      .pipe(
-        switchMap((foundUser) => {
-          if (foundUser) {
-            return this.usersService.updateUser(foundUser._id, {
-              googleUserId: user.googleId,
-              googleAccessToken: user.accessToken,
-              isLoggedInWithGoogle: true
-            })
-              .pipe(map(() => this.generateAccessToken(foundUser)));
-          }
+    const isPasswordCorrect = await this.checkPassword(
+      credentials.password,
+      user.password
+    );
 
-          return this.register({
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            password: generateStrongPassword(),
-            registrationDate: DateTime.now().toUnixInteger(),
-            birthDate: null,
-            lastSeenDate: null,
-            phone: null,
-            googleUserId: user.googleId,
-            googleAccessToken: user.accessToken,
-            googleAdsAccounts: [],
-            googleGrantedScopes: [],
-            googleMerchantCenters: [],
-            googleSearchConsoles: [],
-            googleMyBusinessLocations: [],
-            googleMyBusinessAccounts: [],
-            googleTagManagerAccounts: [],
-            facebookGrantedScopes: [],
-            facebookUserId: null,
-            facebookAccessToken: null,
-            isLoggedInWithGoogle: true,
-            isLoggedInWithFacebook: false
-          })
-            .pipe(map((createdUser) => this.generateAccessToken(createdUser)));
-        })
+    if (!isPasswordCorrect) {
+      throw new UnauthorizedException(
+        ServerErrorCode.INCORRECT_USER_OR_PASSWORD
       );
+    }
+
+    return this.generateAccessToken(user);
   }
 
-  loginWithFacebook(user: IFacebookUser): Observable<IAccessToken> {
-    return this.usersService.findUser({email: user.email})
-      .pipe(
-        switchMap((foundUser) => {
-          if (foundUser) {
-            return this.usersService.updateUser(foundUser._id, {
-              facebookUserId: user.facebookUserId,
-              facebookAccessToken: user.accessToken,
-              isLoggedInWithFacebook: true
-            })
-              .pipe(map(() => this.generateAccessToken(foundUser)));
-          }
+  async loginWithGoogle(user: IGoogleUser): Promise<IAccessToken> {
+    const foundUser = await this.usersService.findUser({ email: user.email });
 
-          return this.register({
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            password: generateStrongPassword(),
-            registrationDate: DateTime.now().toUnixInteger(),
-            birthDate: null,
-            lastSeenDate: null,
-            phone: null,
-            googleUserId: null,
-            googleAccessToken: null,
-            googleAdsAccounts: [],
-            googleGrantedScopes: [],
-            googleMerchantCenters: [],
-            googleSearchConsoles: [],
-            googleMyBusinessLocations: [],
-            googleMyBusinessAccounts: [],
-            googleTagManagerAccounts: [],
-            facebookGrantedScopes: [],
-            facebookUserId: user.facebookUserId,
-            facebookAccessToken: user.accessToken,
-            isLoggedInWithGoogle: false,
-            isLoggedInWithFacebook: true
-          })
-            .pipe(map((createdUser) => this.generateAccessToken(createdUser)));
-        })
-      );
+    if (foundUser) {
+      await this.usersService.updateUser(foundUser._id, {
+        googleUserId: user.googleId,
+        googleAccessToken: user.accessToken,
+        isLoggedInWithGoogle: true,
+      });
+
+      return this.generateAccessToken(foundUser);
+    }
+
+    const createdUser = await this.register({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      password: generateStrongPassword(),
+      registrationDate: DateTime.now().toUnixInteger(),
+      birthDate: null,
+      lastSeenDate: null,
+      phone: null,
+      googleUserId: user.googleId,
+      googleAccessToken: user.accessToken,
+      googleAdsAccounts: [],
+      googleGrantedScopes: [],
+      googleMerchantCenters: [],
+      googleSearchConsoles: [],
+      googleMyBusinessLocations: [],
+      googleMyBusinessAccounts: [],
+      googleTagManagerAccounts: [],
+      facebookGrantedScopes: [],
+      facebookUserId: null,
+      facebookAccessToken: null,
+      isLoggedInWithGoogle: true,
+      isLoggedInWithFacebook: false,
+    });
+
+    return this.generateAccessToken(createdUser);
   }
 
-  register(credentials: CreateUserDto) {
-    return this.usersService.findUser({email: credentials.email})
-      .pipe(
-        switchMap(user => {
-          if (user) throw new BadRequestException(ServerErrorCode.USER_ALREADY_EXISTS);
+  async loginWithFacebook(user: IFacebookUser): Promise<IAccessToken> {
+    const foundUser = await this.usersService.findUser({ email: user.email });
 
-          return encryptPassword(credentials.password)
-            .pipe(switchMap((encryptedPassword: string) => this.usersService.createUser({...credentials, password: encryptedPassword})));
-        })
-      );
+    if (foundUser) {
+      await this.usersService.updateUser(foundUser._id, {
+        facebookUserId: user.facebookUserId,
+        facebookAccessToken: user.accessToken,
+        isLoggedInWithFacebook: true,
+      });
+
+      return this.generateAccessToken(foundUser);
+    }
+
+    const createdUser = await this.register({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      password: generateStrongPassword(),
+      registrationDate: DateTime.now().toUnixInteger(),
+      birthDate: null,
+      lastSeenDate: null,
+      phone: null,
+      googleUserId: null,
+      googleAccessToken: null,
+      googleAdsAccounts: [],
+      googleGrantedScopes: [],
+      googleMerchantCenters: [],
+      googleSearchConsoles: [],
+      googleMyBusinessLocations: [],
+      googleMyBusinessAccounts: [],
+      googleTagManagerAccounts: [],
+      facebookGrantedScopes: [],
+      facebookUserId: user.facebookUserId,
+      facebookAccessToken: user.accessToken,
+      isLoggedInWithGoogle: false,
+      isLoggedInWithFacebook: true,
+    });
+
+    return this.generateAccessToken(createdUser);
   }
 
-  private checkPassword(
+  async register(credentials: CreateUserDto): Promise<IUserResponse> {
+    const existingUser = await this.usersService.findUser({
+      email: credentials.email,
+    });
+
+    if (existingUser) {
+      throw new BadRequestException(ServerErrorCode.USER_ALREADY_EXISTS);
+    }
+
+    const encryptedPassword = await encryptPassword(credentials.password);
+    return await this.usersService.createUser({
+      ...credentials,
+      password: encryptedPassword,
+    });
+  }
+
+  private async checkPassword(
     password: string,
     hashedPassword: string
-  ): Observable<boolean> {
-    return from(bcryptJs.compare(password, hashedPassword));
+  ): Promise<boolean> {
+    return await bcryptJs.compare(password, hashedPassword);
   }
 
   private generateAccessToken(user: IUserResponse): IAccessToken {
-    const payload = {sub: user};
-    return {[LocalStorageKey.ACCESS_TOKEN]: this.jwtService.sign(payload)};
+    const payload = { sub: user };
+    return { [LocalStorageKey.ACCESS_TOKEN]: this.jwtService.sign(payload) };
   }
 }
+

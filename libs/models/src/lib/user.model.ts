@@ -1,3 +1,12 @@
+import {
+  IGoogleAdsAccount,
+  IGoogleMerchantCenter,
+  IGoogleMyBusinessAccount,
+  IGoogleMyBusinessLocation,
+  IGoogleSearchConsole,
+  IGoogleTagManagerAccount
+} from './google.model';
+
 export interface IAccessToken {
   access_token: string;
 }
@@ -33,59 +42,6 @@ export interface IRegistrationCredentials {
   isLoggedInWithGoogle: boolean;
 }
 
-export interface IGoogleAdsAccount {
-  id: string;
-  name: string;
-  hasNoPermissions: boolean;
-  _id: string;
-}
-
-export interface IGoogleAnaliticsAccount {
-  id: string;
-  name: string;
-  created: string;
-  selfLink: string;
-  childLink: {
-    type: string;
-    href: string;
-  };
-  permissions: string[]; // 'COLLABORATE', 'EDIT', 'MANAGE_USERS', 'READ_AND_ANALYZE'
-  _id: string;
-}
-
-export interface IGoogleTagManagerAccount {
-  id: string;
-  name: string;
-  path: string;
-  _id: string;
-}
-
-export interface IGoogleSearchConsole { // todo specify later
-  siteUrl: string;
-  permissionLevel: string;
-  verified: boolean;
-  _id: string;
-}
-
-export interface IGoogleMyBusinessAccount { // todo specify later
-  id: string;
-  name: string;
-  accountType: string;
-}
-
-export interface IGoogleMerchantCenter { // todo specify later
-  id: string;
-  name: string;
-  country: string;
-}
-
-export interface IGoogleMyBusinessLocation { // todo specify later
-  id: string;
-  name: string;
-  address: string;
-}
-
 export interface IUserResponse extends Omit<IRegistrationCredentials, 'password'> {
   _id: string;
 }
-
