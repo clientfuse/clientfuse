@@ -5,7 +5,7 @@ import { NestFactory } from '@nestjs/core';
 import compression from 'compression';
 import helmet from 'helmet';
 import { AppModule } from './app/app.module';
-import { TransformResponse } from './app/interceptors/transform-response.interceptor';
+import { TransformResponse } from './app/core/interceptors/transform-response.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
