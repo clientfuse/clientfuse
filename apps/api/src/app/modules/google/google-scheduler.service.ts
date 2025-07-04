@@ -6,6 +6,7 @@ import { isEmpty, isNil } from 'lodash';
 import { DateTime } from 'luxon';
 import { UsersService } from '../users/users.service';
 import { GoogleAccounts } from './google-accounts.class';
+import { getGoogleTokenExpirationDate } from './utils/google.utils';
 
 @Injectable()
 export class GoogleSchedulerService implements OnModuleInit {
@@ -91,9 +92,7 @@ export class GoogleSchedulerService implements OnModuleInit {
         {
           googleAccessToken: refreshedTokens.access_token,
           googleRefreshToken: refreshedTokens.refresh_token || user.googleRefreshToken,
-          googleTokenExpirationDate: refreshedTokens.expiry_date
-            ? DateTime.fromMillis(refreshedTokens.expiry_date).toJSDate()
-            : DateTime.now().plus({ hours: 1 }).toJSDate()
+          googleTokenExpirationDate: getGoogleTokenExpirationDate(refreshedTokens.expiry_date)
         });
 
       this.logger.log(`Successfully refreshed tokens for user ${user._id}`);

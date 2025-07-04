@@ -3,9 +3,9 @@ import { generateStrongPassword } from '@connectly/utils';
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcryptJs from 'bcryptjs';
-import { DateTime } from 'luxon';
 import { EventType, IFacebookAuthEvent, IGoogleAuthEvent } from '../../core/modules/event-bus/event-bus.model';
 import { EventBusService } from '../../core/modules/event-bus/event-bus.service';
+import { getGoogleTokenExpirationDate } from '../google/utils/google.utils';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { encryptPassword } from '../users/utils/user.utils';
@@ -55,7 +55,7 @@ export class AuthService {
         googleUserId: user.googleId,
         googleAccessToken: user.accessToken,
         googleRefreshToken: user.refreshToken ?? foundUser.googleRefreshToken,
-        googleTokenExpirationDate: DateTime.now().plus({ hours: 1 }).toJSDate(),
+        googleTokenExpirationDate: getGoogleTokenExpirationDate(null),
         isLoggedInWithGoogle: true
       });
 
@@ -83,7 +83,7 @@ export class AuthService {
       googleUserId: user.googleId,
       googleAccessToken: user.accessToken,
       googleRefreshToken: user.refreshToken,
-      googleTokenExpirationDate: DateTime.now().plus({ hours: 1 }).toJSDate(),
+      googleTokenExpirationDate: getGoogleTokenExpirationDate(null),
       googleAnalyticsAccounts: [],
       googleAdsAccounts: [],
       googleGrantedScopes: [],

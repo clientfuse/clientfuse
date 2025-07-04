@@ -5,6 +5,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { EmittedEvent, EventType, IGoogleAuthEvent } from '../../core/modules/event-bus/event-bus.model';
 import { UsersService } from '../users/users.service';
 import { GoogleAccounts } from './google-accounts.class';
+import { getGoogleTokenExpirationDate } from './utils/google.utils';
 
 @Injectable()
 export class GoogleListenerService {
@@ -39,7 +40,10 @@ export class GoogleListenerService {
         googleAnalyticsAccounts: data.data.googleAnalyticsAccounts,
         googleTagManagers: data.data.googleTagManagers,
         googleSearchConsoles: data.data.googleSearchConsoles,
-        googleGrantedScopes: data.data.googleGrantedScopes
+        googleGrantedScopes: data.data.googleGrantedScopes,
+        googleAccessToken: data.tokens.access_token,
+        googleRefreshToken: data.tokens.refresh_token,
+        googleTokenExpirationDate: getGoogleTokenExpirationDate(data.tokens.expiry_date)
       }
     );
   }
