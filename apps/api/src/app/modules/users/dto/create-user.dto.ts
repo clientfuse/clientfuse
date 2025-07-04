@@ -1,15 +1,16 @@
+import { IGoogleAdsAccount, IRegistrationCredentials, Role } from '@connectly/models';
+import { IsBoolean, IsDate, IsDefined, IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
 import {
-  IGoogleAdsAccount,
-  IGoogleMerchantCenter,
-  IGoogleMyBusinessAccount,
-  IGoogleMyBusinessLocation,
-  IGoogleSearchConsole,
-  IGoogleTagManagerAccount,
-  IRegistrationCredentials
-} from '@connectly/models';
-import { IsBoolean, IsDefined, IsEmail, IsNumber, IsOptional, IsString } from 'class-validator';
+  analytics_v3,
+  content_v2_1,
+  mybusinessaccountmanagement_v1,
+  mybusinessbusinessinformation_v1,
+  searchconsole_v1,
+  tagmanager_v2
+} from 'googleapis';
 
 export class CreateUserDto implements IRegistrationCredentials {
+  // *** User identification fields ***
   @IsEmail()
   @IsString()
   @IsDefined()
@@ -27,10 +28,6 @@ export class CreateUserDto implements IRegistrationCredentials {
   @IsDefined()
   lastName: string;
 
-  @IsNumber()
-  @IsDefined()
-  registrationDate: number;
-
   @IsString()
   @IsOptional()
   phone: string | null;
@@ -39,10 +36,14 @@ export class CreateUserDto implements IRegistrationCredentials {
   @IsOptional()
   birthDate: string | null;
 
-  @IsNumber()
+  @IsDate()
   @IsOptional()
-  lastSeenDate: number | null;
+  lastSeenDate: Date | null;
 
+  @IsEnum(Role)
+  role: Role;
+
+  // *** Google-related fields ***
   @IsString()
   @IsOptional()
   googleUserId: string | null;
@@ -51,32 +52,48 @@ export class CreateUserDto implements IRegistrationCredentials {
   @IsOptional()
   googleAccessToken: string | null;
 
-  @IsString({each: true})
+  @IsString()
+  @IsOptional()
+  googleRefreshToken: string | null;
+
+  @IsDate()
+  @IsOptional()
+  googleTokenExpirationDate: Date | null;
+
+  @IsString({ each: true })
   googleGrantedScopes: string[];
 
   @IsDefined()
   googleAdsAccounts: IGoogleAdsAccount[];
 
   @IsDefined()
-  googleTagManagerAccounts: IGoogleTagManagerAccount[];
+  googleAnalyticsAccounts: analytics_v3.Schema$Account[];
 
   @IsDefined()
-  googleSearchConsoles: IGoogleSearchConsole[];
+  googleSearchConsoles: searchconsole_v1.Schema$WmxSite[];
 
   @IsDefined()
-  googleMyBusinessAccounts: IGoogleMyBusinessAccount[];
+  googleTagManagers: tagmanager_v2.Schema$Account[];
 
   @IsDefined()
-  googleMerchantCenters: IGoogleMerchantCenter[];
+  googleMerchantCenters: content_v2_1.Schema$AccountIdentifier[];
 
   @IsDefined()
-  googleMyBusinessLocations: IGoogleMyBusinessLocation[];
+  googleMyBusinessAccounts: mybusinessaccountmanagement_v1.Schema$Account[];
 
+  @IsDefined()
+  googleMyBusinessLocations: mybusinessbusinessinformation_v1.Schema$Location[];
+
+  @IsBoolean()
+  @IsOptional()
+  isLoggedInWithGoogle: boolean;
+
+  // *** Facebook-related fields ***
   @IsString()
   @IsOptional()
   facebookUserId: string | null;
 
-  @IsString({each: true})
+  @IsString({ each: true })
   facebookGrantedScopes: string[];
 
   @IsString()
@@ -86,8 +103,4 @@ export class CreateUserDto implements IRegistrationCredentials {
   @IsBoolean()
   @IsOptional()
   isLoggedInWithFacebook: boolean;
-
-  @IsBoolean()
-  @IsOptional()
-  isLoggedInWithGoogle: boolean;
 }

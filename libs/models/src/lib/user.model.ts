@@ -1,45 +1,53 @@
 import {
-  IGoogleAdsAccount,
-  IGoogleMerchantCenter,
-  IGoogleMyBusinessAccount,
-  IGoogleMyBusinessLocation,
-  IGoogleSearchConsole,
-  IGoogleTagManagerAccount
-} from './google.model';
+  analytics_v3,
+  content_v2_1,
+  mybusinessaccountmanagement_v1,
+  mybusinessbusinessinformation_v1,
+  searchconsole_v1,
+  tagmanager_v2
+} from 'googleapis';
+import { IGoogleAdsAccount } from './google.model';
 
 export interface IAccessToken {
   access_token: string;
 }
 
-export interface IJwtPayload {
-  sub: IUserResponse;
-  iat: number;
-  exp: number;
+export enum Role {
+  ADMIN = 'admin',
+  MANAGER = 'manager',
 }
 
 export interface IRegistrationCredentials {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  registrationDate: number;
-  phone: string | null;
+  // *** User identification fields ***
   birthDate: string | null;
-  lastSeenDate: number | null;
-  googleUserId: string | null;
-  googleAccessToken: string | null;
-  googleGrantedScopes: string[];
-  googleAdsAccounts: IGoogleAdsAccount[];
-  googleTagManagerAccounts: IGoogleTagManagerAccount[];
-  googleSearchConsoles: IGoogleSearchConsole[];
-  googleMyBusinessAccounts: IGoogleMyBusinessAccount[];
-  googleMerchantCenters: IGoogleMerchantCenter[];
-  googleMyBusinessLocations: IGoogleMyBusinessLocation[];
-  facebookUserId: string | null;
-  facebookGrantedScopes: string[];
-  facebookAccessToken: string | null;
+  email: string;
+  firstName: string;
   isLoggedInWithFacebook: boolean;
   isLoggedInWithGoogle: boolean;
+  lastName: string;
+  lastSeenDate: Date | null;
+  password: string;
+  phone: string | null;
+  role: Role;
+
+  // *** Google-related fields ***
+  googleAccessToken: string | null;
+  googleAdsAccounts: IGoogleAdsAccount[]; // todo specify type properly
+  googleAnalyticsAccounts: analytics_v3.Schema$Account[];
+  googleGrantedScopes: string[];
+  googleMerchantCenters: content_v2_1.Schema$AccountIdentifier[];
+  googleMyBusinessAccounts: mybusinessaccountmanagement_v1.Schema$Account[];
+  googleMyBusinessLocations: mybusinessbusinessinformation_v1.Schema$Location[];
+  googleRefreshToken: string | null;
+  googleSearchConsoles: searchconsole_v1.Schema$WmxSite[];
+  googleTagManagers: tagmanager_v2.Schema$Account[];
+  googleTokenExpirationDate: Date | null;
+  googleUserId: string | null;
+
+  // *** Facebook-related fields ***
+  facebookAccessToken: string | null;
+  facebookGrantedScopes: string[];
+  facebookUserId: string | null;
 }
 
 export interface IUserResponse extends Omit<IRegistrationCredentials, 'password'> {

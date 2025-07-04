@@ -1,18 +1,11 @@
-import {
-  IAccessToken,
-  IUserResponse,
-  LocalStorageKey,
-  ServerErrorCode,
-} from '@connectly/models';
+import { IAccessToken, IUserResponse, LocalStorageKey, Role, ServerErrorCode } from '@connectly/models';
 import { generateStrongPassword } from '@connectly/utils';
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcryptJs from 'bcryptjs';
 import { DateTime } from 'luxon';
+import { EventType, IFacebookAuthEvent, IGoogleAuthEvent } from '../../core/modules/event-bus/event-bus.model';
+import { EventBusService } from '../../core/modules/event-bus/event-bus.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { encryptPassword } from '../users/utils/user.utils';
@@ -24,12 +17,14 @@ import { IGoogleUser } from './strategies/google.strategy';
 export class AuthService {
   constructor(
     private jwtService: JwtService,
-    private usersService: UsersService
-  ) {}
+    private usersService: UsersService,
+    private eventBusService: EventBusService
+  ) {
+  }
 
   async login(credentials: LoginDto): Promise<IAccessToken> {
     const user = await this.usersService.findUserWithPassword({
-      email: credentials.email,
+      email: credentials.email
     });
 
     if (!user) {
@@ -59,8 +54,20 @@ export class AuthService {
       await this.usersService.updateUser(foundUser._id, {
         googleUserId: user.googleId,
         googleAccessToken: user.accessToken,
-        isLoggedInWithGoogle: true,
+        googleRefreshToken: user.refreshToken ?? foundUser.googleRefreshToken,
+        googleTokenExpirationDate: DateTime.now().plus({ hours: 1 }).toJSDate(),
+        isLoggedInWithGoogle: true
       });
+
+      this.eventBusService.emit<IGoogleAuthEvent>(
+        EventType.AUTH_LOGIN_GOOGLE,
+        {
+          userId: foundUser._id,
+          googleAccessToken: user.accessToken,
+          googleRefreshToken: user.refreshToken ?? foundUser.googleRefreshToken
+        },
+        AuthService.name
+      );
 
       return this.generateAccessToken(foundUser);
     }
@@ -70,25 +77,38 @@ export class AuthService {
       lastName: user.lastName,
       email: user.email,
       password: generateStrongPassword(),
-      registrationDate: DateTime.now().toUnixInteger(),
       birthDate: null,
       lastSeenDate: null,
       phone: null,
       googleUserId: user.googleId,
       googleAccessToken: user.accessToken,
+      googleRefreshToken: user.refreshToken,
+      googleTokenExpirationDate: DateTime.now().plus({ hours: 1 }).toJSDate(),
+      googleAnalyticsAccounts: [],
       googleAdsAccounts: [],
       googleGrantedScopes: [],
       googleMerchantCenters: [],
       googleSearchConsoles: [],
       googleMyBusinessLocations: [],
       googleMyBusinessAccounts: [],
-      googleTagManagerAccounts: [],
+      googleTagManagers: [],
       facebookGrantedScopes: [],
       facebookUserId: null,
       facebookAccessToken: null,
       isLoggedInWithGoogle: true,
       isLoggedInWithFacebook: false,
+      role: Role.MANAGER
     });
+
+    this.eventBusService.emit<IGoogleAuthEvent>(
+      EventType.AUTH_REGISTER_GOOGLE,
+      {
+        userId: createdUser._id,
+        googleAccessToken: user.accessToken,
+        googleRefreshToken: user.refreshToken
+      },
+      AuthService.name
+    );
 
     return this.generateAccessToken(createdUser);
   }
@@ -100,8 +120,17 @@ export class AuthService {
       await this.usersService.updateUser(foundUser._id, {
         facebookUserId: user.facebookUserId,
         facebookAccessToken: user.accessToken,
-        isLoggedInWithFacebook: true,
+        isLoggedInWithFacebook: true
       });
+
+      this.eventBusService.emit<IFacebookAuthEvent>(
+        EventType.AUTH_LOGIN_FACEBOOK,
+        {
+          userId: foundUser._id,
+          facebookAccessToken: user.accessToken
+        },
+        AuthService.name
+      );
 
       return this.generateAccessToken(foundUser);
     }
@@ -111,32 +140,44 @@ export class AuthService {
       lastName: user.lastName,
       email: user.email,
       password: generateStrongPassword(),
-      registrationDate: DateTime.now().toUnixInteger(),
       birthDate: null,
       lastSeenDate: null,
       phone: null,
       googleUserId: null,
       googleAccessToken: null,
+      googleRefreshToken: null,
+      googleTokenExpirationDate: null,
+      googleAnalyticsAccounts: [],
       googleAdsAccounts: [],
       googleGrantedScopes: [],
       googleMerchantCenters: [],
       googleSearchConsoles: [],
       googleMyBusinessLocations: [],
       googleMyBusinessAccounts: [],
-      googleTagManagerAccounts: [],
+      googleTagManagers: [],
       facebookGrantedScopes: [],
       facebookUserId: user.facebookUserId,
       facebookAccessToken: user.accessToken,
       isLoggedInWithGoogle: false,
       isLoggedInWithFacebook: true,
+      role: Role.MANAGER
     });
+
+    this.eventBusService.emit<IFacebookAuthEvent>(
+      EventType.AUTH_REGISTER_FACEBOOK,
+      {
+        userId: createdUser._id,
+        facebookAccessToken: user.accessToken
+      },
+      AuthService.name
+    );
 
     return this.generateAccessToken(createdUser);
   }
 
   async register(credentials: CreateUserDto): Promise<IUserResponse> {
     const existingUser = await this.usersService.findUser({
-      email: credentials.email,
+      email: credentials.email
     });
 
     if (existingUser) {
@@ -146,7 +187,7 @@ export class AuthService {
     const encryptedPassword = await encryptPassword(credentials.password);
     return await this.usersService.createUser({
       ...credentials,
-      password: encryptedPassword,
+      password: encryptedPassword
     });
   }
 

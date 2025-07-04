@@ -1,3 +1,5 @@
+import { Logger } from '@nestjs/common';
+import { Credentials } from 'google-auth-library/build/src/auth/credentials';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import { google } from 'googleapis';
 import { isEmpty, isNil } from 'lodash';
@@ -21,7 +23,23 @@ export class GoogleAccounts {
     this.oauth2Client.setCredentials(tokens);
   }
 
-  // async getGoogleAdsAccounts(): Promise<GoogleAdsAccount[]> {
+  getUpdatedTokens(): Credentials {
+    return this.oauth2Client.credentials;
+  }
+
+  async refreshTokens(): Promise<Credentials> {
+    try {
+      const { credentials } = await this.oauth2Client.refreshAccessToken();
+      this.oauth2Client.setCredentials(credentials);
+
+      return this.getUpdatedTokens();
+    } catch (error) {
+      Logger.error('Error refreshing tokens:', error);
+      throw new Error('Failed to refresh tokens');
+    }
+  }
+
+  // async getGoogleAdsAccounts() { todo uncomment when Google Ads integration is needed
   //   try {
   //     // *** Note: Google Ads API requires special setup and MCC account ***
   //     // *** This is a simplified example - actual implementation needs Google Ads API client ***
@@ -33,11 +51,11 @@ export class GoogleAccounts {
   //     const googleAds = google.googleads({ version: 'v16', auth: this.oauth2Client });
   //
   //     // *** This is a placeholder - actual Google Ads API integration is more complex ***
-  //     console.warn('Google Ads API requires special setup with MCC account');
+  //     Logger.warn('Google Ads API requires special setup with MCC account');
   //     return [];
   //
   //   } catch (error) {
-  //     console.error('Error fetching Google Ads accounts:', error);
+  //     Logger.error('Error fetching Google Ads accounts:', error);
   //     return [];
   //   }
   // }
@@ -54,7 +72,7 @@ export class GoogleAccounts {
 
       return response.data.items;
     } catch (error) {
-      console.error('Error fetching Analytics accounts:', error);
+      Logger.error('Error fetching Analytics accounts:', error);
       return [];
     }
   }
@@ -71,7 +89,7 @@ export class GoogleAccounts {
 
       return response.data.siteEntry;
     } catch (error) {
-      console.error('Error fetching Search Console sites:', error);
+      Logger.error('Error fetching Search Console sites:', error);
       return [];
     }
   }
@@ -88,7 +106,7 @@ export class GoogleAccounts {
 
       return response.data.account;
     } catch (error) {
-      console.error('Error fetching Tag Manager accounts:', error);
+      Logger.error('Error fetching Tag Manager accounts:', error);
       return [];
     }
   }
@@ -105,7 +123,7 @@ export class GoogleAccounts {
 
       return response.data.accountIdentifiers;
     } catch (error) {
-      console.error('Error fetching Merchant Center accounts:', error);
+      Logger.error('Error fetching Merchant Center accounts:', error);
       return [];
     }
   }
@@ -125,7 +143,7 @@ export class GoogleAccounts {
 
       return response.data.accounts;
     } catch (error) {
-      console.error('Error fetching My Business accounts:', error);
+      Logger.error('Error fetching My Business accounts:', error);
       return [];
     }
   }
@@ -150,14 +168,14 @@ export class GoogleAccounts {
             locations.push(...response.data.locations);
           }
         } catch (locationError) {
-          console.error(`Error fetching locations for account ${account.accountNumber}:`, locationError);
+          Logger.error(`Error fetching locations for account ${account.accountNumber}:`, locationError);
         }
       }
 
       return locations;
 
     } catch (error) {
-      console.error('Error fetching My Business locations:', error);
+      Logger.error('Error fetching My Business locations:', error);
       return [];
     }
   }
@@ -177,41 +195,45 @@ export class GoogleAccounts {
 
   async getUserAccountsData() {
     try {
-      console.log('Fetching user accounts data...');
+      Logger.log('Fetching user accounts data...');
+      await this.refreshTokens();
 
       const [
         // googleAdsAccounts,
         googleAnalyticsAccounts,
         googleSearchConsoles,
-        googleTagManagers,
-        googleMerchantCenters,
+        googleTagManagers
+        // googleMerchantCenters,
         // googleMyBusinessAccounts,
-        googleMyBusinessLocations
+        // googleMyBusinessLocations
       ] = await Promise.all([
         // this.getGoogleAdsAccounts(),
         this.getGoogleAnalyticsAccounts(),
         this.getGoogleSearchConsoleAccounts(),
-        this.getGoogleTagManagerAccounts(),
-        this.getGoogleMerchantCenterAccounts(),
+        this.getGoogleTagManagerAccounts()
+        // this.getGoogleMerchantCenterAccounts(),
         // this.getGoogleMyBusinessAccounts(),
-        this.getGoogleMyBusinessLocations()
+        // this.getGoogleMyBusinessLocations()
       ]);
 
       const googleGrantedScopes = this.getGrantedScopes();
+      const updatedTokens = this.getUpdatedTokens();
 
       return {
-        // googleAdsAccounts,
-        googleAnalyticsAccounts,
-        googleSearchConsoles,
-        googleTagManagers,
-        googleMerchantCenters,
-        // googleMyBusinessAccounts,
-        googleMyBusinessLocations,
-        googleGrantedScopes
+        data: {
+          // googleAdsAccounts,
+          googleAnalyticsAccounts,
+          googleSearchConsoles,
+          googleTagManagers,
+          // googleMerchantCenters,
+          // googleMyBusinessAccounts,
+          // googleMyBusinessLocations,
+          googleGrantedScopes
+        },
+        tokens: updatedTokens
       };
-
     } catch (error) {
-      console.error('Error fetching user accounts data:', error);
+      Logger.error('Error fetching user accounts data:', error);
       throw error;
     }
   }

@@ -10,7 +10,9 @@ import { getUserWithoutPassword } from './utils/user.utils';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {
+  }
 
   async createUser(user: CreateUserDto): Promise<IUserResponse> {
     const newUser: IRegistrationCredentials = { ...user };
@@ -55,7 +57,7 @@ export class UsersService {
   }
 
   async updateLastSeenDate(id: string): Promise<null> {
-    const lastSeenDate = DateTime.now().toUnixInteger();
+    const lastSeenDate = DateTime.now().toISO();
     await this.userModel.findOneAndUpdate({ _id: id }, { lastSeenDate });
     return null;
   }

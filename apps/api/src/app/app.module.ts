@@ -2,11 +2,15 @@ import { ApiEnv } from '@connectly/models';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { EventBusModule } from './core/modules/event-bus/event-bus.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt.guard';
+import { GoogleModule } from './modules/google/google.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -23,8 +27,12 @@ import { UsersModule } from './modules/users/users.module';
       }),
       inject: [ConfigService]
     }),
+    ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot(),
+    EventBusModule,
     AuthModule,
-    UsersModule
+    UsersModule,
+    GoogleModule
   ],
   controllers: [AppController],
   providers: [

@@ -13,6 +13,10 @@ export const ENDPOINTS = {
       callback: 'facebook/callback'
     }
   },
+  google: {
+    root: 'google',
+    userAccountsData: 'user-accounts-data'
+  },
   users: {
     root: 'users',
     profile: 'profile',
