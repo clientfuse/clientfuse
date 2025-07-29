@@ -52,10 +52,13 @@ export class AuthService {
 
     if (foundUser) {
       await this.usersService.updateUser(foundUser._id, {
-        googleUserId: user.googleId,
-        googleAccessToken: user.accessToken,
-        googleRefreshToken: user.refreshToken ?? foundUser.googleRefreshToken,
-        googleTokenExpirationDate: getGoogleTokenExpirationDate(null),
+        google: {
+          ...foundUser.google,
+          userId: user.googleId,
+          accessToken: user.accessToken,
+          refreshToken: user.refreshToken ?? foundUser.google.refreshToken,
+          tokenExpirationDate: getGoogleTokenExpirationDate(null)
+        },
         isLoggedInWithGoogle: true
       });
 
@@ -64,7 +67,7 @@ export class AuthService {
         {
           userId: foundUser._id,
           googleAccessToken: user.accessToken,
-          googleRefreshToken: user.refreshToken ?? foundUser.googleRefreshToken
+          googleRefreshToken: user.refreshToken ?? foundUser.google.refreshToken
         },
         AuthService.name
       );
@@ -80,21 +83,25 @@ export class AuthService {
       birthDate: null,
       lastSeenDate: null,
       phone: null,
-      googleUserId: user.googleId,
-      googleAccessToken: user.accessToken,
-      googleRefreshToken: user.refreshToken,
-      googleTokenExpirationDate: getGoogleTokenExpirationDate(null),
-      googleAnalyticsAccounts: [],
-      googleAdsAccounts: [],
-      googleGrantedScopes: [],
-      googleMerchantCenters: [],
-      googleSearchConsoles: [],
-      googleMyBusinessLocations: [],
-      googleMyBusinessAccounts: [],
-      googleTagManagers: [],
-      facebookGrantedScopes: [],
-      facebookUserId: null,
-      facebookAccessToken: null,
+      google: {
+        userId: user.googleId,
+        accessToken: user.accessToken,
+        refreshToken: user.refreshToken,
+        tokenExpirationDate: getGoogleTokenExpirationDate(null),
+        analyticsAccounts: [],
+        adsAccounts: [],
+        grantedScopes: [],
+        merchantCenters: [],
+        searchConsoles: [],
+        myBusinessLocations: [],
+        myBusinessAccounts: [],
+        tagManagers: []
+      },
+      facebook: {
+        userId: null,
+        accessToken: null,
+        grantedScopes: []
+      },
       isLoggedInWithGoogle: true,
       isLoggedInWithFacebook: false,
       role: Role.MANAGER
@@ -118,8 +125,11 @@ export class AuthService {
 
     if (foundUser) {
       await this.usersService.updateUser(foundUser._id, {
-        facebookUserId: user.facebookUserId,
-        facebookAccessToken: user.accessToken,
+        facebook: {
+          ...foundUser.facebook,
+          userId: user.facebookUserId,
+          accessToken: user.accessToken
+        },
         isLoggedInWithFacebook: true
       });
 
@@ -143,21 +153,25 @@ export class AuthService {
       birthDate: null,
       lastSeenDate: null,
       phone: null,
-      googleUserId: null,
-      googleAccessToken: null,
-      googleRefreshToken: null,
-      googleTokenExpirationDate: null,
-      googleAnalyticsAccounts: [],
-      googleAdsAccounts: [],
-      googleGrantedScopes: [],
-      googleMerchantCenters: [],
-      googleSearchConsoles: [],
-      googleMyBusinessLocations: [],
-      googleMyBusinessAccounts: [],
-      googleTagManagers: [],
-      facebookGrantedScopes: [],
-      facebookUserId: user.facebookUserId,
-      facebookAccessToken: user.accessToken,
+      google: {
+        userId: null,
+        accessToken: null,
+        refreshToken: null,
+        tokenExpirationDate: null,
+        analyticsAccounts: [],
+        adsAccounts: [],
+        grantedScopes: [],
+        merchantCenters: [],
+        searchConsoles: [],
+        myBusinessLocations: [],
+        myBusinessAccounts: [],
+        tagManagers: []
+      },
+      facebook: {
+        userId: user.facebookUserId,
+        accessToken: user.accessToken,
+        grantedScopes: []
+      },
       isLoggedInWithGoogle: false,
       isLoggedInWithFacebook: true,
       role: Role.MANAGER
@@ -203,4 +217,3 @@ export class AuthService {
     return { [LocalStorageKey.ACCESS_TOKEN]: this.jwtService.sign(payload) };
   }
 }
-

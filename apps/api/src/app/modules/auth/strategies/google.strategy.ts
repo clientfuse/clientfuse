@@ -1,4 +1,4 @@
-import { ApiEnv } from '@connectly/models';
+import { ApiEnv, GOOGLE_SCOPES } from '@connectly/models';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
@@ -22,21 +22,7 @@ export class GoogleStrategy extends PassportStrategy(OAuth2Strategy, 'google') {
       clientID: configService.get(ApiEnv.GOOGLE_CLIENT_ID),
       clientSecret: configService.get(ApiEnv.GOOGLE_CLIENT_SECRET),
       callbackURL: configService.get(ApiEnv.GOOGLE_CALLBACK_URL),
-      scope: [
-        'https://www.googleapis.com/auth/userinfo.email',
-        'https://www.googleapis.com/auth/userinfo.profile',
-        'https://www.googleapis.com/auth/user.birthday.read',
-        'https://www.googleapis.com/auth/user.phonenumbers.read',
-        'https://www.googleapis.com/auth/tagmanager.readonly',
-        'https://www.googleapis.com/auth/webmasters.readonly',
-        'openid',
-        'https://www.googleapis.com/auth/tagmanager.manage.users',
-        'https://www.googleapis.com/auth/analytics.readonly',
-        'https://www.googleapis.com/auth/content',
-        'https://www.googleapis.com/auth/analytics.manage.users',
-        'https://www.googleapis.com/auth/business.manage',
-        'https://www.googleapis.com/auth/adwords'
-      ]
+      scope: GOOGLE_SCOPES
     });
   }
 

@@ -1,4 +1,4 @@
-import { ApiEnv } from '@connectly/models';
+import { ApiEnv, FACEBOOK_SCOPES } from '@connectly/models';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
@@ -21,7 +21,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
       clientID: configService.get(ApiEnv.FACEBOOK_CLIENT_ID),
       clientSecret: configService.get(ApiEnv.FACEBOOK_CLIENT_SECRET),
       callbackURL: configService.get(ApiEnv.FACEBOOK_CALLBACK_URL),
-      scope: 'email',
+      scope: FACEBOOK_SCOPES,
       profileFields: ['emails', 'name']
     });
   }
