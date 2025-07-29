@@ -1,7 +1,9 @@
 import { inject, Injectable } from '@angular/core';
 import { IResponse, IUserResponse, LocalStorageKey } from '@connectly/models';
+import { isNil } from 'lodash';
 import { DateTime } from 'luxon';
 import { finalize, Observable, of } from 'rxjs';
+import { AgencyStoreService } from './agency/agency-store.service';
 import { LocalStorageService } from './local-storage.service';
 import { NavigationService } from './navigation.service';
 import { ProfileStoreService } from './profile/profile-store.service';
@@ -11,8 +13,9 @@ import { ProfileStoreService } from './profile/profile-store.service';
 })
 export class AppInitializerService {
 
-  private profileStoreService = inject(ProfileStoreService);
-  private navigationService = inject(NavigationService);
+  private readonly agencyStoreService = inject(AgencyStoreService);
+  private readonly navigationService = inject(NavigationService);
+  private readonly profileStoreService = inject(ProfileStoreService);
 
   constructor() {
   }
@@ -25,7 +28,14 @@ export class AppInitializerService {
         this.navigationService.observeUrl().subscribe();
         profile$
           .pipe(finalize(() => resolve()))
-          .subscribe(() => console.log(`Application initialized at ${DateTime.now().toISOTime()}`));
+          .subscribe((res) => {
+            console.log(`Application initialized at ${DateTime.now().toISOTime()}`);
+            if (isNil(res)) return;
+
+            Promise.all([
+              this.agencyStoreService.getUserAgency(res.payload._id)
+            ]);
+          });
       } catch (error) {
         console.error('Error during application initializing:', error);
         reject(error);

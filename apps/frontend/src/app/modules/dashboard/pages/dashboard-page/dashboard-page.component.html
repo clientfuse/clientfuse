@@ -16,14 +16,14 @@
           <div class="connect-link-row">
             <mat-form-field appearance="outline">
               <mat-label>'Manage Access' Link</mat-label>
-              <input readonly matInput placeholder="Placeholder" value="https://connectly.io/connect/f6104c484d095739/manage"/>
+              <input readonly matInput placeholder="Placeholder" value="https://connectly.io/connect/f6104c484d095739/manage" />
               <button matSuffix mat-icon-button matTooltip="Copy link">
                 <mat-icon>content_copy</mat-icon>
               </button>
               <mat-hint>Copy the link and share it with your client</mat-hint>
             </mat-form-field>
 
-            <button mat-icon-button matTooltip="Customize this link">
+            <button mat-icon-button matTooltip="Customize this link" (click)="openCustomizeAccessLinkModal('manage')">
               <mat-icon>settings</mat-icon>
             </button>
 
@@ -51,14 +51,14 @@
           <div class="connect-link-row">
             <mat-form-field appearance="outline">
               <mat-label>'View Access' Link</mat-label>
-              <input readonly matInput placeholder="Placeholder" value="https://connectly.io/connect/f6104c484d095739/manage"/>
+              <input readonly matInput placeholder="Placeholder" value="https://connectly.io/connect/f6104c484d095739/manage" />
               <button matSuffix mat-icon-button matTooltip="Copy link">
                 <mat-icon>content_copy</mat-icon>
               </button>
               <mat-hint>Copy the link and share it with your client</mat-hint>
             </mat-form-field>
 
-            <button mat-icon-button matTooltip="Customize this link">
+            <button mat-icon-button matTooltip="Customize this link" (click)="openCustomizeAccessLinkModal('view')">
               <mat-icon>settings</mat-icon>
             </button>
 

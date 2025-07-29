@@ -1,0 +1,151 @@
+@import "mixins";
+@import "variables";
+
+:host {
+  display: block;
+}
+
+.customize-access-modal {
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-6) var(--spacing-6) var(--spacing-4) var(--spacing-6);
+    border-bottom: 1px solid $dark-20;
+  }
+
+  .modal-description {
+    padding: var(--spacing-4) var(--spacing-6) var(--spacing-6) var(--spacing-6);
+
+    p {
+      margin: 0 0 var(--spacing-2) 0;
+      font-size: var(--fs-14);
+      color: $dark-80;
+      line-height: 1.4;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+.access-form {
+  padding: 0 var(--spacing-6) var(--spacing-6) var(--spacing-6);
+
+  .platforms-container {
+    display: grid;
+    max-height: 700px;
+    overflow-y: auto;
+  }
+}
+
+.platform-accordion {
+  margin-bottom: var(--spacing-4);
+
+  .platform-panel {
+    border: 1px solid $dark-20;
+    border-radius: var(--br-2);
+    box-shadow: none;
+
+    &.mat-expanded {
+      border-color: $blue-80;
+    }
+
+    .platform-header {
+      padding: var(--spacing-4);
+
+      .platform-title {
+        width: 100%;
+
+        .platform-info {
+          display: flex;
+          align-items: center;
+          width: 100%;
+
+          .platform-icon {
+            --platform-icon-size: 24px;
+            width: var(--platform-icon-size);
+            height: var(--platform-icon-size);
+            margin-right: var(--spacing-3);
+            flex-shrink: 0;
+          }
+
+          .platform-name {
+            font-size: var(--fs-16);
+            font-weight: var(--fw-medium);
+            color: $dark-100;
+            flex: 1;
+          }
+        }
+      }
+    }
+  }
+}
+
+.services-container {
+  padding: 0 var(--spacing-4) var(--spacing-4) var(--spacing-4);
+
+  .service-item {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-3) 0;
+    border-bottom: 1px solid $dark-20;
+
+    &:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    .service-toggle {
+      margin-right: var(--spacing-4);
+      flex-shrink: 0;
+    }
+
+    .service-details {
+      display: flex;
+      align-items: center;
+      flex: 1;
+
+      .service-icon {
+        --service-icon-size: 24px;
+        width: var(--service-icon-size);
+        height: var(--service-icon-size);
+        margin-right: var(--spacing-3);
+        flex-shrink: 0;
+      }
+
+      .service-info {
+        flex: 1;
+
+        .service-email-row {
+          display: flex;
+          gap: var(--spacing-2);
+          align-items: center;
+          font-size: var(--fs-14);
+
+          .service-name {
+            font-weight: var(--fw-medium);
+          }
+
+          .service-email {
+            color: $dark-100;
+          }
+
+          .service-connector {
+            color: $dark-60;
+          }
+        }
+      }
+    }
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-6);
+  padding-top: var(--spacing-4);
+  border-top: 1px solid $dark-20;
+}

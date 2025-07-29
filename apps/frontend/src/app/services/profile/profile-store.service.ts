@@ -21,7 +21,8 @@ export class ProfileStoreService {
   }
 
   updateProfile(partial: Partial<IUserResponse>) {
-    const updatedProfile = {...this.profile(), ...partial} as IUserResponse;
+    const updatedProfile = { ...this.profile(), ...partial } as IUserResponse;
+    // TODO : Call API to update profile
     this._profile.set(updatedProfile);
   }
 

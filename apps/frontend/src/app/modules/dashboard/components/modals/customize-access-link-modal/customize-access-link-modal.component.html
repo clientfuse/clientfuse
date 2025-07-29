@@ -1,0 +1,76 @@
+<div class="customize-access-modal">
+
+  <div class="modal-header">
+    <div class="subtitle-medium">Customize your standard access links</div>
+    <button mat-icon-button (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="modal-description">
+    <p>Select which accounts to get access to by default.</p>
+    <p>You can also create <a href="#" class="link link-blue">custom requests</a> to receive access to specific assets.</p>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="access-form">
+
+    <div class="platforms-container">
+      @for (section of sections(); track section.name) {
+        <mat-accordion class="platform-accordion">
+          <mat-expansion-panel [expanded]="section.expanded" class="platform-panel">
+
+            <mat-expansion-panel-header class="platform-header">
+              <mat-panel-title class="platform-title">
+                <div class="platform-info">
+                  <div class="platform-icon">
+                    <img [src]="section.iconSrc" alt="{{ section.name }} icon">
+                  </div>
+                  <span class="platform-name">{{ section.name }}</span>
+                </div>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div class="services-container">
+              @for (service of section.services; track service.name) {
+                <div class="service-item">
+                  <div class="service-toggle">
+                    <mat-slide-toggle (change)="onToggleChange($event, service)"
+                                      [checked]="data.accessType === 'view' ? service.isViewAccessEnabled : service.isManageAccessEnabled"></mat-slide-toggle>
+                  </div>
+
+                  <div class="service-details">
+                    @if (service.iconSrc) {
+                      <div class="service-icon" [attr.data-service]="service.name">
+                        <img [src]="service.iconSrc" alt="{{ service.name }} icon">
+                      </div>
+                    }
+
+                    <div class="service-info">
+                      <div class="service-email-row">
+                        <div>
+                          <div class="service-name">{{ service.name }}</div>
+                          <span class="service-email">{{ service.email }}</span>
+                        </div>
+                        <!--                         <span class="service-connector">or</span> -->
+                        <!--                         <button mat-button color="primary" class="change-button" type="button" (click)="onChangeEmail(service)"> -->
+                        <!--                           change -->
+                        <!--                         </button> -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+      }
+    </div>
+
+
+    <div class="form-actions">
+      <button mat-button type="button" (click)="onCancel()">Cancel</button>
+      <button mat-flat-button color="primary" type="submit" [disabled]="!isChanged()">Save Changes</button>
+    </div>
+
+  </form>
+</div>
