@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EmittedEvent, EventType } from './event-bus.model';
+import { generateCorrelationId } from './event-but.utils';
 
 @Injectable()
 export class EventBusService {
@@ -12,13 +13,14 @@ export class EventBusService {
   emit<T>(
     type: EventType,
     payload: T,
-    source: string = 'API',
+    source: string,
     correlationId?: string
   ): boolean {
+    source = source || 'API';
+    correlationId = correlationId || generateCorrelationId();
     const eventPayload = new EmittedEvent<T>(type, payload, source, correlationId);
 
-    this.logger.log(`Emitting event: ${type}`, {
-      correlationId,
+    this.logger.log(`${correlationId} Emitting event: ${type}`, {
       payload: eventPayload.payload
     });
 
@@ -28,9 +30,11 @@ export class EventBusService {
   async emitAsync<T>(
     type: EventType,
     payload: T,
-    correlationId?: string,
-    source: string = 'API'
+    source: string,
+    correlationId: string
   ): Promise<any[]> {
+    source = source || 'API';
+    correlationId = correlationId || generateCorrelationId();
     const eventPayload = new EmittedEvent<T>(type, payload, source, correlationId);
 
     this.logger.log(`Emitting event: ${type}`, {
@@ -41,8 +45,7 @@ export class EventBusService {
     try {
       const results = await this.eventEmitter.emitAsync(type, eventPayload);
 
-      this.logger.log(`Event completed successfully: ${type}`, {
-        correlationId,
+      this.logger.log(`${correlationId} Event completed successfully: ${type}`, {
         listenersCount: results.length
       });
 

@@ -3,6 +3,8 @@ export enum EventType {
   AUTH_REGISTER_FACEBOOK = 'auth.register.facebook',
   AUTH_LOGIN_GOOGLE = 'auth.login.google',
   AUTH_LOGIN_FACEBOOK = 'auth.login.facebook',
+  GOOGLE_ACCOUNTS_DATA_UPDATED = 'google.accounts.data.updated',
+  FACEBOOK_ACCOUNTS_DATA_UPDATED = 'facebook.accounts.data.updated',
 }
 
 export interface IEmittedEvent<T> {
@@ -43,4 +45,8 @@ export interface IGoogleAuthEvent {
 export interface IFacebookAuthEvent {
   userId: string;
   facebookAccessToken: string;
+}
+
+export interface IGoogleAccountsDataUpdatedEvent {
+  userId: string;
 }
