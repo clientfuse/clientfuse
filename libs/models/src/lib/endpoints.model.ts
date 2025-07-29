@@ -15,12 +15,29 @@ export const ENDPOINTS = {
   },
   google: {
     root: 'google',
-    userAccountsData: 'user-accounts-data'
+    userAccountsData: 'user-accounts-data',
+    accessManagement: {
+      root: 'access-management',
+      grantManagementAccess: 'grant-management-access',
+      grantReadonlyAccess: 'grant-readonly-access',
+      grantCustomAccess: 'grant-custom-access',
+      getEntityUsers: 'users/:service/:entityId',
+      revokeAgencyAccess: 'revoke/:service/:entityId/:linkId',
+      getAvailableServices: 'services'
+    }
   },
   users: {
     root: 'users',
     profile: 'profile',
-    getUsers: 'get-users'
+    getOne: ':id',
+    editOne: ':id',
+    deleteOne: ':id'
+  },
+  agencies: {
+    root: 'agencies',
+    getOne: ':id',
+    editOne: ':id',
+    deleteOne: ':id'
   }
 };
 
