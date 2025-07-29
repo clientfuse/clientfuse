@@ -4,9 +4,9 @@ import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { isEmpty, isNil } from 'lodash';
 import { DateTime } from 'luxon';
-import { UsersService } from '../users/users.service';
-import { GoogleAccounts } from './google-accounts.class';
-import { getGoogleTokenExpirationDate } from './utils/google.utils';
+import { UsersService } from '../../users/users.service';
+import { GoogleAccounts } from '../classes/google-accounts.class';
+import { getGoogleTokenExpirationDate } from '../utils/google.utils';
 
 @Injectable()
 export class GoogleSchedulerService implements OnModuleInit {
@@ -14,6 +14,7 @@ export class GoogleSchedulerService implements OnModuleInit {
   private readonly googleClientId: string = this.configService.get(ApiEnv.GOOGLE_CLIENT_ID);
   private readonly googleClientSecret: string = this.configService.get(ApiEnv.GOOGLE_CLIENT_SECRET);
   private readonly googleCallbackUrl: string = this.configService.get(ApiEnv.GOOGLE_CALLBACK_URL);
+  private readonly googleAdsDeveloperToken: string = this.configService.get(ApiEnv.GOOGLE_ADS_DEVELOPER_TOKEN);
 
   constructor(
     private readonly usersService: UsersService,
@@ -31,8 +32,8 @@ export class GoogleSchedulerService implements OnModuleInit {
     this.logger.log('Starting Google token refresh job...');
 
     try {
-      const usersWithGoogleTokens = await this.usersService.findUsers({
-        googleRefreshToken: <any>{ $ne: null, $exists: true },
+      const usersWithGoogleTokens = await this.usersService.findUsers(<any>{
+        'google.refreshToken': { $ne: null, $exists: true },
         isLoggedInWithGoogle: true
       });
 
@@ -66,7 +67,7 @@ export class GoogleSchedulerService implements OnModuleInit {
   }
 
   private async processUserTokenRefresh(user: any): Promise<void> {
-    if (!this.shouldRefreshToken(user.googleTokenExpirationDate)) {
+    if (!this.shouldRefreshToken(user.google?.googleTokenExpirationDate)) {
       this.logger.debug(`Token for user ${user._id} is still valid`);
       return;
     }
@@ -76,12 +77,13 @@ export class GoogleSchedulerService implements OnModuleInit {
     const googleAccounts = new GoogleAccounts(
       this.googleClientId,
       this.googleClientSecret,
-      this.googleCallbackUrl
+      this.googleCallbackUrl,
+      this.googleAdsDeveloperToken
     );
 
     googleAccounts.setCredentials({
-      access_token: user.googleAccessToken,
-      refresh_token: user.googleRefreshToken
+      access_token: user.google?.googleAccessToken,
+      refresh_token: user.google?.refreshToken
     });
 
     try {
@@ -90,19 +92,26 @@ export class GoogleSchedulerService implements OnModuleInit {
       await this.usersService.updateUser(
         user._id,
         {
-          googleAccessToken: refreshedTokens.access_token,
-          googleRefreshToken: refreshedTokens.refresh_token || user.googleRefreshToken,
-          googleTokenExpirationDate: getGoogleTokenExpirationDate(refreshedTokens.expiry_date)
-        });
+          google: {
+            ...user.google,
+            accessToken: refreshedTokens.access_token,
+            refreshToken: refreshedTokens.refresh_token || user.google?.refreshToken,
+            tokenExpirationDate: getGoogleTokenExpirationDate(refreshedTokens.expiry_date)
+          }
+        }
+      );
 
       this.logger.log(`Successfully refreshed tokens for user ${user._id}`);
     } catch (error) {
       this.logger.error(`Failed to refresh tokens for user ${user._id}:`, error);
       if (this.isRefreshTokenError(error)) {
         await this.usersService.updateUser(user._id, {
-          googleAccessToken: null,
-          googleRefreshToken: null,
-          googleTokenExpirationDate: null
+          google: {
+            ...user.google,
+            accessToken: null,
+            refreshToken: null,
+            tokenExpirationDate: null
+          }
         });
         this.logger.warn(`Cleared invalid Google tokens for user ${user._id}`);
       }

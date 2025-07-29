@@ -2,7 +2,7 @@ import { ApiEnv, ENDPOINTS, ServerErrorCode } from '@connectly/models';
 import { Controller, Get, NotFoundException, Query } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
-import { GoogleAccounts } from './google-accounts.class';
+import { GoogleAccounts } from './classes/google-accounts.class';
 
 @Controller(ENDPOINTS.google.root)
 export class GoogleController {
@@ -27,11 +27,12 @@ export class GoogleController {
     const googleAccounts = new GoogleAccounts(
       this.configService.get(ApiEnv.GOOGLE_CLIENT_ID),
       this.configService.get(ApiEnv.GOOGLE_CLIENT_SECRET),
-      this.configService.get(ApiEnv.GOOGLE_CALLBACK_URL)
+      this.configService.get(ApiEnv.GOOGLE_CALLBACK_URL),
+      this.configService.get(ApiEnv.GOOGLE_ADS_DEVELOPER_TOKEN)
     );
     googleAccounts.setCredentials({
-      access_token: user.googleAccessToken,
-      refresh_token: user.googleRefreshToken
+      access_token: user.google.accessToken,
+      refresh_token: user.google.refreshToken
     });
     return googleAccounts.getUserAccountsData();
   }

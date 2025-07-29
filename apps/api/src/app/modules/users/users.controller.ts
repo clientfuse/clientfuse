@@ -6,7 +6,8 @@ import { UsersService } from './users.service';
 
 @Controller(ENDPOINTS.users.root)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) {
+  }
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
@@ -23,22 +24,22 @@ export class UsersController {
     const userId: string = req.user._id;
     const res = await Promise.all([
       this.usersService.findUser({ _id: userId }),
-      this.usersService.updateLastSeenDate(userId),
+      this.usersService.updateLastSeenDate(userId)
     ]);
     return res[0];
   }
 
-  @Get(':id')
+  @Get(ENDPOINTS.users.getOne)
   findOne(@Query() partial: Partial<IUserResponse>) {
     return this.usersService.findUser(partial);
   }
 
-  @Put(':id')
+  @Put(ENDPOINTS.users.editOne)
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.updateUser(id, updateUserDto);
   }
 
-  @Delete(':id')
+  @Delete(ENDPOINTS.users.deleteOne)
   remove(@Param('id') id: string) {
     return this.usersService.removeUser(id);
   }

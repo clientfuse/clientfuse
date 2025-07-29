@@ -1,13 +1,8 @@
-import { IGoogleAdsAccount, IRegistrationCredentials, Role } from '@connectly/models';
+import { IRegistrationCredentials, Role } from '@connectly/models';
+import { Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsDefined, IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
-import {
-  analytics_v3,
-  content_v2_1,
-  mybusinessaccountmanagement_v1,
-  mybusinessbusinessinformation_v1,
-  searchconsole_v1,
-  tagmanager_v2
-} from 'googleapis';
+import { FacebookInfoDto } from './facebook-info.dto';
+import { GoogleInfoDto } from './google-info.dto';
 
 export class CreateUserDto implements IRegistrationCredentials {
   // *** User identification fields ***
@@ -44,61 +39,18 @@ export class CreateUserDto implements IRegistrationCredentials {
   role: Role;
 
   // *** Google-related fields ***
-  @IsString()
-  @IsOptional()
-  googleUserId: string | null;
-
-  @IsString()
-  @IsOptional()
-  googleAccessToken: string | null;
-
-  @IsString()
-  @IsOptional()
-  googleRefreshToken: string | null;
-
-  @IsDate()
-  @IsOptional()
-  googleTokenExpirationDate: Date | null;
-
-  @IsString({ each: true })
-  googleGrantedScopes: string[];
-
   @IsDefined()
-  googleAdsAccounts: IGoogleAdsAccount[];
+  @Type(() => GoogleInfoDto)
+  google: GoogleInfoDto;
 
+  // *** Facebook-related fields ***
   @IsDefined()
-  googleAnalyticsAccounts: analytics_v3.Schema$Account[];
-
-  @IsDefined()
-  googleSearchConsoles: searchconsole_v1.Schema$WmxSite[];
-
-  @IsDefined()
-  googleTagManagers: tagmanager_v2.Schema$Account[];
-
-  @IsDefined()
-  googleMerchantCenters: content_v2_1.Schema$AccountIdentifier[];
-
-  @IsDefined()
-  googleMyBusinessAccounts: mybusinessaccountmanagement_v1.Schema$Account[];
-
-  @IsDefined()
-  googleMyBusinessLocations: mybusinessbusinessinformation_v1.Schema$Location[];
+  @Type(() => FacebookInfoDto)
+  facebook: FacebookInfoDto;
 
   @IsBoolean()
   @IsOptional()
   isLoggedInWithGoogle: boolean;
-
-  // *** Facebook-related fields ***
-  @IsString()
-  @IsOptional()
-  facebookUserId: string | null;
-
-  @IsString({ each: true })
-  facebookGrantedScopes: string[];
-
-  @IsString()
-  @IsOptional()
-  facebookAccessToken: string | null;
 
   @IsBoolean()
   @IsOptional()

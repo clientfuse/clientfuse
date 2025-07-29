@@ -10,6 +10,7 @@ import { AppService } from './app.service';
 import { EventBusModule } from './core/modules/event-bus/event-bus.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt.guard';
+import { AgenciesModule } from './modules/agencies/agencies.module';
 import { GoogleModule } from './modules/google/google.module';
 import { UsersModule } from './modules/users/users.module';
 
@@ -32,6 +33,7 @@ import { UsersModule } from './modules/users/users.module';
     EventBusModule,
     AuthModule,
     UsersModule,
+    AgenciesModule,
     GoogleModule
   ],
   controllers: [AppController],

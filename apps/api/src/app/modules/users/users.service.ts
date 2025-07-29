@@ -18,19 +18,21 @@ export class UsersService {
     const newUser: IRegistrationCredentials = { ...user };
 
     const createdUser = await this.userModel.create(newUser);
-    return getUserWithoutPassword({ ...createdUser.toJSON() });
+    return getUserWithoutPassword({ ...createdUser.toJSON() } as unknown as IUserResponse & IRegistrationCredentials);
   }
 
   async findUsers(partial: Partial<IUserResponse>): Promise<IUserResponse[]> {
     const users = await this.userModel.find(partial).exec();
-    return users.map((user) => getUserWithoutPassword({ ...user.toJSON() }));
+    return users.map((user) => {
+      return getUserWithoutPassword({ ...user.toJSON() } as unknown as IUserResponse & IRegistrationCredentials);
+    });
   }
 
   async findUser(
     partial: Partial<IUserResponse>
   ): Promise<IUserResponse | null> {
     const user = await this.userModel.findOne(partial);
-    return user ? getUserWithoutPassword({ ...user.toJSON() }) : null;
+    return user ? getUserWithoutPassword({ ...user.toJSON() } as unknown as IUserResponse & IRegistrationCredentials) : null;
   }
 
   async findUserWithPassword(

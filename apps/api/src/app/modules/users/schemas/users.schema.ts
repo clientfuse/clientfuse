@@ -1,13 +1,5 @@
-import { IGoogleAdsAccount, IRegistrationCredentials, Role } from '@connectly/models';
+import { IFacebookInfo, IGoogleInfo, IRegistrationCredentials, Role } from '@connectly/models';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import {
-  analytics_v3,
-  content_v2_1,
-  mybusinessaccountmanagement_v1,
-  mybusinessbusinessinformation_v1,
-  searchconsole_v1,
-  tagmanager_v2
-} from 'googleapis';
 import * as mongoose from 'mongoose';
 
 export type UserDocument = mongoose.HydratedDocument<User>;
@@ -46,51 +38,35 @@ export class User implements IRegistrationCredentials {
   role: Role;
 
   // *** Google-related fields ***
-  @Prop({ type: String, default: null })
-  googleAccessToken: string | null;
-
-  @Prop({ type: [Object], default: [] })
-  googleAdsAccounts: IGoogleAdsAccount[];
-
-  @Prop({ type: [Object], default: [] })
-  googleAnalyticsAccounts: analytics_v3.Schema$Account[];
-
-  @Prop({ type: [String], default: [] })
-  googleGrantedScopes: string[];
-
-  @Prop({ type: [Object], default: [] })
-  googleMerchantCenters: content_v2_1.Schema$AccountIdentifier[];
-
-  @Prop({ type: [Object], default: [] })
-  googleMyBusinessAccounts: mybusinessaccountmanagement_v1.Schema$Account[];
-
-  @Prop({ type: [Object], default: [] })
-  googleMyBusinessLocations: mybusinessbusinessinformation_v1.Schema$Location[];
-
-  @Prop({ type: String, default: null })
-  googleRefreshToken: string | null;
-
-  @Prop({ type: [Object], default: [] })
-  googleSearchConsoles: searchconsole_v1.Schema$WmxSite[];
-
-  @Prop({ type: [Object], default: [] })
-  googleTagManagers: tagmanager_v2.Schema$Account[];
-
-  @Prop({ type: Date, default: null })
-  googleTokenExpirationDate: Date | null;
-
-  @Prop({ type: String, default: null })
-  googleUserId: string | null;
+  @Prop({
+    type: {
+      accessToken: { type: String, default: null },
+      refreshToken: { type: String, default: null },
+      tokenExpirationDate: { type: Date, default: null },
+      userId: { type: String, default: null },
+      adsAccounts: { type: [Object], default: [] },
+      analyticsAccounts: { type: [Object], default: [] },
+      grantedScopes: { type: [String], default: [] },
+      merchantCenters: { type: [Object], default: [] },
+      myBusinessAccounts: { type: [Object], default: [] },
+      myBusinessLocations: { type: [Object], default: [] },
+      searchConsoles: { type: [Object], default: [] },
+      tagManagers: { type: [Object], default: [] }
+    },
+    default: {}
+  })
+  google: IGoogleInfo;
 
   // *** Facebook-related fields ***
-  @Prop({ type: String, default: null })
-  facebookAccessToken: string | null;
-
-  @Prop({ type: [String], default: [] })
-  facebookGrantedScopes: string[];
-
-  @Prop({ type: String, default: null })
-  facebookUserId: string | null;
+  @Prop({
+    type: {
+      facebookAccessToken: { type: String, default: null },
+      facebookGrantedScopes: { type: [String], default: [] },
+      facebookUserId: { type: String, default: null }
+    },
+    default: {}
+  })
+  facebook: IFacebookInfo;
 }
 
 export const UsersSchema = SchemaFactory.createForClass(User);

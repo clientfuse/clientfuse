@@ -1,13 +1,26 @@
 import { Logger } from '@nestjs/common';
+import { GoogleAdsApi } from 'google-ads-api';
 import { Credentials } from 'google-auth-library/build/src/auth/credentials';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import { google } from 'googleapis';
 import { isEmpty, isNil } from 'lodash';
 
+
 export class GoogleAccounts {
   private readonly oauth2Client: OAuth2Client;
+  private readonly clientId: string;
+  private readonly clientSecret: string;
+  private readonly googleAdsDeveloperToken: string;
 
-  constructor(clientId: string, clientSecret: string, redirectUrl: string) {
+  constructor(
+    clientId: string,
+    clientSecret: string,
+    redirectUrl: string,
+    googleAdsDeveloperToken: string
+  ) {
+    this.clientId = clientId;
+    this.clientSecret = clientSecret;
+    this.googleAdsDeveloperToken = googleAdsDeveloperToken;
     this.oauth2Client = new google.auth.OAuth2(
       clientId,
       clientSecret,
@@ -23,7 +36,7 @@ export class GoogleAccounts {
     this.oauth2Client.setCredentials(tokens);
   }
 
-  getUpdatedTokens(): Credentials {
+  getCredentials(): Credentials {
     return this.oauth2Client.credentials;
   }
 
@@ -32,33 +45,86 @@ export class GoogleAccounts {
       const { credentials } = await this.oauth2Client.refreshAccessToken();
       this.oauth2Client.setCredentials(credentials);
 
-      return this.getUpdatedTokens();
+      return this.getCredentials();
     } catch (error) {
       Logger.error('Error refreshing tokens:', error);
       throw new Error('Failed to refresh tokens');
     }
   }
 
-  // async getGoogleAdsAccounts() { todo uncomment when Google Ads integration is needed
-  //   try {
-  //     // *** Note: Google Ads API requires special setup and MCC account ***
-  //     // *** This is a simplified example - actual implementation needs Google Ads API client ***
-  //
-  //     // For Google Ads, you typically need to use the Google Ads API directly
-  //     // which requires additional setup including Manager Account access
-  //
-  //     // Alternative: Use Google Ads Management API if available
-  //     const googleAds = google.googleads({ version: 'v16', auth: this.oauth2Client });
-  //
-  //     // *** This is a placeholder - actual Google Ads API integration is more complex ***
-  //     Logger.warn('Google Ads API requires special setup with MCC account');
-  //     return [];
-  //
-  //   } catch (error) {
-  //     Logger.error('Error fetching Google Ads accounts:', error);
-  //     return [];
-  //   }
-  // }
+  async getGoogleAdsAccounts() {
+    try {
+      const googleAdsClient = new GoogleAdsApi({
+        client_id: this.clientId,
+        client_secret: this.clientSecret,
+        developer_token: this.googleAdsDeveloperToken
+      });
+
+      const credentials = this.getCredentials();
+
+      if (!credentials.refresh_token) {
+        Logger.warn('No refresh token available for Google Ads');
+        return [];
+      }
+
+      const customerResourceNames = (await googleAdsClient.listAccessibleCustomers(
+        credentials.refresh_token
+      ))?.resource_names;
+
+      if (isNil(customerResourceNames) || isEmpty(customerResourceNames)) {
+        return [];
+      }
+
+      const accounts = [];
+
+      for (const resourceName of customerResourceNames) {
+        try {
+          const customerId = resourceName.split('/')[1];
+
+          const customer = googleAdsClient.Customer({
+            customer_id: customerId,
+            refresh_token: credentials.refresh_token
+          });
+
+          const [customerDetails] = await customer.query(`
+            SELECT customer.id,
+                   customer.descriptive_name,
+                   customer.currency_code,
+                   customer.time_zone,
+                   customer.auto_tagging_enabled,
+                   customer.status,
+                   customer.resource_name
+            FROM customer LIMIT 1
+          `);
+
+          if (customerDetails) {
+            accounts.push({
+              id: customerDetails.customer.id,
+              name: customerDetails.customer.descriptive_name || `Account ${customerDetails.customer.id}`,
+              currencyCode: customerDetails.customer.currency_code,
+              timeZone: customerDetails.customer.time_zone,
+              status: customerDetails.customer.status,
+              resourceName: customerDetails.customer.resource_name,
+              autoTaggingEnabled: customerDetails.customer.auto_tagging_enabled
+            });
+          }
+        } catch (accountError) {
+          Logger.error(`Error fetching Google Ads account details for ${resourceName}:`);
+          console.error(accountError);
+        }
+      }
+
+      return accounts;
+    } catch (error) {
+      Logger.error('Error fetching Google Ads accounts:', error);
+
+      if (error.message?.includes('developer_token')) {
+        Logger.error('Google Ads API requires a valid developer token from a Manager Account (MCC)');
+      }
+
+      return [];
+    }
+  }
 
   async getGoogleAnalyticsAccounts() {
     try {
@@ -195,39 +261,39 @@ export class GoogleAccounts {
 
   async getUserAccountsData() {
     try {
-      Logger.log('Fetching user accounts data...');
       await this.refreshTokens();
 
       const [
-        // googleAdsAccounts,
+        googleAdsAccounts,
         googleAnalyticsAccounts,
         googleSearchConsoles,
-        googleTagManagers
-        // googleMerchantCenters,
-        // googleMyBusinessAccounts,
-        // googleMyBusinessLocations
+        googleTagManagers,
+        googleMerchantCenters,
+        googleMyBusinessAccounts,
+        googleMyBusinessLocations
       ] = await Promise.all([
-        // this.getGoogleAdsAccounts(),
+        this.getGoogleAdsAccounts(),
         this.getGoogleAnalyticsAccounts(),
         this.getGoogleSearchConsoleAccounts(),
-        this.getGoogleTagManagerAccounts()
-        // this.getGoogleMerchantCenterAccounts(),
-        // this.getGoogleMyBusinessAccounts(),
-        // this.getGoogleMyBusinessLocations()
+        this.getGoogleTagManagerAccounts(),
+        this.getGoogleMerchantCenterAccounts(),
+        this.getGoogleMyBusinessAccounts(),
+        this.getGoogleMyBusinessLocations()
       ]);
 
       const googleGrantedScopes = this.getGrantedScopes();
-      const updatedTokens = this.getUpdatedTokens();
+      const updatedTokens = this.getCredentials();
 
+      Logger.log('Fetched user accounts data successfully');
       return {
         data: {
-          // googleAdsAccounts,
+          googleAdsAccounts,
           googleAnalyticsAccounts,
           googleSearchConsoles,
           googleTagManagers,
-          // googleMerchantCenters,
-          // googleMyBusinessAccounts,
-          // googleMyBusinessLocations,
+          googleMerchantCenters,
+          googleMyBusinessAccounts,
+          googleMyBusinessLocations,
           googleGrantedScopes
         },
         tokens: updatedTokens

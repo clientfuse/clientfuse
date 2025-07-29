@@ -2,7 +2,7 @@ import { IRegistrationCredentials, IUserResponse } from '@connectly/models';
 import * as bcryptJs from 'bcryptjs';
 
 export const getUserWithoutPassword = (
-  user: IRegistrationCredentials & { _id }
+  user: IRegistrationCredentials & IUserResponse
 ): IUserResponse => {
   const { password, ...userWithoutPassword } = user;
   return userWithoutPassword;
