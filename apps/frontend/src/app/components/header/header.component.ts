@@ -13,14 +13,13 @@ import { RoutesService } from '../../services/routes.service';
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent {
-
-  private routesService = inject(RoutesService);
+  protected routesService = inject(RoutesService);
   protected authStoreService = inject(AuthStoreService);
 
   menuItems: ILink[] = [
-    {label: 'Dashboard', url: this.routesService.dashboard()},
-    {label: 'Settings', url: this.routesService.settingsUser()},
-    {label: 'Logout', url: '/logout', action: () => this.authStoreService.logout()}
+    { label: 'Dashboard', url: this.routesService.dashboard() },
+    { label: 'Settings', url: this.routesService.settingsUser() },
+    { label: 'Logout', url: '/logout', action: () => this.authStoreService.logout() }
   ];
 
 }

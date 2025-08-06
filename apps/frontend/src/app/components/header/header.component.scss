@@ -16,6 +16,10 @@ header {
   }
 }
 
+.header-logo {
+  cursor: pointer;
+}
+
 .header-menu {
   display: flex;
   gap: var(--spacing-4);
