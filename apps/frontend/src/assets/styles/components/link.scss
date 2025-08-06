@@ -25,11 +25,32 @@
 }
 
 .link {
+  display: inline-block;
   background: none;
   border: none;
   padding: 0;
   text-decoration: none;
   @extend .link-medium;
+
+  &.body-smaller-text {
+    @extend .body-smaller-text
+  }
+
+  &.body-very-small {
+    @extend .body-very-small;
+  }
+}
+
+.body-smaller-text:has(.link) {
+  .link {
+    @extend .body-smaller-text;
+  }
+}
+
+.body-very-small:has(.link) {
+  .link {
+    @extend .body-very-small;
+  }
 }
 
 .link-blue {
