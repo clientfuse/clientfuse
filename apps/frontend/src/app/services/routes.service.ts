@@ -8,7 +8,7 @@ export class RoutesService {
     auth: {
       root: 'auth',
       login: 'login',
-      loginCallback: 'login-callback',
+      loginCallback: 'login-callback'
     },
     dashboard: '',
     settings: {
@@ -20,6 +20,11 @@ export class RoutesService {
       integrations: 'integrations',
       affiliate: 'affiliate',
       webhooks: 'webhooks'
+    },
+    connections: {
+      root: 'connections',
+      viewConnection: ':connectionId/view',
+      manageConnection: ':connectionId/manage'
     },
     errors: {
       '404': '404'
