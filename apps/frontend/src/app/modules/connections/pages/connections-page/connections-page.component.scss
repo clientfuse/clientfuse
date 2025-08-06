@@ -1,0 +1,188 @@
+@import "variables";
+
+:host {
+  display: block;
+  padding: var(--spacing-6);
+  max-width: var(--container-width);
+  margin: 0 auto;
+}
+
+.connections-container {
+  display: grid;
+  gap: var(--spacing-8);
+  max-width: 768px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.header-section {
+  text-align: center;
+  margin-bottom: var(--spacing-6);
+
+  .platforms {
+    color: $blue-100;
+    font-weight: var(--fw-bold);
+  }
+}
+
+.stepper-section {
+  .connection-stepper {
+    background: transparent;
+
+    ::ng-deep .mat-stepper-horizontal {
+      .mat-stepper-header {
+        padding: var(--spacing-4) var(--spacing-6);
+
+        .mat-step-icon {
+          width: 48px;
+          height: 48px;
+          margin-right: var(--spacing-3);
+
+          &.mat-step-icon-state-done {
+            background-color: $green-100;
+          }
+
+          &.mat-step-icon-state-edit {
+            background-color: $blue-100;
+          }
+        }
+
+        .mat-step-label {
+          font-size: var(--fs-14);
+          font-weight: var(--fw-medium);
+        }
+      }
+    }
+  }
+}
+
+.step-content {
+  min-height: 400px;
+
+  .step-header {
+    text-align: center;
+    margin-bottom: var(--spacing-8);
+
+    .step-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      color: $blue-100;
+      margin-bottom: var(--spacing-4);
+    }
+  }
+}
+
+.instructions-container {
+  display: grid;
+  gap: var(--spacing-6);
+  margin-bottom: var(--spacing-8);
+}
+
+.confirmation-card {
+  margin: var(--spacing-6) 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  .assets-list {
+    .asset-item {
+      display: flex;
+      align-items: center;
+      padding: var(--spacing-3) 0;
+      border-bottom: 1px solid $dark-40;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      mat-icon {
+        color: $blue-100;
+        margin-right: var(--spacing-3);
+      }
+    }
+  }
+}
+
+.confirmation-actions {
+  text-align: center;
+  margin: var(--spacing-6) 0;
+
+  .continue-btn {
+    background: #6366f1;
+    color: white;
+    font-weight: var(--fw-bold);
+    padding: var(--spacing-3) var(--spacing-8);
+
+    &:hover {
+      background: #5856eb;
+    }
+  }
+}
+
+.success-message {
+  margin: var(--spacing-8) 0;
+
+  .check-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: $green-100;
+    margin-bottom: var(--spacing-4);
+  }
+}
+
+.connected-assets {
+  margin: var(--spacing-6) 0;
+  text-align: left;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+
+  .connected-asset {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-2) 0;
+
+    mat-icon {
+      color: $green-100;
+      margin-right: var(--spacing-3);
+    }
+  }
+}
+
+.final-actions {
+  display: flex;
+  gap: var(--spacing-4);
+  justify-content: center;
+  margin: var(--spacing-8) 0;
+
+  .finish-btn {
+    background: $green-100;
+    color: white;
+    font-weight: var(--fw-bold);
+    padding: var(--spacing-3) var(--spacing-8);
+
+    &:hover {
+      background: $green-80;
+    }
+  }
+
+  .reset-btn {
+    color: $dark-60;
+
+    &:hover {
+      background: $dark-20;
+    }
+  }
+}
+
+.step-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--spacing-8);
+  padding-top: var(--spacing-6);
+  border-top: 1px solid $dark-40;
+
+  button {
+    min-width: 80px;
+  }
+}

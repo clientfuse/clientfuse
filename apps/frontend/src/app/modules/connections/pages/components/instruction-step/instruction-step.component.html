@@ -1,0 +1,23 @@
+<div class="instruction-step">
+  @if (stepNumber()) {
+    <div class="step-number">{{ stepNumber() }}</div>
+  }
+
+  <div class="step-content-text">
+    <div class="step-header-content">
+      <ng-content select="[slot=header]"></ng-content>
+    </div>
+
+    <div class="step-body-content">
+      <ng-content select="[slot=content]"></ng-content>
+    </div>
+
+    <div class="step-actions-content">
+      <ng-content select="[slot=actions]"></ng-content>
+    </div>
+
+    <div class="step-additional-content">
+      <ng-content select="[slot=additional]"></ng-content>
+    </div>
+  </div>
+</div>
