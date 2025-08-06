@@ -22,6 +22,10 @@ export const appRoutes: Route[] = [
     loadChildren: () => import('./modules/auth/auth.routes').then(r => r.AUTH_ROUTES)
   },
   {
+    path: RoutesService.routes.connections.root,
+    loadChildren: () => import('./modules/connections/connections.routes').then(r => r.CONNECTIONS_ROUTES)
+  },
+  {
     path: RoutesService.routes.errors['404'],
     loadComponent: () => import('./pages/not-found-page/not-found-page.component').then(c => c.NotFoundPageComponent)
   },
