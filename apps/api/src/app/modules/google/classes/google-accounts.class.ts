@@ -47,7 +47,8 @@ export class GoogleAccounts {
 
       return this.getCredentials();
     } catch (error) {
-      Logger.error('Error refreshing tokens:', error);
+      Logger.error('Error refreshing tokens:');
+      console.error(error);
       throw new Error('Failed to refresh tokens');
     }
   }
