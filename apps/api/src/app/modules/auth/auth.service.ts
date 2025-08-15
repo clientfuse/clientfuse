@@ -5,8 +5,10 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcryptJs from 'bcryptjs';
 import { EventType, IFacebookAuthEvent, IGoogleAuthEvent } from '../../core/modules/event-bus/event-bus.model';
 import { EventBusService } from '../../core/modules/event-bus/event-bus.service';
+import { FacebookAccounts } from '../facebook/classes/facebook-accounts.class';
 import { getGoogleTokenExpirationDate } from '../google/utils/google.utils';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { UserMergeService } from '../users/user-merge.service';
 import { UsersService } from '../users/users.service';
 import { encryptPassword } from '../users/utils/user.utils';
 import { LoginDto } from './dto/login.dto';
@@ -18,6 +20,7 @@ export class AuthService {
   constructor(
     private jwtService: JwtService,
     private usersService: UsersService,
+    private userMergeService: UserMergeService,
     private eventBusService: EventBusService
   ) {
   }
@@ -121,14 +124,17 @@ export class AuthService {
   }
 
   async loginWithFacebook(user: IFacebookUser): Promise<IAccessToken> {
-    const foundUser = await this.usersService.findUser({ email: user.email });
+    const foundUser = await this.usersService.findUser({ 'facebook.userId': user.userId });
+    const facebookAccounts = new FacebookAccounts(user.accessToken);
+    const grantedScopes = await facebookAccounts.getGrantedScopes();
 
     if (foundUser) {
       await this.usersService.updateUser(foundUser._id, {
         facebook: {
           ...foundUser.facebook,
-          userId: user.facebookUserId,
-          accessToken: user.accessToken
+          userId: user.userId,
+          accessToken: user.accessToken,
+          grantedScopes
         },
         isLoggedInWithFacebook: true
       });
@@ -168,9 +174,9 @@ export class AuthService {
         tagManagers: []
       },
       facebook: {
-        userId: user.facebookUserId,
+        userId: user.userId,
         accessToken: user.accessToken,
-        grantedScopes: []
+        grantedScopes: grantedScopes || []
       },
       isLoggedInWithGoogle: false,
       isLoggedInWithFacebook: true,
@@ -205,6 +211,24 @@ export class AuthService {
     });
   }
 
+  async updateEmail(userId: string, email: string) {
+    const foundUser = await this.usersService.findUser({ _id: userId });
+
+    if (!foundUser) {
+      throw new BadRequestException(ServerErrorCode.USER_NOT_FOUND);
+    }
+
+    await this.usersService.updateUser(foundUser._id, { email });
+
+    const foundUsers = await this.usersService.findUsers({ email });
+
+    if (foundUsers.length === 1) return 'User email was successfully updated';
+
+    await this.userMergeService.mergeAccountsByEmail(email);
+
+    return 'User email was successfully updated and accounts were merged';
+  }
+
   private async checkPassword(
     password: string,
     hashedPassword: string
@@ -213,7 +237,7 @@ export class AuthService {
   }
 
   private generateAccessToken(user: IUserResponse): IAccessToken {
-    const payload = { sub: user };
+    const payload = { sub: { _id: user._id, email: user.email } };
     return { [LocalStorageKey.ACCESS_TOKEN]: this.jwtService.sign(payload) };
   }
 }

@@ -1,4 +1,5 @@
 import { ApiEnv, FACEBOOK_SCOPES } from '@connectly/models';
+import { getNoEmailPlaceholder } from '@connectly/utils';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
@@ -8,7 +9,7 @@ export type IFacebookUser = {
   email: string;
   firstName: string;
   lastName: string;
-  facebookUserId: string;
+  userId: string;
   accessToken: string;
 }
 
@@ -32,12 +33,12 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     profile: Profile,
     done: Function
   ): Promise<any> {
-    const {name, emails} = profile;
-    const user = {
-      email: emails[0].value,
+    const { name, emails } = profile;
+    const user: IFacebookUser = {
+      email: emails?.[0]?.value || getNoEmailPlaceholder(),
       firstName: name.givenName,
       lastName: name.familyName,
-      facebookProfileId: profile.id,
+      userId: profile.id,
       accessToken
     };
     done(null, user);

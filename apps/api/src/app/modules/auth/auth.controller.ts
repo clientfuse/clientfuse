@@ -69,12 +69,14 @@ export class AuthController {
     }
   }
 
+  @Public()
   @HttpCode(HttpStatus.OK)
   @Post(ENDPOINTS.auth.login)
   login(@Body() credentials: LoginDto): Promise<IAccessToken> {
     return this.authService.login(credentials);
   }
 
+  @Public()
   @HttpCode(HttpStatus.CREATED)
   @Post(ENDPOINTS.auth.register)
   register(@Body() credentials: CreateUserDto) {
@@ -83,5 +85,12 @@ export class AuthController {
 
   private getRedirectUrl(token: string): string {
     return `${this.configService.get(ApiEnv.CORS_ORIGIN)}/auth/login-callback?token=${token}`;
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post(ENDPOINTS.auth.updateEmail)
+  async updateEmail(@Body() body: { email: string }, @Req() req) {
+    const userId = req.user._id; // Assuming user ID is stored in the request object
+    return this.authService.updateEmail(userId, body.email);
   }
 }
