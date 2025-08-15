@@ -5,12 +5,32 @@ import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import { google } from 'googleapis';
 import { isEmpty, isNil } from 'lodash';
 
+export interface VerifiedGoogleUser {
+  sub: string;
+  email: string;
+  email_verified: boolean;
+  name: string;
+  given_name: string;
+  family_name: string;
+  picture?: string;
+  aud: string;
+  iss: string;
+  iat: number;
+  exp: number;
+}
+
+export interface LoginInitResult {
+  user: VerifiedGoogleUser;
+  hasValidTokens: boolean;
+  requiresReauth: boolean;
+}
 
 export class GoogleAccounts {
   private readonly oauth2Client: OAuth2Client;
   private readonly clientId: string;
   private readonly clientSecret: string;
   private readonly googleAdsDeveloperToken: string;
+  private verifiedUser: VerifiedGoogleUser | null = null;
 
   constructor(
     clientId: string,
@@ -26,6 +46,65 @@ export class GoogleAccounts {
       clientSecret,
       redirectUrl
     );
+  }
+
+  async verifyAndInitialize(idToken: string, tokens?: { access_token?: string; refresh_token?: string }): Promise<LoginInitResult> {
+    try {
+      const ticket = await this.oauth2Client.verifyIdToken({
+        idToken,
+        audience: this.clientId
+      });
+
+      const payload = ticket.getPayload();
+
+      if (!payload) {
+        throw new Error('Invalid token payload');
+      }
+
+      this.verifiedUser = {
+        sub: payload.sub,
+        email: payload.email,
+        email_verified: payload.email_verified || false,
+        name: payload.name,
+        given_name: payload.given_name,
+        family_name: payload.family_name,
+        picture: payload.picture,
+        aud: payload.aud,
+        iss: payload.iss,
+        iat: payload.iat,
+        exp: payload.exp
+      } as VerifiedGoogleUser;
+
+      let hasValidTokens = false;
+      let requiresReauth = false;
+
+      if (tokens && (!isEmpty(tokens.access_token) || !isEmpty(tokens.refresh_token))) {
+        this.setCredentials(tokens);
+        hasValidTokens = true;
+
+        try {
+          await this.oauth2Client.getAccessToken();
+        } catch (error) {
+          Logger.warn('Provided tokens are invalid, reauth required');
+          requiresReauth = true;
+          hasValidTokens = false;
+        }
+      } else {
+        requiresReauth = true;
+      }
+
+      Logger.log(`User ${this.verifiedUser.email} verified successfully`);
+
+      return {
+        user: this.verifiedUser,
+        hasValidTokens,
+        requiresReauth
+      };
+
+    } catch (error) {
+      Logger.error('Failed to verify idToken:', error);
+      throw new Error('Invalid Google ID token');
+    }
   }
 
   setCredentials(tokens: { access_token?: string; refresh_token?: string }) {
@@ -260,9 +339,11 @@ export class GoogleAccounts {
     return Array.isArray(credentials.scope) ? credentials.scope : [];
   }
 
-  async getUserAccountsData() {
+  async getUserAccountsData(ignoreTokenRefresh = false) {
     try {
-      await this.refreshTokens();
+      if (!ignoreTokenRefresh) {
+        await this.refreshTokens();
+      }
 
       const [
         googleAdsAccounts,
