@@ -82,7 +82,7 @@ export class GoogleSchedulerService implements OnModuleInit {
     );
 
     googleAccounts.setCredentials({
-      access_token: user.google?.googleAccessToken,
+      access_token: user.google?.accessToken,
       refresh_token: user.google?.refreshToken
     });
 
