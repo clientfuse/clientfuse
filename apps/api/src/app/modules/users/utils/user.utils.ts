@@ -1,10 +1,13 @@
 import { IRegistrationCredentials, IUserResponse } from '@connectly/models';
 import * as bcryptJs from 'bcryptjs';
 
-export const getUserWithoutPassword = (
+export const getUserWithoutSensitiveData = (
   user: IRegistrationCredentials & IUserResponse
 ): IUserResponse => {
   const { password, ...userWithoutPassword } = user;
+  // delete userWithoutPassword.google.accessToken;
+  // delete userWithoutPassword.google.refreshToken;
+  // delete userWithoutPassword.facebook.accessToken;
   return userWithoutPassword;
 };
 

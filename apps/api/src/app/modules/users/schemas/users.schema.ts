@@ -60,13 +60,16 @@ export class User implements IRegistrationCredentials {
   // *** Facebook-related fields ***
   @Prop({
     type: {
-      facebookAccessToken: { type: String, default: null },
-      facebookGrantedScopes: { type: [String], default: [] },
-      facebookUserId: { type: String, default: null }
+      accessToken: { type: String, default: null },
+      grantedScopes: { type: [String], default: [] },
+      userId: { type: String, default: null }
     },
     default: {}
   })
   facebook: IFacebookInfo;
+
+  updatedAt: Date | null;
+  createdAt: Date | null;
 }
 
 export const UsersSchema = SchemaFactory.createForClass(User);
