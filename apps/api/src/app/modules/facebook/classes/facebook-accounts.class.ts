@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { FacebookAdsApi } from 'facebook-nodejs-business-sdk';
 import { isNil } from 'lodash';
+import { facebookHttpClient } from '../../../core/utils/http/http-client.factory';
 import { FacebookAdAccount, FacebookBusinessAccount, FacebookCatalog, FacebookCredentials, FacebookPage } from '../models/facebook.model';
 
 export class FacebookAccounts {
@@ -18,6 +19,23 @@ export class FacebookAccounts {
       access_token: this.accessToken
     };
   }
+
+  async getGrantedScopes(): Promise<string[]> {
+    try {
+      this.logger.log('Fetching granted Facebook permissions (Graph API)');
+      const { data } = await facebookHttpClient.get('/me/permissions', {
+        params: { access_token: this.accessToken }
+      });
+
+      return (data?.data ?? [])
+        .filter((p: any) => p.status === 'granted')
+        .map((p: any) => p.permission);
+    } catch (error: any) {
+      this.logger.error('Error fetching Facebook permissions:', error?.response?.data || error);
+      return [];
+    }
+  }
+
 
   async getAdAccounts(): Promise<FacebookAdAccount[]> {
     try {
