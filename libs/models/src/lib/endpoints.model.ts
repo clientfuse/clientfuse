@@ -4,6 +4,7 @@ export const ENDPOINTS = {
     login: 'login',
     register: 'register',
     logout: 'logout',
+    updateEmail: 'update-email',
     google: {
       root: 'google',
       callback: 'google/callback'
@@ -16,6 +17,7 @@ export const ENDPOINTS = {
   google: {
     root: 'google',
     userAccountsData: 'user-accounts-data',
+    connect: 'connect',
     accessManagement: {
       root: 'access-management',
       grantManagementAccess: 'grant-management-access',
