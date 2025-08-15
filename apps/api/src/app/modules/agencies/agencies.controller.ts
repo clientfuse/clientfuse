@@ -1,5 +1,6 @@
 import { ENDPOINTS, IAgencyBase, IAgencyResponse, ServerErrorCode } from '@connectly/models';
 import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Query } from '@nestjs/common';
+import { Public } from '../auth/decorators/is-public.decorator';
 import { AgenciesService } from './agencies.service';
 import { CreateAgencyDto } from './dto/create-agency.dto';
 import { UpdateAgencyDto } from './dto/update-agency.dto';
@@ -19,9 +20,15 @@ export class AgenciesController {
     return this.agenciesService.findAgencies(query);
   }
 
+  @Public()
   @Get(ENDPOINTS.agencies.getOne)
   async findOne(@Param('id') id: string): Promise<IAgencyResponse> {
-    const agency = this.agenciesService.findAgency({ _id: id });
+    let agency: IAgencyResponse | null;
+    try {
+      agency = await this.agenciesService.findAgency({ _id: id });
+    } catch (error) {
+      throw new NotFoundException(ServerErrorCode.AGENCY_NOT_FOUND);
+    }
     if (!agency) throw new NotFoundException(ServerErrorCode.AGENCY_NOT_FOUND);
     return agency;
   }
