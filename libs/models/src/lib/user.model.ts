@@ -7,6 +7,20 @@ import {
   tagmanager_v2
 } from 'googleapis';
 import {
+  FACEBOOK_ADS_MANAGEMENT_SCOPE,
+  FACEBOOK_BUSINESS_MANAGEMENT_SCOPE,
+  FACEBOOK_CATALOG_MANAGEMENT_SCOPE,
+  FACEBOOK_EMAIL_SCOPE,
+  FACEBOOK_PAGES_MANAGE_METADATA_SCOPE,
+  FACEBOOK_PAGES_READ_ENGAGEMENT_SCOPE,
+  FACEBOOK_PAGES_SHOW_LIST_SCOPE,
+  FACEBOOK_PUBLIC_PROFILE_SCOPE,
+  FacebookAdAccount,
+  FacebookBusinessAccount,
+  FacebookCatalog,
+  FacebookPage
+} from './integrations/facebook.model';
+import {
   GOOGLE_ADWORDS_SCOPE,
   GOOGLE_ANALYTICS_MANAGE_USERS_SCOPE,
   GOOGLE_ANALYTICS_READONLY_SCOPE,
@@ -51,6 +65,10 @@ export type IFacebookInfo = {
   accessToken: string | null;
   grantedScopes: string[];
   userId: string | null;
+  adsAccounts: FacebookAdAccount[];
+  businessAccounts: FacebookBusinessAccount[];
+  pages: FacebookPage[];
+  catalogs: FacebookCatalog[];
 };
 
 export interface IRegistrationCredentials {
@@ -101,6 +119,7 @@ export class User implements IUserResponse {
     Object.assign(this, props);
   }
 
+  // *** Google Permission Checks ***
   get isGoogleAdsAccessGranted() {
     return this.google.grantedScopes?.includes(GOOGLE_ADWORDS_SCOPE);
   }
@@ -151,5 +170,38 @@ export class User implements IUserResponse {
 
   get isGoogleUserPhoneNumbersReadAccessGranted() {
     return this.google.grantedScopes?.includes(GOOGLE_USER_PHONENUMBERS_READ_SCOPE);
+  }
+
+  // *** Facebook Permission Checks ***
+  get isFacebookAdsManagementGranted() {
+    return this.facebook.grantedScopes?.includes(FACEBOOK_ADS_MANAGEMENT_SCOPE);
+  }
+
+  get isFacebookBusinessManagementGranted() {
+    return this.facebook.grantedScopes?.includes(FACEBOOK_BUSINESS_MANAGEMENT_SCOPE);
+  }
+
+  get isFacebookCatalogManagementGranted() {
+    return this.facebook.grantedScopes?.includes(FACEBOOK_CATALOG_MANAGEMENT_SCOPE);
+  }
+
+  get isFacebookEmailGranted() {
+    return this.facebook.grantedScopes?.includes(FACEBOOK_EMAIL_SCOPE);
+  }
+
+  get isFacebookPagesManageMetadataGranted() {
+    return this.facebook.grantedScopes?.includes(FACEBOOK_PAGES_MANAGE_METADATA_SCOPE);
+  }
+
+  get isFacebookPagesReadEngagementGranted() {
+    return this.facebook.grantedScopes?.includes(FACEBOOK_PAGES_READ_ENGAGEMENT_SCOPE);
+  }
+
+  get isFacebookPagesShowListGranted() {
+    return this.facebook.grantedScopes?.includes(FACEBOOK_PAGES_SHOW_LIST_SCOPE);
+  }
+
+  get isFacebookPublicProfileGranted() {
+    return this.facebook.grantedScopes?.includes(FACEBOOK_PUBLIC_PROFILE_SCOPE);
   }
 }
