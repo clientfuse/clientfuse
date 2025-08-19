@@ -1,6 +1,6 @@
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { IErrorResponse } from '@connectly/models';
+import { IErrorResponse } from '@clientfuse/models';
 import { catchError, Observable, throwError } from 'rxjs';
 import { AuthStoreService } from '../services/auth/auth-store.service';
 

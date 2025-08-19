@@ -1,6 +1,6 @@
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { AppHeaders, LocalStorageKey } from '@connectly/models';
+import { AppHeaders, LocalStorageKey } from '@clientfuse/models';
 import { Observable } from 'rxjs';
 import { LocalStorageService } from '../services/local-storage.service';
 
