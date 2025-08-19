@@ -1,4 +1,4 @@
-import { PREFIX } from '@connectly/models';
+import { PREFIX } from '@clientfuse/models';
 
 export const environment = {
   production: false,
