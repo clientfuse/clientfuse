@@ -1,1 +1,29 @@
-<p>access-outcome works!</p>
+<div class="success-message">
+  <mat-icon class="check-icon">check_circle</mat-icon>
+  <h3 class="card-title-large">Connection Complete!</h3>
+  <p class="body">
+    result
+  </p>
+</div>
+
+<div class="connected-assets">
+  <h4 class="body-strong">Connected Assets:</h4>
+  <!--   @for (asset of businessAccount.requestedAccess; track asset) { -->
+  <!--     <div class="connected-asset"> -->
+  <!--       <mat-icon color="primary">check</mat-icon> -->
+  <!--       <span class="body-smaller-text">{{ asset }}</span> -->
+  <!--     </div> -->
+  <!--   } -->
+</div>
+
+<div class="final-actions">
+  <button mat-raised-button
+          color="primary"
+          class="finish-btn button-large">
+    FINISH
+  </button>
+  <button mat-button
+          class="reset-btn button-medium">
+    Start Over
+  </button>
+</div>

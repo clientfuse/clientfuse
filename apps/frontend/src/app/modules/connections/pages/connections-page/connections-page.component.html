@@ -2,26 +2,23 @@
 
   <div class="header-section">
     <h1 class="title-heading-2">
-      {{ businessAccount.name }} is requesting access to
-      <span class="platforms">{{ businessAccount.platforms.join(' and ') }}</span>
+      {{ connectionSettings()?.email }} is requesting access to
+      <span class="platforms">{{ requestedPlatformsText() }}</span>
     </h1>
   </div>
 
   <div class="stepper-section">
-    <mat-stepper
-      #stepper
-      [linear]="isLinear()"
-      [selectedIndex]="currentStepIndex()"
-      (selectionChange)="onStepChange($event.selectedIndex)"
-      orientation="horizontal"
-      labelPosition="bottom"
-      class="connection-stepper">
+    <mat-stepper #stepper
+                 [linear]="isLinear()"
+                 [selectedIndex]="currentStepIndex()"
+                 orientation="horizontal"
+                 labelPosition="bottom"
+                 class="connection-stepper">
 
       @for (step of connectionSteps(); track step.id) {
-        <mat-step
-          [completed]="step.completed"
-          [editable]="!isLinear() || isStepAccessible($index)"
-          class="connection-step">
+        <mat-step [completed]="step.completed"
+                  [editable]="!isLinear() || isStepAccessible($index)"
+                  class="connection-step">
 
           <ng-template matStepLabel>
             {{ step.title }}
@@ -37,12 +34,12 @@
                   <p class="body step-description">{{ step.description }}</p>
                 </div>
 
-                <div class="instructions-container">
-                  <app-connect-accounts />
-                </div>
+                <app-connect-accounts [connectionSettings]="connectionSettings()"
+                                      [enabledGoogleServicesNames]="enabledGoogleServicesNames()"
+                                      [accessType]="accessType()" />
 
                 <div class="step-actions">
-                  <button mat-button matStepperNext class="button-medium">Next</button>
+                  <button (click)="nextStep()" mat-button>Next</button>
                 </div>
               </div>
             }
@@ -54,36 +51,11 @@
                   <p class="body step-description">Review the permissions you're about to grant</p>
                 </div>
 
-                <mat-card class="confirmation-card">
-                  <mat-card-header>
-                    <mat-card-title class="card-title-medium">Assets to grant:</mat-card-title>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <div class="assets-list">
-                      @for (asset of businessAccount.requestedAccess; track asset) {
-                        <div class="asset-item">
-                          <mat-icon>account_balance</mat-icon>
-                          <span class="body-smaller-text">{{ asset }}</span>
-                        </div>
-                      }
-                    </div>
-                  </mat-card-content>
-                </mat-card>
-
-                <div class="confirmation-actions">
-                  <p class="body">Done? Hit "Continue" 🔥</p>
-                  <button
-                    mat-raised-button
-                    color="primary"
-                    class="continue-btn button-large"
-                    (click)="onContinue()">
-                    CONTINUE
-                  </button>
-                </div>
+                <app-confirm-access />
 
                 <div class="step-actions">
-                  <button mat-button matStepperPrevious class="button-medium">Back</button>
-                  <button mat-button matStepperNext class="button-medium">Next</button>
+                  <button mat-button (click)="previousStep()" class="button-medium">Back</button>
+                  <button mat-button (click)="nextStep()" class="button-medium">Next</button>
                 </div>
               </div>
             }
@@ -95,42 +67,10 @@
                   <p class="body step-description">Successfully connected to all requested accounts</p>
                 </div>
 
-                <div class="success-message">
-                  <mat-icon class="check-icon">check_circle</mat-icon>
-                  <h3 class="card-title-large">Connection Complete!</h3>
-                  <p class="body">
-                    {{ businessAccount.name }} now has access to your
-                    {{ businessAccount.platforms.join(' and ') }} accounts.
-                  </p>
-                </div>
-
-                <div class="connected-assets">
-                  <h4 class="body-strong">Connected Assets:</h4>
-                  @for (asset of businessAccount.requestedAccess; track asset) {
-                    <div class="connected-asset">
-                      <mat-icon color="primary">check</mat-icon>
-                      <span class="body-smaller-text">{{ asset }}</span>
-                    </div>
-                  }
-                </div>
-
-                <div class="final-actions">
-                  <button
-                    mat-raised-button
-                    color="primary"
-                    class="finish-btn button-large">
-                    FINISH
-                  </button>
-                  <button
-                    mat-button
-                    class="reset-btn button-medium"
-                    (click)="resetConnection()">
-                    Start Over
-                  </button>
-                </div>
+                <app-access-outcome />
 
                 <div class="step-actions">
-                  <button mat-button matStepperPrevious class="button-medium">Back</button>
+                  <button mat-button (click)="previousStep()" class="button-medium">Back</button>
                 </div>
               </div>
             }

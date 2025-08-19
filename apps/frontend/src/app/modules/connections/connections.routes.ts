@@ -1,10 +1,19 @@
 import { Routes } from '@angular/router';
+import { RoutesService } from '../../services/routes.service';
 import { ConnectionsPageComponent } from './pages/connections-page/connections-page.component';
 
 export const CONNECTIONS_ROUTES: Routes = [
   {
     path: '',
-    component: ConnectionsPageComponent,
-    children: []
+    children: [
+      {
+        path: RoutesService.routes.connections.viewConnection,
+        component: ConnectionsPageComponent
+      },
+      {
+        path: RoutesService.routes.connections.manageConnection,
+        component: ConnectionsPageComponent
+      }
+    ]
   }
 ];
