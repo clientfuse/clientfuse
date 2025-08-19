@@ -1,0 +1,40 @@
+body .accordion {
+  .accordion-panel {
+    border: 1px solid $dark-20;
+    border-radius: var(--br-2);
+    box-shadow: none;
+
+    &.mat-expanded {
+      border-color: $blue-80;
+    }
+
+    .accordion-header {
+      padding: var(--spacing-4);
+
+      .accordion-title {
+        width: 100%;
+
+        .accordion-info {
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-3);
+          width: 100%;
+
+          .accordion-icon {
+            --accordion-icon-size: 24px;
+            width: var(--accordion-icon-size);
+            height: var(--accordion-icon-size);
+            flex-shrink: 0;
+          }
+
+          .accordion-name {
+            font-size: var(--fs-16);
+            font-weight: var(--fw-medium);
+            color: $dark-100;
+            flex: 1;
+          }
+        }
+      }
+    }
+  }
+}
