@@ -22,7 +22,7 @@ export class RoutesService {
       webhooks: 'webhooks'
     },
     connections: {
-      root: 'connections',
+      root: 'connect',
       viewConnection: ':connectionId/view',
       manageConnection: ':connectionId/manage'
     },

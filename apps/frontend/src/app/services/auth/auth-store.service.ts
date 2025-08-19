@@ -1,7 +1,7 @@
 import { computed, inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { LocalStorageKey } from '@connectly/models';
-import { tap } from 'rxjs';
+import { LocalStorageKey } from '@clientfuse/models';
+import { firstValueFrom, tap } from 'rxjs';
 import { LocalStorageService } from '../local-storage.service';
 import { ProfileStoreService } from '../profile/profile-store.service';
 import { RoutesService } from '../routes.service';
@@ -45,6 +45,17 @@ export class AuthStoreService {
   logout() {
     this.clearUICache();
     void this.router.navigateByUrl(this.routesService.login());
+  }
+
+  async updateEmail(email: string) {
+    try {
+      const result = await this.authApiService.updateEmail(email);
+      await firstValueFrom(this.profileStoreService.getProfile$());
+      this.snackbarService.success(result.payload);
+    } catch (error) {
+      console.error('Error updating email:', error);
+      this.snackbarService.error('Failed to update email');
+    }
   }
 
   private clearUICache(): void {

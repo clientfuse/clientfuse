@@ -1,5 +1,5 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { IUserResponse } from '@connectly/models';
+import { IUserResponse } from '@clientfuse/models';
 import { tap } from 'rxjs';
 import { ProfileApiService } from './profile-api.service';
 
@@ -22,7 +22,6 @@ export class ProfileStoreService {
 
   updateProfile(partial: Partial<IUserResponse>) {
     const updatedProfile = { ...this.profile(), ...partial } as IUserResponse;
-    // TODO : Call API to update profile
     this._profile.set(updatedProfile);
   }
 

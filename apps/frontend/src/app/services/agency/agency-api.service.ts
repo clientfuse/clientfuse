@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { ENDPOINTS, IAgencyBase, IAgencyResponse, IResponse } from '@connectly/models';
+import { ENDPOINTS, IAgencyBase, IAgencyResponse, IResponse } from '@clientfuse/models';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 

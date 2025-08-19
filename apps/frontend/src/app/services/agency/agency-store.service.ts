@@ -1,5 +1,5 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { IAgencyBase, IAgencyResponse } from '@connectly/models';
+import { IAgencyBase, IAgencyResponse } from '@clientfuse/models';
 import { AgencyApiService } from './agency-api.service';
 
 @Injectable({

@@ -1,4 +1,5 @@
 import { inject, Injectable } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { BehaviorSubject, filter, Observable, tap } from 'rxjs';
 
@@ -11,8 +12,10 @@ export class NavigationService {
 
   private previousUrl$$: BehaviorSubject<string> = new BehaviorSubject<string>('');
   previousUrl$: Observable<string> = this.previousUrl$$;
+  previousUrl = toSignal(this.previousUrl$);
   private currentUrl$$: BehaviorSubject<string> = new BehaviorSubject<string>('');
   currentUrl$: Observable<string> = this.currentUrl$$;
+  currentUrl = toSignal(this.currentUrl$);
 
   observeUrl() {
     return this.router.events

@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { IResponse, IUserResponse, LocalStorageKey } from '@connectly/models';
+import { IResponse, IUserResponse, LocalStorageKey } from '@clientfuse/models';
 import { isNil } from 'lodash';
 import { DateTime } from 'luxon';
 import { finalize, Observable, of } from 'rxjs';
