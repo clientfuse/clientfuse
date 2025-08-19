@@ -1,26 +1,23 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { FacebookAdsApi } from 'facebook-nodejs-business-sdk';
-import { isEmpty, isNil } from 'lodash';
 import {
+  FACEBOOK_CATALOG_MANAGEMENT_SCOPE,
   FACEBOOK_ERROR_CODES,
   FACEBOOK_PAGE_ROLES,
-  FACEBOOK_SCOPES,
+  FACEBOOK_PAGES_SHOW_LIST_SCOPE,
   IFacebookAccessRequest,
   IFacebookAccessResponse,
   IFacebookBaseAccessService,
   IFacebookCustomAccessOptions,
   IFacebookUserInfo
-} from '../../models/facebook.model';
+} from '@clientfuse/models';
+import { Injectable, Logger } from '@nestjs/common';
+import { FacebookAdsApi } from 'facebook-nodejs-business-sdk';
+import { isEmpty, isNil } from 'lodash';
 
 @Injectable()
 export class FacebookPageAccessService implements IFacebookBaseAccessService {
   private readonly logger = new Logger(FacebookPageAccessService.name);
   private facebookApi: FacebookAdsApi;
   private accessToken: string;
-
-  constructor(private readonly configService: ConfigService) {
-  }
 
   setCredentials(tokens: { access_token: string }): void {
     if (isEmpty(tokens) || isNil(tokens) || !tokens.access_token) {
@@ -299,7 +296,7 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
   }
 
   getRequiredScopes(): string[] {
-    return [FACEBOOK_SCOPES.PAGES_SHOW_LIST, FACEBOOK_SCOPES.PAGES_MANAGE_METADATA];
+    return [FACEBOOK_PAGES_SHOW_LIST_SCOPE, FACEBOOK_CATALOG_MANAGEMENT_SCOPE];
   }
 
   async getPageInfo(pageId: string): Promise<any> {

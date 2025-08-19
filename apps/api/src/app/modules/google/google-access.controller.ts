@@ -1,4 +1,4 @@
-import { ENDPOINTS, ServerErrorCode } from '@connectly/models';
+import { ENDPOINTS, ServerErrorCode } from '@clientfuse/models';
 import {
   BadRequestException,
   Body,
@@ -13,26 +13,13 @@ import {
 } from '@nestjs/common';
 import { isEmpty, isNil } from 'lodash';
 import { UsersService } from '../users/users.service';
-import { GoogleServiceType, IGoogleBaseAccessService, ICustomAccessOptions } from './models/google.model';
+import { GoogleServiceType, IGoogleBaseAccessService, ICustomAccessOptions } from '@clientfuse/models';
 import { GoogleAdsAccessService } from './services/access/google-ads-access.service';
 import { GoogleAnalyticsAccessService } from './services/access/google-analytics-access.service';
 import { GoogleMerchantCenterAccessService } from './services/access/google-merchant-center-access.service';
 import { GoogleMyBusinessAccessService } from './services/access/google-my-business-access.service';
 import { GoogleSearchConsoleAccessService } from './services/access/google-search-console-access.service';
 import { GoogleTagManagerAccessService } from './services/access/google-tag-manager-access.service';
-
-export interface IUpdatePermissionsDto {
-  permissions: string[];
-}
-
-export interface IServiceScopesResponse {
-  service: GoogleServiceType;
-  hasRequiredScopes: boolean;
-  requiredScopes: string[];
-  grantedScopes: string[];
-  availablePermissions: string[];
-  defaultPermissions: string[];
-}
 
 @Controller(`${ENDPOINTS.google.root}/${ENDPOINTS.google.accessManagement.root}`)
 export class GoogleAccessController {

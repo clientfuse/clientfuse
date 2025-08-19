@@ -1,18 +1,19 @@
-// *** Updated Google Tag Manager Access Service ***
-import { ApiEnv, GOOGLE_TAGMANAGER_MANAGE_USERS_SCOPE, ServerErrorCode } from '@connectly/models';
+import {
+  ApiEnv,
+  GOOGLE_TAGMANAGER_MANAGE_USERS_SCOPE,
+  GoogleTagManagerPermission,
+  IBaseAccessRequest,
+  IBaseAccessResponse,
+  IBaseUserInfo,
+  ICustomAccessOptions,
+  IGoogleBaseAccessService,
+  ServerErrorCode
+} from '@clientfuse/models';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import { google } from 'googleapis';
 import { isEmpty, isNil } from 'lodash';
-import {
-  GoogleTagManagerPermission,
-  IBaseAccessRequest,
-  IBaseAccessResponse,
-  IGoogleBaseAccessService,
-  IBaseUserInfo,
-  ICustomAccessOptions
-} from '../../models/google.model';
 
 export interface IGoogleTagManagerCustomOptions extends ICustomAccessOptions {
   accountId: string;

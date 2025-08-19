@@ -1,7 +1,8 @@
-import { ApiEnv } from '@connectly/models';
+import { ApiEnv } from '@clientfuse/models';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { AgenciesModule } from '../agencies/agencies.module';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -14,10 +15,11 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   providers: [AuthService, GoogleStrategy, FacebookStrategy, JwtStrategy],
   imports: [
     UsersModule,
+    AgenciesModule,
     JwtModule.register({
       global: true,
       secret: process.env[ApiEnv.JWT_SECRET],
-      signOptions: {expiresIn: '30d'}
+      signOptions: { expiresIn: '30d' }
     }),
     PassportModule
     // MailModule todo add mail module

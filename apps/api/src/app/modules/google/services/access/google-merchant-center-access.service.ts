@@ -1,17 +1,19 @@
-import { ApiEnv, GOOGLE_MERCHANT_CENTER_SCOPE, ServerErrorCode } from '@connectly/models';
+import {
+  ApiEnv,
+  GOOGLE_MERCHANT_CENTER_SCOPE,
+  GoogleMerchantCenterPermission,
+  IBaseAccessRequest,
+  IBaseAccessResponse,
+  IBaseUserInfo,
+  ICustomAccessOptions,
+  IGoogleBaseAccessService,
+  ServerErrorCode
+} from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import { google } from 'googleapis';
 import { isEmpty, isNil } from 'lodash';
-import {
-  GoogleMerchantCenterPermission,
-  IBaseAccessRequest,
-  IBaseAccessResponse,
-  IGoogleBaseAccessService,
-  IBaseUserInfo,
-  ICustomAccessOptions
-} from '../../models/google.model';
 
 @Injectable()
 export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessService {

@@ -1,4 +1,4 @@
-import { ApiEnv, ENDPOINTS, IAccessToken } from '@connectly/models';
+import { ApiEnv, ENDPOINTS, IAccessToken } from '@clientfuse/models';
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';

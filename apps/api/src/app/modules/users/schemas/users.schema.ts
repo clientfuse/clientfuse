@@ -1,4 +1,4 @@
-import { IFacebookInfo, IGoogleInfo, IRegistrationCredentials, Role } from '@connectly/models';
+import { IFacebookInfo, IGoogleInfo, IRegistrationCredentials, Role } from '@clientfuse/models';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 
@@ -62,14 +62,18 @@ export class User implements IRegistrationCredentials {
     type: {
       accessToken: { type: String, default: null },
       grantedScopes: { type: [String], default: [] },
-      userId: { type: String, default: null }
+      userId: { type: String, default: null },
+      adsAccounts: { type: [Object], default: [] },
+      businessAccounts: { type: [Object], default: [] },
+      pages: { type: [Object], default: [] },
+      catalogs: { type: [Object], default: [] }
     },
     default: {}
   })
   facebook: IFacebookInfo;
 
-  updatedAt: Date | null;
-  createdAt: Date | null;
+  updatedAt: Date;
+  createdAt: Date;
 }
 
 export const UsersSchema = SchemaFactory.createForClass(User);

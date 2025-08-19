@@ -1,4 +1,4 @@
-import { ApiEnv } from '@connectly/models';
+import { ApiEnv } from '@clientfuse/models';
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -14,6 +14,7 @@ import { createRetryConfig } from './core/utils/http';
 import { AgenciesModule } from './modules/agencies/agencies.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt.guard';
+import { FacebookModule } from './modules/facebook/facebook.module';
 import { GoogleModule } from './modules/google/google.module';
 import { UsersModule } from './modules/users/users.module';
 
@@ -42,7 +43,8 @@ import { UsersModule } from './modules/users/users.module';
     AuthModule,
     UsersModule,
     AgenciesModule,
-    GoogleModule
+    GoogleModule,
+    FacebookModule
   ],
   controllers: [AppController],
   providers: [

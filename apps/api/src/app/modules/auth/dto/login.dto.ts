@@ -1,4 +1,4 @@
-import { IRegistrationCredentials } from '@connectly/models';
+import { IRegistrationCredentials } from '@clientfuse/models';
 import { IsDefined, IsEmail, IsString } from 'class-validator';
 
 export class LoginDto implements Pick<IRegistrationCredentials, 'email' | 'password'> {

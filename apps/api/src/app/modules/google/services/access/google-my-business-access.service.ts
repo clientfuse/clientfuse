@@ -1,17 +1,19 @@
-import { ApiEnv, GOOGLE_MY_BUSINESS_MANAGE_SCOPE, ServerErrorCode } from '@connectly/models';
+import {
+  ApiEnv,
+  GOOGLE_MY_BUSINESS_MANAGE_SCOPE,
+  GoogleMyBusinessPermission,
+  IBaseAccessRequest,
+  IBaseAccessResponse,
+  IBaseUserInfo,
+  ICustomAccessOptions,
+  IGoogleBaseAccessService,
+  ServerErrorCode
+} from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import { google } from 'googleapis';
 import { isEmpty, isNil } from 'lodash';
-import {
-  GoogleMyBusinessPermission,
-  IBaseAccessRequest,
-  IBaseAccessResponse,
-  IGoogleBaseAccessService,
-  IBaseUserInfo,
-  ICustomAccessOptions
-} from '../../models/google.model';
 
 @Injectable()
 export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {

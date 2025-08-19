@@ -1,4 +1,4 @@
-import { ApiEnv, GOOGLE_SCOPES } from '@connectly/models';
+import { ApiEnv, GOOGLE_SCOPES } from '@clientfuse/models';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';

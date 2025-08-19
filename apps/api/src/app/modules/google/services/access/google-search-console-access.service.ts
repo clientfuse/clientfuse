@@ -1,23 +1,18 @@
-import { ApiEnv, GOOGLE_SEARCH_CONSOLE_READONLY_SCOPE } from '@connectly/models';
+import {
+  ApiEnv,
+  GOOGLE_SEARCH_CONSOLE_READONLY_SCOPE,
+  GoogleSearchConsolePermission,
+  IBaseAccessRequest,
+  IBaseAccessResponse,
+  IBaseUserInfo,
+  ICustomAccessOptions,
+  IGoogleBaseAccessService
+} from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import { google } from 'googleapis';
 import { isEmpty, isNil } from 'lodash';
-import {
-  GoogleSearchConsolePermission,
-  IBaseAccessRequest,
-  IBaseAccessResponse,
-  IGoogleBaseAccessService,
-  IBaseUserInfo,
-  ICustomAccessOptions
-} from '../../models/google.model';
-
-export interface IGoogleSearchConsoleCustomOptions extends ICustomAccessOptions {
-  siteUrl: string;
-  propertyType?: 'URL_PREFIX' | 'DOMAIN';
-  verificationMethod?: string;
-}
 
 @Injectable()
 export class GoogleSearchConsoleAccessService implements IGoogleBaseAccessService {

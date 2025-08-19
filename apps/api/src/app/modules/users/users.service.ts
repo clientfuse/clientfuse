@@ -1,8 +1,8 @@
-import { IRegistrationCredentials, IUserResponse } from '@connectly/models';
+import { IRegistrationCredentials, IUserResponse } from '@clientfuse/models';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { DateTime } from 'luxon';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schemas/users.schema';
@@ -21,7 +21,7 @@ export class UsersService {
     return getUserWithoutSensitiveData({ ...createdUser.toJSON() } as unknown as IUserResponse & IRegistrationCredentials);
   }
 
-  async findUsers(partial: Partial<IUserResponse>): Promise<IUserResponse[]> {
+  async findUsers(partial: FilterQuery<UserDocument>): Promise<IUserResponse[]> {
     const users = await this.userModel.find(partial).exec();
     return users.map((user) => {
       return getUserWithoutSensitiveData({ ...user.toJSON() } as unknown as IUserResponse & IRegistrationCredentials);
@@ -29,14 +29,14 @@ export class UsersService {
   }
 
   async findUser(
-    partial: Partial<IUserResponse>
+    partial: FilterQuery<UserDocument>
   ): Promise<IUserResponse | null> {
     const user = await this.userModel.findOne(partial);
     return user ? getUserWithoutSensitiveData({ ...user.toJSON() } as unknown as IUserResponse & IRegistrationCredentials) : null;
   }
 
   async findUserWithPassword(
-    partial: Partial<IUserResponse>
+    partial: FilterQuery<UserDocument>
   ): Promise<(IUserResponse & IRegistrationCredentials) | null> {
     const user = await this.userModel.findOne(partial);
     return user

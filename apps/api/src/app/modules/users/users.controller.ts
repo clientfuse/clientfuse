@@ -1,4 +1,4 @@
-import { ENDPOINTS, IUserResponse } from '@connectly/models';
+import { ENDPOINTS, IUserResponse } from '@clientfuse/models';
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';

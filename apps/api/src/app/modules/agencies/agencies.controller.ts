@@ -1,7 +1,7 @@
-import { ENDPOINTS, IAgencyBase, IAgencyResponse, ServerErrorCode } from '@connectly/models';
+import { ENDPOINTS, IAgencyBase, IAgencyResponse, ServerErrorCode } from '@clientfuse/models';
 import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Query } from '@nestjs/common';
 import { Public } from '../auth/decorators/is-public.decorator';
-import { AgenciesService } from './agencies.service';
+import { AgenciesService } from './services/agencies.service';
 import { CreateAgencyDto } from './dto/create-agency.dto';
 import { UpdateAgencyDto } from './dto/update-agency.dto';
 

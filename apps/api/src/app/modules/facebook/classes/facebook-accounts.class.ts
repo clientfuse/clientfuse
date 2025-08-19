@@ -1,17 +1,14 @@
+import { FacebookAdAccount, FacebookBusinessAccount, FacebookCatalog, FacebookCredentials, FacebookPage } from '@clientfuse/models';
 import { Logger } from '@nestjs/common';
-import { FacebookAdsApi } from 'facebook-nodejs-business-sdk';
 import { isNil } from 'lodash';
-import { facebookHttpClient } from '../../../core/utils/http/http-client.factory';
-import { FacebookAdAccount, FacebookBusinessAccount, FacebookCatalog, FacebookCredentials, FacebookPage } from '../models/facebook.model';
+import { facebookHttpClient } from '../../../core/utils/http';
 
 export class FacebookAccounts {
   private readonly logger = new Logger(FacebookAccounts.name);
   private readonly accessToken: string;
-  private facebookApi: FacebookAdsApi;
 
   constructor(accessToken: string) {
     this.accessToken = accessToken;
-    this.facebookApi = FacebookAdsApi.init(accessToken);
   }
 
   getCredentials(): FacebookCredentials {
@@ -36,15 +33,13 @@ export class FacebookAccounts {
     }
   }
 
-
   async getAdAccounts(): Promise<FacebookAdAccount[]> {
     try {
       this.logger.log('Fetching Facebook Ad Accounts');
 
-      const response = await this.facebookApi.call<any>(
-        'GET',
-        '/me/adaccounts',
-        {
+      const { data } = await facebookHttpClient.get('/me/adaccounts', {
+        params: {
+          access_token: this.accessToken,
           fields: [
             'id',
             'name',
@@ -56,13 +51,13 @@ export class FacebookAccounts {
             'created_time'
           ].join(',')
         }
-      );
+      });
 
-      if (isNil(response.data)) {
+      if (isNil(data?.data)) {
         return [];
       }
 
-      return response.data.map((account: any) => ({
+      return data.data.map((account: any) => ({
         id: account.id,
         name: account.name || `Ad Account ${account.account_id}`,
         account_id: account.account_id,
@@ -74,10 +69,10 @@ export class FacebookAccounts {
         created_time: account.created_time
       }));
 
-    } catch (error) {
-      this.logger.error('Error fetching Facebook Ad Accounts:', error);
+    } catch (error: any) {
+      this.logger.error('Error fetching Facebook Ad Accounts:', error?.response?.data || error);
 
-      if (error.response?.error?.code === 190) {
+      if (error?.response?.data?.error?.code === 190) {
         this.logger.error('Access token is invalid or expired');
       }
 
@@ -89,10 +84,9 @@ export class FacebookAccounts {
     try {
       this.logger.log('Fetching Facebook Business Accounts');
 
-      const response = await this.facebookApi.call<any>(
-        'GET',
-        '/me/businesses',
-        {
+      const { data } = await facebookHttpClient.get('/me/businesses', {
+        params: {
+          access_token: this.accessToken,
           fields: [
             'id',
             'name',
@@ -103,13 +97,13 @@ export class FacebookAccounts {
             'primary_page'
           ].join(',')
         }
-      );
+      });
 
-      if (isNil(response.data)) {
+      if (isNil(data?.data)) {
         return [];
       }
 
-      return response.data.map((business: any) => ({
+      return data.data.map((business: any) => ({
         id: business.id,
         name: business.name,
         verification_status: business.verification_status,
@@ -119,8 +113,8 @@ export class FacebookAccounts {
         primary_page: business.primary_page
       }));
 
-    } catch (error) {
-      this.logger.error('Error fetching Facebook Business Accounts:', error);
+    } catch (error: any) {
+      this.logger.error('Error fetching Facebook Business Accounts:', error?.response?.data || error);
       return [];
     }
   }
@@ -129,42 +123,40 @@ export class FacebookAccounts {
     try {
       this.logger.log('Fetching Facebook Pages');
 
-      const response = await this.facebookApi.call<any>(
-        'GET',
-        '/me/accounts',
-        {
+      const { data } = await facebookHttpClient.get('/me/accounts', {
+        params: {
+          access_token: this.accessToken,
           fields: [
             'id',
             'name',
             'category',
             'category_list',
             'access_token',
-            'perms',
             'tasks',
             'verification_status',
             'fan_count'
           ].join(',')
         }
-      );
+      });
 
-      if (isNil(response.data)) {
+      if (isNil(data?.data)) {
         return [];
       }
 
-      return response.data.map((page: any) => ({
+      return data.data.map((page: any) => ({
         id: page.id,
         name: page.name,
         category: page.category,
         category_list: page.category_list || [],
         access_token: page.access_token,
-        perms: page.perms || [],
+        perms: [],
         tasks: page.tasks || [],
         verification_status: page.verification_status,
         fan_count: page.fan_count
       }));
 
-    } catch (error) {
-      this.logger.error('Error fetching Facebook Pages:', error);
+    } catch (error: any) {
+      this.logger.error('Error fetching Facebook Pages:', error?.response?.data || error);
       return [];
     }
   }
@@ -173,39 +165,55 @@ export class FacebookAccounts {
     try {
       this.logger.log('Fetching Facebook Catalogs');
 
-      const response = await this.facebookApi.call<any>(
-        'GET',
-        '/me/businesses',
-        {
-          fields: 'owned_product_catalogs{id,name,product_count,created_time,updated_time}'
+      const { data: businessesData } = await facebookHttpClient.get('/me/businesses', {
+        params: {
+          access_token: this.accessToken,
+          fields: 'id,name'
         }
-      );
+      });
 
-      if (isNil(response.data)) {
+      if (isNil(businessesData?.data)) {
         return [];
       }
 
       const catalogs: FacebookCatalog[] = [];
 
-      for (const business of response.data) {
-        if (business.owned_product_catalogs?.data) {
-          for (const catalog of business.owned_product_catalogs.data) {
-            catalogs.push({
-              id: catalog.id,
-              name: catalog.name,
-              business_id: business.id,
-              product_count: catalog.product_count || 0,
-              created_time: catalog.created_time,
-              updated_time: catalog.updated_time
-            });
+      for (const business of businessesData.data) {
+        try {
+          const { data: catalogsData } = await facebookHttpClient.get(
+            `/${business.id}/owned_product_catalogs`,
+            {
+              params: {
+                access_token: this.accessToken,
+                fields: 'id,name,product_count,created_time,updated_time'
+              }
+            }
+          );
+
+          if (catalogsData?.data) {
+            for (const catalog of catalogsData.data) {
+              catalogs.push({
+                id: catalog.id,
+                name: catalog.name,
+                business_id: business.id,
+                product_count: catalog.product_count || 0,
+                created_time: catalog.created_time,
+                updated_time: catalog.updated_time
+              });
+            }
           }
+        } catch (catalogError: any) {
+          this.logger.error(
+            `Error fetching catalogs for business ${business.id}:`,
+            catalogError?.response?.data || catalogError
+          );
         }
       }
 
       return catalogs;
 
-    } catch (error) {
-      this.logger.error('Error fetching Facebook Catalogs:', error);
+    } catch (error: any) {
+      this.logger.error('Error fetching Facebook Catalogs:', error?.response?.data || error);
       return [];
     }
   }
@@ -214,10 +222,9 @@ export class FacebookAccounts {
     try {
       this.logger.log(`Fetching Ad Accounts for business ${businessId}`);
 
-      const response = await this.facebookApi.call<any>(
-        'GET',
-        `/${businessId}/owned_ad_accounts`,
-        {
+      const { data } = await facebookHttpClient.get(`/${businessId}/owned_ad_accounts`, {
+        params: {
+          access_token: this.accessToken,
           fields: [
             'id',
             'name',
@@ -228,13 +235,13 @@ export class FacebookAccounts {
             'created_time'
           ].join(',')
         }
-      );
+      });
 
-      if (isNil(response.data)) {
+      if (isNil(data?.data)) {
         return [];
       }
 
-      return response.data.map((account: any) => ({
+      return data.data.map((account: any) => ({
         id: account.id,
         name: account.name || `Ad Account ${account.account_id}`,
         account_id: account.account_id,
@@ -245,8 +252,11 @@ export class FacebookAccounts {
         created_time: account.created_time
       }));
 
-    } catch (error) {
-      this.logger.error(`Error fetching Ad Accounts for business ${businessId}:`, error);
+    } catch (error: any) {
+      this.logger.error(
+        `Error fetching Ad Accounts for business ${businessId}:`,
+        error?.response?.data || error
+      );
       return [];
     }
   }
@@ -255,10 +265,9 @@ export class FacebookAccounts {
     try {
       this.logger.log(`Fetching Pages for business ${businessId}`);
 
-      const response = await this.facebookApi.call<any>(
-        'GET',
-        `/${businessId}/owned_pages`,
-        {
+      const { data } = await facebookHttpClient.get(`/${businessId}/owned_pages`, {
+        params: {
+          access_token: this.accessToken,
           fields: [
             'id',
             'name',
@@ -268,13 +277,13 @@ export class FacebookAccounts {
             'fan_count'
           ].join(',')
         }
-      );
+      });
 
-      if (isNil(response.data)) {
+      if (isNil(data?.data)) {
         return [];
       }
 
-      return response.data.map((page: any) => ({
+      return data.data.map((page: any) => ({
         id: page.id,
         name: page.name,
         category: page.category,
@@ -285,8 +294,11 @@ export class FacebookAccounts {
         fan_count: page.fan_count
       }));
 
-    } catch (error) {
-      this.logger.error(`Error fetching Pages for business ${businessId}:`, error);
+    } catch (error: any) {
+      this.logger.error(
+        `Error fetching Pages for business ${businessId}:`,
+        error?.response?.data || error
+      );
       return [];
     }
   }
@@ -308,6 +320,7 @@ export class FacebookAccounts {
       ]);
 
       const tokens = this.getCredentials();
+      const grantedScopes = await this.getGrantedScopes();
 
       this.logger.log('Successfully fetched Facebook user accounts data');
 
@@ -316,12 +329,13 @@ export class FacebookAccounts {
           facebookAdAccounts: adAccounts,
           facebookBusinessAccounts: businessAccounts,
           facebookPages: pages,
-          facebookCatalogs: catalogs
+          facebookCatalogs: catalogs,
+          grantedScopes: grantedScopes
         },
         tokens
       };
 
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Error fetching Facebook user accounts data:', error);
       throw error;
     }

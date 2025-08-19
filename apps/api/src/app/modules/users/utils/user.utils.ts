@@ -1,4 +1,4 @@
-import { IRegistrationCredentials, IUserResponse } from '@connectly/models';
+import { IRegistrationCredentials, IUserResponse } from '@clientfuse/models';
 import * as bcryptJs from 'bcryptjs';
 
 export const getUserWithoutSensitiveData = (

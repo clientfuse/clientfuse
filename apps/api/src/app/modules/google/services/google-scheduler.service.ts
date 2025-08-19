@@ -1,4 +1,4 @@
-import { ApiEnv } from '@connectly/models';
+import { ApiEnv } from '@clientfuse/models';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -32,7 +32,7 @@ export class GoogleSchedulerService implements OnModuleInit {
     this.logger.log('Starting Google token refresh job...');
 
     try {
-      const usersWithGoogleTokens = await this.usersService.findUsers(<any>{
+      const usersWithGoogleTokens = await this.usersService.findUsers({
         'google.refreshToken': { $ne: null, $exists: true },
         isLoggedInWithGoogle: true
       });

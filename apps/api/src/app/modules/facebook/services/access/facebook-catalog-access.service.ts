@@ -1,8 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { FacebookAdsApi } from 'facebook-nodejs-business-sdk';
-import { isEmpty, isNil } from 'lodash';
 import {
+  FACEBOOK_CATALOG_MANAGEMENT_SCOPE,
   FACEBOOK_CATALOG_ROLES,
   FACEBOOK_ERROR_CODES,
   FACEBOOK_SCOPES,
@@ -11,16 +8,16 @@ import {
   IFacebookBaseAccessService,
   IFacebookCustomAccessOptions,
   IFacebookUserInfo
-} from '../../models/facebook.model';
+} from '@clientfuse/models';
+import { Injectable, Logger } from '@nestjs/common';
+import { FacebookAdsApi } from 'facebook-nodejs-business-sdk';
+import { isEmpty, isNil } from 'lodash';
 
 @Injectable()
 export class FacebookCatalogAccessService implements IFacebookBaseAccessService {
   private readonly logger = new Logger(FacebookCatalogAccessService.name);
   private facebookApi: FacebookAdsApi;
   private accessToken: string;
-
-  constructor() {
-  }
 
   setCredentials(tokens: { access_token: string }): void {
     if (isEmpty(tokens) || isNil(tokens) || !tokens.access_token) {
@@ -297,7 +294,7 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
   }
 
   getRequiredScopes(): string[] {
-    return [FACEBOOK_SCOPES.CATALOG_MANAGEMENT];
+    return [FACEBOOK_CATALOG_MANAGEMENT_SCOPE];
   }
 
   async getCatalogInfo(catalogId: string): Promise<any> {

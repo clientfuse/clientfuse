@@ -1,4 +1,4 @@
-import { ApiEnv, ENDPOINTS, ServerErrorCode } from '@connectly/models';
+import { ApiEnv, ENDPOINTS, ServerErrorCode } from '@clientfuse/models';
 import { Body, Controller, Get, NotFoundException, Post, Query } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IsNotEmpty, IsString } from 'class-validator';

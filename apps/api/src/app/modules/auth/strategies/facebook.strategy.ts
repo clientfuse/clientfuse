@@ -1,5 +1,5 @@
-import { ApiEnv, FACEBOOK_SCOPES } from '@connectly/models';
-import { getNoEmailPlaceholder } from '@connectly/utils';
+import { ApiEnv, FACEBOOK_SCOPES } from '@clientfuse/models';
+import { getNoEmailPlaceholder } from '@clientfuse/utils';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';

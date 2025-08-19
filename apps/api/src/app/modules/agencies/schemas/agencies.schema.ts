@@ -1,4 +1,4 @@
-import { IAgencyBase, IGoogleAccessLinkBase } from '@connectly/models';
+import { IAgencyBase, TFacebookAccessLink, TGoogleAccessLink } from '@clientfuse/models';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 
@@ -15,53 +15,76 @@ export class Agency implements IAgencyBase {
   @Prop({
     type: {
       google: {
-        ads: {
-          isViewAccessEnabled: { type: Boolean, required: true },
-          isManageAccessEnabled: { type: Boolean, required: true },
-          email: { type: String, required: true },
-          method: { type: String, required: true }
+        type: {
+          ads: {
+            isViewAccessEnabled: { type: Boolean, required: true },
+            isManageAccessEnabled: { type: Boolean, required: true },
+            email: { type: String, required: false },
+            method: { type: String, required: true }
+          },
+          analytics: {
+            isViewAccessEnabled: { type: Boolean, required: true },
+            isManageAccessEnabled: { type: Boolean, required: true },
+            email: { type: String, required: false }
+          },
+          merchantCenter: {
+            isViewAccessEnabled: { type: Boolean, required: true },
+            isManageAccessEnabled: { type: Boolean, required: true },
+            email: { type: String, required: false }
+          },
+          myBusiness: {
+            isViewAccessEnabled: { type: Boolean, required: true },
+            isManageAccessEnabled: { type: Boolean, required: true },
+            emailOrId: { type: String, required: false }
+          },
+          searchConsole: {
+            isViewAccessEnabled: { type: Boolean, required: true },
+            isManageAccessEnabled: { type: Boolean, required: true },
+            email: { type: String, required: false }
+          },
+          tagManager: {
+            isViewAccessEnabled: { type: Boolean, required: true },
+            isManageAccessEnabled: { type: Boolean, required: true },
+            email: { type: String, required: false }
+          }
         },
-        analytics: {
-          isViewAccessEnabled: { type: Boolean, required: true },
-          isManageAccessEnabled: { type: Boolean, required: true },
-          email: { type: String, required: true }
-        },
-        merchantCenter: {
-          isViewAccessEnabled: { type: Boolean, required: true },
-          isManageAccessEnabled: { type: Boolean, required: true },
-          email: { type: String, required: true }
-        },
-        myBusiness: {
-          isViewAccessEnabled: { type: Boolean, required: true },
-          isManageAccessEnabled: { type: Boolean, required: true },
-          emailOrId: { type: String, required: true }
-        },
-        searchConsole: {
-          isViewAccessEnabled: { type: Boolean, required: true },
-          isManageAccessEnabled: { type: Boolean, required: true },
-          email: { type: String, required: true }
-        },
-        tagManager: {
-          isViewAccessEnabled: { type: Boolean, required: true },
-          isManageAccessEnabled: { type: Boolean, required: true },
-          email: { type: String, required: true }
-        }
+        required: false
       },
-      facebook: { default: {} }
+      facebook: {
+        type: {
+          ads: {
+            isViewAccessEnabled: { type: Boolean, required: true },
+            isManageAccessEnabled: { type: Boolean, required: true },
+            entityId: { type: String, required: false }
+          },
+          business: {
+            isViewAccessEnabled: { type: Boolean, required: true },
+            isManageAccessEnabled: { type: Boolean, required: true },
+            entityId: { type: String, required: false }
+          },
+          pages: {
+            isViewAccessEnabled: { type: Boolean, required: true },
+            isManageAccessEnabled: { type: Boolean, required: true },
+            entityId: { type: String, required: false }
+          },
+          catalogs: {
+            isViewAccessEnabled: { type: Boolean, required: true },
+            isManageAccessEnabled: { type: Boolean, required: true },
+            entityId: { type: String, required: false }
+          }
+        },
+        required: false
+      }
     },
-    required: true
+    required: false
   })
   defaultAccessLink: {
-    google: {
-      ads: IGoogleAccessLinkBase & { email: string; method: string };
-      analytics: IGoogleAccessLinkBase & { email: string };
-      merchantCenter: IGoogleAccessLinkBase & { email: string };
-      myBusiness: IGoogleAccessLinkBase & { emailOrId: string };
-      searchConsole: IGoogleAccessLinkBase & { email: string };
-      tagManager: IGoogleAccessLinkBase & { email: string };
-    };
-    facebook: {};
+    google?: TGoogleAccessLink;
+    facebook?: TFacebookAccessLink;
   };
+
+  updatedAt: Date;
+  createdAt: Date;
 }
 
 export const AgencySchema = SchemaFactory.createForClass(Agency);

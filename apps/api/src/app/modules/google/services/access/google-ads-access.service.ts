@@ -1,16 +1,18 @@
-import { ApiEnv, GOOGLE_ADWORDS_SCOPE, ServerErrorCode } from '@connectly/models';
+import {
+  ApiEnv,
+  GOOGLE_ADWORDS_SCOPE,
+  GoogleAdsPermission,
+  IBaseAccessRequest,
+  IBaseAccessResponse,
+  IBaseUserInfo,
+  ICustomAccessOptions,
+  IGoogleBaseAccessService,
+  ServerErrorCode
+} from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { enums, errors, GoogleAdsApi } from 'google-ads-api';
 import { isEmpty, isNil } from 'lodash';
-import {
-  GoogleAdsPermission,
-  IBaseAccessRequest,
-  IBaseAccessResponse,
-  IGoogleBaseAccessService,
-  IBaseUserInfo,
-  ICustomAccessOptions
-} from '../../models/google.model';
 
 @Injectable()
 export class GoogleAdsAccessService implements IGoogleBaseAccessService {

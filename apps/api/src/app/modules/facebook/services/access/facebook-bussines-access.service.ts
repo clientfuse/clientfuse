@@ -1,26 +1,24 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { FacebookAdsApi } from 'facebook-nodejs-business-sdk';
-import { isEmpty, isNil } from 'lodash';
 import {
+  FACEBOOK_BUSINESS_MANAGEMENT_SCOPE,
   FACEBOOK_BUSINESS_ROLES,
   FACEBOOK_ERROR_CODES,
-  FACEBOOK_SCOPES, FacebookBusinessPermission,
+  FACEBOOK_SCOPES,
+  FacebookBusinessPermission,
   IFacebookAccessRequest,
   IFacebookAccessResponse,
   IFacebookBaseAccessService,
   IFacebookCustomAccessOptions,
   IFacebookUserInfo
-} from '../../models/facebook.model';
+} from '@clientfuse/models';
+import { Injectable, Logger } from '@nestjs/common';
+import { FacebookAdsApi } from 'facebook-nodejs-business-sdk';
+import { isEmpty, isNil } from 'lodash';
 
 @Injectable()
 export class FacebookBusinessAccessService implements IFacebookBaseAccessService {
   private readonly logger = new Logger(FacebookBusinessAccessService.name);
   private facebookApi: FacebookAdsApi;
   private accessToken: string;
-
-  constructor() {
-  }
 
   setCredentials(tokens: { access_token: string }): void {
     if (isEmpty(tokens) || isNil(tokens) || !tokens.access_token) {
@@ -266,7 +264,7 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
   }
 
   getRequiredScopes(): string[] {
-    return [FACEBOOK_SCOPES.BUSINESS_MANAGEMENT];
+    return [FACEBOOK_BUSINESS_MANAGEMENT_SCOPE];
   }
 
   async getBusinessInfo(businessId: string): Promise<any> {

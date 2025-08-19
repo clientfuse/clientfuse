@@ -1,4 +1,4 @@
-import { ApiEnv, IUserResponse } from '@connectly/models';
+import { ApiEnv, IUserResponse } from '@clientfuse/models';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';

@@ -1,10 +1,10 @@
-import { IAgencyBase, IAgencyResponse } from '@connectly/models';
+import { IAgencyBase, IAgencyResponse } from '@clientfuse/models';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { CreateAgencyDto } from './dto/create-agency.dto';
-import { UpdateAgencyDto } from './dto/update-agency.dto';
-import { Agency, AgencyDocument } from './schemas/agencies.schema';
+import { FilterQuery, Model } from 'mongoose';
+import { CreateAgencyDto } from '../dto/create-agency.dto';
+import { UpdateAgencyDto } from '../dto/update-agency.dto';
+import { Agency, AgencyDocument } from '../schemas/agencies.schema';
 
 @Injectable()
 export class AgenciesService {
@@ -18,7 +18,7 @@ export class AgenciesService {
     return createdAgency.toJSON() as unknown as IAgencyResponse;
   }
 
-  async findAgencies(partial: Partial<IAgencyBase>): Promise<IAgencyResponse[]> {
+  async findAgencies(partial: FilterQuery<AgencyDocument>): Promise<IAgencyResponse[]> {
     const agencies = await this.agencyModel.find(partial).exec();
     return agencies.map((agency) => {
       return agency.toJSON() as unknown as IAgencyResponse;
@@ -26,7 +26,7 @@ export class AgenciesService {
   }
 
   async findAgency(
-    partial: Partial<IAgencyResponse>
+    partial: FilterQuery<AgencyDocument>
   ): Promise<IAgencyResponse | null> {
     const agency = await this.agencyModel.findOne(partial);
     if (!agency) return null;

@@ -1,4 +1,4 @@
-import { ApiEnv, PREFIX } from '@connectly/models';
+import { ApiEnv, PREFIX } from '@clientfuse/models';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';

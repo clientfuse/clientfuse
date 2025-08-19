@@ -1,8 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { FacebookAdsApi } from 'facebook-nodejs-business-sdk';
-import { isEmpty, isNil } from 'lodash';
 import {
-  FACEBOOK_AD_ACCOUNT_ROLES,
+  FACEBOOK_AD_ACCOUNT_ROLES, FACEBOOK_ADS_MANAGEMENT_SCOPE,
   FACEBOOK_ERROR_CODES,
   FACEBOOK_SCOPES,
   FacebookAdAccountPermission,
@@ -11,7 +8,11 @@ import {
   IFacebookBaseAccessService,
   IFacebookCustomAccessOptions,
   IFacebookUserInfo
-} from '../../models/facebook.model';
+} from '@clientfuse/models';
+import { Injectable, Logger } from '@nestjs/common';
+import { FacebookAdsApi } from 'facebook-nodejs-business-sdk';
+import { isEmpty, isNil } from 'lodash';
+
 
 @Injectable()
 export class FacebookAdAccountAccessService implements IFacebookBaseAccessService {
@@ -300,7 +301,7 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
   }
 
   getRequiredScopes(): string[] {
-    return [FACEBOOK_SCOPES.ADS_MANAGEMENT];
+    return [FACEBOOK_ADS_MANAGEMENT_SCOPE];
   }
 
   async getAdAccountInfo(adAccountId: string): Promise<any> {

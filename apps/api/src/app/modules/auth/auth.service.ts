@@ -1,11 +1,12 @@
-import { IAccessToken, IUserResponse, LocalStorageKey, Role, ServerErrorCode } from '@connectly/models';
-import { generateStrongPassword } from '@connectly/utils';
+import { IAccessToken, IUserResponse, LocalStorageKey, Role, ServerErrorCode } from '@clientfuse/models';
+import { generateStrongPassword } from '@clientfuse/utils';
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcryptJs from 'bcryptjs';
-import { EventType, IFacebookAuthEvent, IGoogleAuthEvent } from '../../core/modules/event-bus/event-bus.model';
+import { EventType, IFacebookAuthEvent, IGoogleAuthEvent, IUserEmailUpdatedEvent } from '../../core/modules/event-bus/event-bus.model';
 import { EventBusService } from '../../core/modules/event-bus/event-bus.service';
-import { FacebookAccounts } from '../facebook/classes/facebook-accounts.class';
+import { AgenciesService } from '../agencies/services/agencies.service';
+import { AgencyMergeService } from '../agencies/services/agency-merge.service';
 import { getGoogleTokenExpirationDate } from '../google/utils/google.utils';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UserMergeService } from '../users/user-merge.service';
@@ -21,7 +22,9 @@ export class AuthService {
     private jwtService: JwtService,
     private usersService: UsersService,
     private userMergeService: UserMergeService,
-    private eventBusService: EventBusService
+    private eventBusService: EventBusService,
+    private agenciesService: AgenciesService,
+    private agencyMergeService: AgencyMergeService
   ) {
   }
 
@@ -103,7 +106,11 @@ export class AuthService {
       facebook: {
         userId: null,
         accessToken: null,
-        grantedScopes: []
+        grantedScopes: [],
+        catalogs: [],
+        adsAccounts: [],
+        businessAccounts: [],
+        pages: []
       },
       isLoggedInWithGoogle: true,
       isLoggedInWithFacebook: false,
@@ -125,16 +132,13 @@ export class AuthService {
 
   async loginWithFacebook(user: IFacebookUser): Promise<IAccessToken> {
     const foundUser = await this.usersService.findUser({ 'facebook.userId': user.userId });
-    const facebookAccounts = new FacebookAccounts(user.accessToken);
-    const grantedScopes = await facebookAccounts.getGrantedScopes();
 
     if (foundUser) {
       await this.usersService.updateUser(foundUser._id, {
         facebook: {
           ...foundUser.facebook,
           userId: user.userId,
-          accessToken: user.accessToken,
-          grantedScopes
+          accessToken: user.accessToken
         },
         isLoggedInWithFacebook: true
       });
@@ -176,7 +180,11 @@ export class AuthService {
       facebook: {
         userId: user.userId,
         accessToken: user.accessToken,
-        grantedScopes: grantedScopes || []
+        grantedScopes: [],
+        catalogs: [],
+        adsAccounts: [],
+        businessAccounts: [],
+        pages: []
       },
       isLoggedInWithGoogle: false,
       isLoggedInWithFacebook: true,
@@ -222,10 +230,27 @@ export class AuthService {
 
     const foundUsers = await this.usersService.findUsers({ email });
 
-    if (foundUsers.length === 1) return 'User email was successfully updated';
+    if (foundUsers.length === 1) {
+      this.eventBusService.emit<IUserEmailUpdatedEvent>(EventType.USER_EMAIL_UPDATED, { userId }, AuthService.name);
+      return 'User email was successfully updated';
+    }
 
-    await this.userMergeService.mergeAccountsByEmail(email);
+    const userMergeResult = await this.userMergeService.mergeAccountsByEmail(email);
 
+    for (const deletedUserId of userMergeResult.deletedUserIds) {
+      const foundAgencies = await this.agenciesService.findAgencies({ userId: deletedUserId.toString() });
+      for (const foundAgency of foundAgencies) {
+        await this.agenciesService.updateAgency(foundAgency._id, { userId: userMergeResult.mergedUserId.toString() });
+      }
+    }
+
+    const agencyMergeResult = await this.agencyMergeService.mergeAgenciesByUserId(userMergeResult.mergedUserId.toString());
+
+    if (agencyMergeResult.mergedAgencyId) {
+      await this.agenciesService.updateAgency(agencyMergeResult.mergedAgencyId.toString(), { email });
+    }
+
+    this.eventBusService.emit<IUserEmailUpdatedEvent>(EventType.USER_EMAIL_UPDATED, { userId }, AuthService.name);
     return 'User email was successfully updated and accounts were merged';
   }
 

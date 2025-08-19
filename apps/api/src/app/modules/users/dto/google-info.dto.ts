@@ -8,7 +8,7 @@ import {
   searchconsole_v1,
   tagmanager_v2
 } from 'googleapis';
-import { IGoogleAdsAccount, IGoogleInfo } from '@connectly/models';
+import { IGoogleAdsAccount, IGoogleInfo } from '@clientfuse/models';
 
 export class GoogleInfoDto implements IGoogleInfo {
   @IsString()

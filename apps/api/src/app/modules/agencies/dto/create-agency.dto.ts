@@ -1,8 +1,16 @@
-import { IAgencyBase, IGoogleAccessLinkBase } from '@connectly/models';
+import {
+  IAccessLinkBase,
+  IAgencyBase,
+  IGoogleAccessLinkWithEmail,
+  IGoogleAccessLinkWithEmailOrId, TAccessLink,
+  TFacebookAccessLink,
+  TFacebookAccessLinkWithId,
+  TGoogleAccessLink
+} from '@clientfuse/models';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsDefined, IsEmail, IsObject, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsDefined, IsEmail, IsOptional, IsString, ValidateNested } from 'class-validator';
 
-export class GoogleAccessLinkBaseDto implements IGoogleAccessLinkBase {
+export class AccessLinkBase implements IAccessLinkBase {
   @IsBoolean()
   @IsDefined()
   isViewAccessEnabled: boolean;
@@ -12,14 +20,14 @@ export class GoogleAccessLinkBaseDto implements IGoogleAccessLinkBase {
   isManageAccessEnabled: boolean;
 }
 
-export class GoogleAccessLinkWithEmailDto extends GoogleAccessLinkBaseDto {
+export class GoogleAccessLinkWithEmailDto extends AccessLinkBase implements IGoogleAccessLinkWithEmail {
   @IsEmail()
   @IsString()
   @IsDefined()
   email: string;
 }
 
-export class GoogleAccessLinkWithEmailOrIdDto extends GoogleAccessLinkBaseDto {
+export class GoogleAccessLinkWithEmailOrIdDto extends AccessLinkBase implements IGoogleAccessLinkWithEmailOrId {
   @IsString()
   @IsDefined()
   emailOrId: string;
@@ -31,7 +39,7 @@ export class GoogleAdsAccessDto extends GoogleAccessLinkWithEmailDto {
   method: string;
 }
 
-export class GoogleAccessDto {
+export class GoogleAccessDto implements TGoogleAccessLink {
   @ValidateNested()
   @Type(() => GoogleAdsAccessDto)
   @IsDefined()
@@ -63,15 +71,44 @@ export class GoogleAccessDto {
   tagManager: GoogleAccessLinkWithEmailDto;
 }
 
-export class DefaultAccessLinkDto {
+export class FacebookAccessLinkWithId extends AccessLinkBase implements TFacebookAccessLinkWithId {
+  @IsString()
+  @IsDefined()
+  entityId: string;
+}
+
+export class FacebookAccessDto implements TFacebookAccessLink {
+  @ValidateNested()
+  @Type(() => FacebookAccessLinkWithId)
+  @IsDefined()
+  ads: FacebookAccessLinkWithId;
+
+  @ValidateNested()
+  @Type(() => FacebookAccessLinkWithId)
+  @IsDefined()
+  business: FacebookAccessLinkWithId;
+
+  @ValidateNested()
+  @Type(() => FacebookAccessLinkWithId)
+  @IsDefined()
+  pages: FacebookAccessLinkWithId;
+
+  @ValidateNested()
+  @Type(() => FacebookAccessLinkWithId)
+  @IsDefined()
+  catalogs: FacebookAccessLinkWithId;
+}
+
+export class DefaultAccessLinkDto implements TAccessLink {
   @ValidateNested()
   @Type(() => GoogleAccessDto)
-  @IsDefined()
-  google: GoogleAccessDto;
+  @IsOptional()
+  google?: GoogleAccessDto;
 
-  @IsDefined()
-  @IsObject()
-  facebook: {} = {};
+  @ValidateNested()
+  @Type(() => FacebookAccessDto)
+  @IsOptional()
+  facebook?: FacebookAccessDto;
 }
 
 export class CreateAgencyDto implements IAgencyBase {

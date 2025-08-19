@@ -1,4 +1,4 @@
-import { IResponse } from '@connectly/models';
+import { IResponse } from '@clientfuse/models';
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
 

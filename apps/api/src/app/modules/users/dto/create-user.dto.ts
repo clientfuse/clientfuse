@@ -1,4 +1,4 @@
-import { IRegistrationCredentials, Role } from '@connectly/models';
+import { IRegistrationCredentials, Role } from '@clientfuse/models';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsDefined, IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
 import { FacebookInfoDto } from './facebook-info.dto';

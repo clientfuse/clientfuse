@@ -1,4 +1,4 @@
-import { IFacebookInfo, IGoogleInfo, IUserResponse } from '@connectly/models';
+import { IFacebookInfo, IGoogleInfo, IUserResponse } from '@clientfuse/models';
 import { ConflictException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { isEmpty, isNil, uniqBy } from 'lodash';
@@ -70,7 +70,7 @@ export class UserMergeService {
 
     await this.userModel.updateOne(
       { _id: primaryAccount._id },
-      { $set: { ...mergedData, updatedAt: new Date() } },
+      { $set: { ...mergedData } },
       { session }
     );
 
