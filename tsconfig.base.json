@@ -15,8 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@connectly/models": ["libs/models/src/index.ts"],
-      "@connectly/utils": ["libs/utils/src/index.ts"]
+      "@clientfuse/models": ["libs/models/src/index.ts"],
+      "@clientfuse/utils": ["libs/utils/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
