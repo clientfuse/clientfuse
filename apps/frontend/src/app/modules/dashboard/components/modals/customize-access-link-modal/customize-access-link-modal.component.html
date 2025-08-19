@@ -1,31 +1,31 @@
-<div class="customize-access-modal">
+<div class="connectly-modal">
 
-  <div class="modal-header">
+  <div class="connectly-modal-header">
     <div class="subtitle-medium">Customize your standard access links</div>
     <button mat-icon-button (click)="onCancel()">
       <mat-icon>close</mat-icon>
     </button>
   </div>
 
-  <div class="modal-description">
+  <div class="connectly-modal-description">
     <p>Select which accounts to get access to by default.</p>
     <p>You can also create <a href="#" class="link link-blue">custom requests</a> to receive access to specific assets.</p>
   </div>
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="access-form">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="connectly-modal-content">
 
     <div class="platforms-container">
       @for (section of sections(); track section.name) {
-        <mat-accordion class="platform-accordion">
-          <mat-expansion-panel [expanded]="section.expanded" class="platform-panel">
+        <mat-accordion class="accordion">
+          <mat-expansion-panel [expanded]="section.expanded" class="accordion-panel">
 
-            <mat-expansion-panel-header class="platform-header">
-              <mat-panel-title class="platform-title">
-                <div class="platform-info">
-                  <div class="platform-icon">
+            <mat-expansion-panel-header class="accordion-header">
+              <mat-panel-title class="accordion-title">
+                <div class="accordion-info">
+                  <div class="accordion-icon">
                     <img [src]="section.iconSrc" alt="{{ section.name }} icon">
                   </div>
-                  <span class="platform-name">{{ section.name }}</span>
+                  <span class="accordion-name">{{ section.name }}</span>
                 </div>
               </mat-panel-title>
             </mat-expansion-panel-header>
@@ -67,7 +67,7 @@
     </div>
 
 
-    <div class="form-actions">
+    <div class="connectly-modal-actions">
       <button mat-button type="button" (click)="onCancel()">Cancel</button>
       <button mat-flat-button color="primary" type="submit" [disabled]="!isChanged()">Save Changes</button>
     </div>

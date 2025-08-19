@@ -6,9 +6,20 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleChange, MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { IAgencyResponse, IGoogleAccessLinkBase, TGoogleAccessLinkKeys } from '@connectly/models';
-import { findKeyPath } from '@connectly/utils';
+import {
+  AllAccessLinkKeys,
+  getAccessLinkBaseKey,
+  IAccessLinkBase,
+  IAgencyResponse,
+  ServiceNames,
+  TAccessLinkBaseKey,
+  TAccessType,
+  TFacebookAccessLinkKeys,
+  TGoogleAccessLinkKeys
+} from '@clientfuse/models';
+import { findKeyPath } from '@clientfuse/utils';
 import { cloneDeep, isEqual, isNil, set } from 'lodash';
+import { GOOGLE_ICON_PATHS } from '../../../../../utils/icon.utils';
 
 interface IPlatformSection {
   name: string;
@@ -17,14 +28,12 @@ interface IPlatformSection {
   iconSrc: string;
 }
 
-type TServiceAccount = IGoogleAccessLinkBase & {
+type TServiceAccount = IAccessLinkBase & {
   key: string;
   name: string;
   email: string;
   iconSrc?: string;
 }
-
-export type TAccessType = 'view' | 'manage';
 
 export interface ICustomizeAccessLinkModalData {
   agency: IAgencyResponse | null;
@@ -49,14 +58,7 @@ export interface ICustomizeAccessLinkModalData {
 export class CustomizeAccessLinkModalComponent {
   private readonly dialogRef = inject(MatDialogRef<CustomizeAccessLinkModalComponent>);
   protected readonly data: ICustomizeAccessLinkModalData = inject(MAT_DIALOG_DATA);
-  private readonly googleIconPaths: Record<TGoogleAccessLinkKeys, string> = {
-    ads: './assets/icons/google-ads.svg',
-    analytics: './assets/icons/google-analytics.svg',
-    merchantCenter: './assets/icons/google-merchant-center.svg',
-    myBusiness: './assets/icons/google-my-business.svg',
-    searchConsole: './assets/icons/google-search-console.svg',
-    tagManager: './assets/icons/google-tag-manager.svg'
-  };
+  private readonly googleIconPaths = GOOGLE_ICON_PATHS;
 
   form = new FormGroup({});
 
@@ -68,47 +70,39 @@ export class CustomizeAccessLinkModalComponent {
       name: 'Google Accounts',
       expanded: true,
       iconSrc: './assets/icons/google.svg',
-      services: Object.keys(this.data.agency?.defaultAccessLink.google || {}).map((key: string) => {
-        const service = this.data.agency?.defaultAccessLink.google[key as TGoogleAccessLinkKeys];
+      services: Object.keys(this.data.agency?.defaultAccessLink.google || {})
+        .map((key: string) => {
+          const service = this.data.agency?.defaultAccessLink?.google?.[key as TGoogleAccessLinkKeys];
 
-        return {
-          key,
-          name: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
-          email: (<any>service)?.email || (<any>service)?.emailOrId || '',
-          iconSrc: this.googleIconPaths[key as TGoogleAccessLinkKeys] || '',
-          isViewAccessEnabled: service?.isViewAccessEnabled || false,
-          isManageAccessEnabled: service?.isManageAccessEnabled || false
-        };
-      })
+          return {
+            key,
+            name: ServiceNames[key as AllAccessLinkKeys] || key,
+            email: (<any>service)?.email || (<any>service)?.emailOrId || '',
+            iconSrc: this.googleIconPaths[key as TGoogleAccessLinkKeys] || '',
+            isViewAccessEnabled: service?.isViewAccessEnabled || false,
+            isManageAccessEnabled: service?.isManageAccessEnabled || false
+          };
+        })
+        .filter((service: TServiceAccount) => service.key !== '_id' && service.email)
     };
 
     const metaSection: IPlatformSection = {
       name: 'Meta Assets',
       expanded: false,
       iconSrc: './assets/icons/meta.svg',
-      services: [
-        {
-          key: 'facebookAds',
-          name: 'Facebook Ads',
-          email: this.data.agency?.email || '',
-          isViewAccessEnabled: true,
-          isManageAccessEnabled: true
-        },
-        {
-          key: 'instagramBusiness',
-          name: 'Instagram Business',
-          email: this.data.agency?.email || '',
-          isViewAccessEnabled: false,
-          isManageAccessEnabled: false
-        },
-        {
-          key: 'metaPixel',
-          name: 'Meta Pixel',
-          email: this.data.agency?.email || '',
-          isViewAccessEnabled: true,
-          isManageAccessEnabled: true
-        }
-      ]
+      services: Object.keys(this.data.agency?.defaultAccessLink.facebook || {})
+        .map((key: string) => {
+          const service = this.data.agency?.defaultAccessLink?.facebook?.[key as TFacebookAccessLinkKeys];
+
+          return {
+            key,
+            name: ServiceNames[key as AllAccessLinkKeys] || key,
+            email: service?.entityId || '',
+            isViewAccessEnabled: service?.isViewAccessEnabled || false,
+            isManageAccessEnabled: service?.isManageAccessEnabled || false
+          };
+        })
+        .filter((service: TServiceAccount) => service.key !== '_id' && service.email)
     };
     return [googleSection, metaSection];
   });
@@ -130,7 +124,7 @@ export class CustomizeAccessLinkModalComponent {
     }
 
     const path = findKeyPath(agency, service.key);
-    const fieldToChange: keyof IGoogleAccessLinkBase = this.data.accessType === 'view' ? 'isViewAccessEnabled' : 'isManageAccessEnabled';
+    const fieldToChange: TAccessLinkBaseKey = getAccessLinkBaseKey(this.data.accessType);
     if (!path) {
       console.warn(`Path not found for key: ${service.key}`);
       return;

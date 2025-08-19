@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { MatTabsModule } from '@angular/material/tabs';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { ILink } from '../../../../models/navigation.model';
@@ -19,13 +18,13 @@ export class SettingsPageComponent {
   private navigationService = inject(NavigationService);
 
   links: ILink[] = [
-    {label: 'General', url: this.routesService.settingsUser()},
-    {label: 'Billing', url: this.routesService.settingsBilling()},
-    {label: 'Teams', url: this.routesService.settingsTeams()},
-    {label: 'White-labeling', url: this.routesService.settingsWhiteLabeling()},
-    {label: 'Integrations', url: this.routesService.settingsIntegrations()},
-    {label: 'Affiliate', url: this.routesService.settingsAffiliate()},
-    {label: 'Webhooks & API', url: this.routesService.settingsWebhooks()}
+    { label: 'General', url: this.routesService.settingsUser() },
+    { label: 'Billing', url: this.routesService.settingsBilling() },
+    { label: 'Teams', url: this.routesService.settingsTeams() },
+    { label: 'White-labeling', url: this.routesService.settingsWhiteLabeling() },
+    { label: 'Integrations', url: this.routesService.settingsIntegrations() },
+    { label: 'Affiliate', url: this.routesService.settingsAffiliate() },
+    { label: 'Webhooks & API', url: this.routesService.settingsWebhooks() }
   ];
-  currentUrl = toSignal(this.navigationService.currentUrl$);
+  currentUrl = this.navigationService.currentUrl;
 }

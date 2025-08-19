@@ -6,10 +6,10 @@ import {
   SocialLoginModule
 } from '@abacritt/angularx-social-login';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, provideZoneChangeDetection, InjectionToken } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter } from '@angular/router';
-import { FACEBOOK_SCOPES, GOOGLE_SCOPES } from '@connectly/models';
+import { FACEBOOK_SCOPES, GOOGLE_SCOPES } from '@clientfuse/models';
 import { appRoutes } from './app.routes';
 import { INTERCEPTORS } from './interceptors';
 import { AppInitializerService } from './services/app-initializer.service';
@@ -17,7 +17,8 @@ import { AppInitializerService } from './services/app-initializer.service';
 
 const GOOGLE_LOGIN_OPTIONS: GoogleInitOptions = {
   oneTapEnabled: false,
-  scopes: GOOGLE_SCOPES.join(' ')
+  scopes: GOOGLE_SCOPES as unknown as string[],
+  prompt: 'consent'
 };
 
 const FACEBOOK_LOGIN_OPTIONS = {
