@@ -66,7 +66,9 @@ export interface IAgencyBase {
   defaultAccessLink: TAccessLink;
 }
 
-export const PlatformNames: Record<keyof Omit<TAccessLink, '_id'>, string> = {
+export type TPlatformNamesKeys = keyof Omit<TAccessLink, '_id'>;
+
+export const PlatformNames: Record<TPlatformNamesKeys, string> = {
   google: 'Google',
   facebook: 'Meta'
 };
