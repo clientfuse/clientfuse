@@ -8,8 +8,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { ActivatedRoute } from '@angular/router';
-import { getAccessLinkBaseKey, IAgencyResponse, TAccessType, TGoogleAccessLinkKeys } from '@clientfuse/models';
-import { ListFormatter } from '../../../../../../../../libs/utils/src/lib/core/list-formatter.utils';
+import { getAccessLinkBaseKey, IAgencyResponse, TAccessType, TGoogleAccessLinkKeys, TFacebookAccessLinkKeys } from '@clientfuse/models';
+import { ListFormatter } from '@clientfuse/utils';
 import { ConnectionStoreService } from '../../../../services/connect/connection-store.service';
 import { AccessOutcomeComponent } from '../components/access-outcome/access-outcome.component';
 import { ConfirmAccessComponent } from '../components/confirm-access/confirm-access.component';
@@ -63,6 +63,17 @@ export class ConnectionsPageComponent implements OnInit {
     if (!googleServices) return [];
     const key = getAccessLinkBaseKey(this.accessType());
     return Object.keys(googleServices).filter(serviceKey => googleServices[serviceKey as TGoogleAccessLinkKeys][key]) as TGoogleAccessLinkKeys[];
+  });
+
+  readonly enabledFacebookServicesNames = computed<TFacebookAccessLinkKeys[]>(() => {
+    const connectionSettings = this.connectionSettings();
+    const facebookServices = connectionSettings?.defaultAccessLink?.facebook;
+    if (!facebookServices) return [];
+    const key = getAccessLinkBaseKey(this.accessType());
+    return Object.keys(facebookServices).filter(serviceKey => {
+      const service = facebookServices[serviceKey as TFacebookAccessLinkKeys];
+      return service[key] && service.entityId && service.entityId.trim() !== '';
+    }) as TFacebookAccessLinkKeys[];
   });
 
   connectionSteps = signal<ConnectionStep[]>([

@@ -1,16 +1,131 @@
-<mat-accordion class="accordion">
-  <mat-expansion-panel [expanded]="false" class="accordion-panel">
-
-    <mat-expansion-panel-header class="accordion-header">
-      <mat-panel-title class="accordion-title">
-        <div class="accordion-info">
-          <div class="accordion-icon">
-            <img [src]="'temp'" alt="icon">
+<div class="confirm-access-container">
+  <!-- Google Section -->
+  @if (hasGoogleServices()) {
+    <div class="provider-section google-section">
+      <div class="header-info">
+        <div class="platform-info">
+          <div class="platform-icon"><img src="./assets/icons/google.svg" alt="Google" /></div>
+          <div class="user-info">
+            <p class="email">{{ connectionSettings()?.email }}</p>
+            <p class="manage-text">would like to manage your Google accounts</p>
           </div>
-          <span class="accordion-name">Ads</span>
         </div>
-      </mat-panel-title>
-    </mat-expansion-panel-header>
+      </div>
 
-  </mat-expansion-panel>
-</mat-accordion>
+      <div class="account-selections">
+        <mat-accordion class="accordion">
+          @for (panel of googleServicePanels(); track panel.key) {
+            <mat-expansion-panel [expanded]="panel.expanded" class="accordion-panel">
+              <mat-expansion-panel-header class="accordion-header">
+                <mat-panel-title class="accordion-title">
+                  <div class="accordion-info">
+                    <div class="accordion-icon">
+                      @if (panel.iconPath) {
+                        <img [src]="panel.iconPath" [alt]="panel.name" width="24" height="24" />
+                      }
+                    </div>
+                    <span class="accordion-name">{{ panel.name }}</span>
+                  </div>
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <div class="account-content">
+                @if (panel.accounts.length > 0) {
+                  @for (
+                    account of panel.accounts; track account.id || account.siteUrl || account.accountId || account.merchantId || account.name || $index) {
+                    <div class="account-item">
+                      <mat-radio-group [(ngModel)]="panel.selectedAccount">
+                        <mat-radio-button [value]="getAccountValue(account, panel)" class="account-radio">
+                          <div class="account-info">
+                            <span class="account-name">{{ getAccountDisplayName(account, panel) }}</span>
+                            <span class="account-details">{{ getAccountDetails(account, panel) }}</span>
+                          </div>
+                        </mat-radio-button>
+                      </mat-radio-group>
+                    </div>
+                  }
+                } @else {
+                  <div class="no-accounts">
+                    <span>{{ panel.noAccountsMessage }}</span>
+                  </div>
+                }
+              </div>
+            </mat-expansion-panel>
+          }
+        </mat-accordion>
+      </div>
+    </div>
+  }
+
+  <!-- Meta Section -->
+  @if (hasMetaServices()) {
+    <div class="provider-section meta-section">
+      <div class="header-info">
+        <div class="platform-info">
+          <div class="platform-icon"><img src="./assets/icons/meta.svg" alt="Meta" /></div>
+          <div class="user-info">
+            <p class="email">{{ connectionSettings()?.email }}</p>
+            <p class="manage-text">would like to manage your Meta accounts</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="account-selections">
+        <mat-accordion class="accordion">
+          @for (panel of metaServicePanels(); track panel.key) {
+            <mat-expansion-panel [expanded]="panel.expanded" class="accordion-panel">
+              <mat-expansion-panel-header class="accordion-header">
+                <mat-panel-title class="accordion-title">
+                  <div class="accordion-info">
+                    <div class="accordion-icon">
+                      @if (panel.iconPath) {
+                        <img [src]="panel.iconPath" [alt]="panel.name" width="24" height="24" />
+                      }
+                    </div>
+                    <span class="accordion-name">{{ panel.name }}</span>
+                  </div>
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <div class="account-content">
+                @if (panel.accounts.length > 0) {
+                  @for (
+                    account of panel.accounts; track account.id || account.siteUrl || account.accountId || account.merchantId || account.name || $index) {
+                    <div class="account-item">
+                      <mat-radio-group [(ngModel)]="panel.selectedAccount">
+                        <mat-radio-button [value]="getAccountValue(account, panel)" class="account-radio">
+                          <div class="account-info">
+                            <span class="account-name">{{ getAccountDisplayName(account, panel) }}</span>
+                            <span class="account-details">{{ getAccountDetails(account, panel) }}</span>
+                          </div>
+                        </mat-radio-button>
+                      </mat-radio-group>
+                    </div>
+                  }
+                } @else {
+                  <div class="no-accounts">
+                    <span>{{ panel.noAccountsMessage }}</span>
+                  </div>
+                }
+              </div>
+            </mat-expansion-panel>
+          }
+        </mat-accordion>
+      </div>
+    </div>
+  }
+
+  <div class="confirm-section">
+    <div class="request-details">
+      <h4>Request details</h4>
+      <app-request-details
+        [connectionSettings]="connectionSettings()"
+        [accessType]="accessType()"
+        [enabledGoogleServicesNames]="enabledGoogleServicesNames()"
+        [enabledFacebookServicesNames]="enabledFacebookServicesNames()">
+      </app-request-details>
+    </div>
+
+    <button mat-flat-button class="w-100" (click)="confirmAccess()">Confirm Access</button>
+  </div>
+</div>

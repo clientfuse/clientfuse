@@ -1,7 +1,5 @@
-<!-- *** Created connect accounts layout with instruction steps *** -->
 <div class="connect-accounts-container">
 
-  <!-- Requested Accounts Section -->
   <app-instruction-step>
     <div slot="header">
       <h2 class="subtitle-medium">Requested Accounts</h2>
@@ -10,29 +8,39 @@
     <div slot="content">
       <div class="requested-accounts-list">
 
-        <div class="account-item">
-          <div class="account-icon">
-            <img src="./assets/icons/meta.svg" alt="Meta" class="provider-icon" />
+        @if (hasNoServiceRequests()) {
+          <div class="no-requests-message">
+            <p>No service access requests found</p>
           </div>
-          <div class="account-details">
-            <div class="account-title">
-              <span class="account-name body-strong">Meta</span>
-              <span class="account-types">Ad Account, Page, Business Profile Location, Tag Manager, Search Console, Merchant Center</span>
+        } @else {
+          @if (facebookServicesText()) {
+            <div class="account-item">
+              <div class="account-icon">
+                <img src="./assets/icons/meta.svg" alt="Meta" class="provider-icon" />
+              </div>
+              <div class="account-details">
+                <div class="account-title">
+                  <span class="account-name body-strong">Meta</span>
+                  <span class="account-types">{{ facebookServicesText() }}</span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          }
 
-        <div class="account-item">
-          <div class="account-icon">
-            <img src="./assets/icons/google.svg" alt="Google" class="provider-icon" />
-          </div>
-          <div class="account-details">
-            <div class="account-title">
-              <span class="account-name body-strong">Google</span>
-              <span class="account-types">Ads Account, Analytics Account, Search Console, Tag Manager, Merchant Center, My Business</span>
+          @if (googleServicesText()) {
+            <div class="account-item">
+              <div class="account-icon">
+                <img src="./assets/icons/google.svg" alt="Google" class="provider-icon" />
+              </div>
+              <div class="account-details">
+                <div class="account-title">
+                  <span class="account-name body-strong">Google</span>
+                  <span class="account-types">{{ googleServicesText() }}</span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          }
+        }
 
       </div>
     </div>
@@ -44,97 +52,96 @@
     </div>
 
     <div slot="content">
-      <div class="request-details-grid">
-        <div class="detail-row">
-          <span class="detail-label">Meta Business Portfolio</span>
-          <span class="detail-value">{{ requestDetails().metaBusinessPortfolio }}</span>
-        </div>
-
-        <div class="detail-row">
-          <span class="detail-label">Google Account</span>
-          <span class="detail-value">{{ requestDetails().googleAccount }}</span>
-        </div>
-
-        <div class="detail-row">
-          <span class="detail-label">Access Level</span>
-          <span class="detail-value body-strong">{{ requestDetails().accessLevel }}</span>
-        </div>
-      </div>
+      <app-request-details [connectionSettings]="connectionSettings()"
+                           [accessType]="accessType()"
+                           [enabledGoogleServicesNames]="enabledGoogleServicesNames()"
+                           [enabledFacebookServicesNames]="enabledFacebookServicesNames()" />
     </div>
   </app-instruction-step>
 
   <div class="connection-actions">
 
-    <div class="provider-section">
-      <div class="provider-header">
-        <img src="./assets/icons/meta.svg" alt="Meta" class="provider-icon-large" />
-        <h3 class="subtitle-medium">Meta</h3>
+    @if (facebookServicesText()) {
+      <div class="provider-section">
+        <div class="provider-header">
+          <img src="./assets/icons/meta.svg" alt="Meta" class="provider-icon-large" />
+          <h3 class="subtitle-medium">Meta</h3>
+        </div>
+
+        @if (metaConnectionStatus() === 'disconnected') {
+          <div class="connection-content">
+            <p>Let's start by connecting Facebook</p>
+
+            <button type="button"
+                    class="facebook-connect-btn"
+                    (click)="connectFacebook()"
+                    [disabled]="isConnecting()">
+              <svg class="facebook-icon" viewBox="0 0 24 24" width="20" height="20">
+                <path fill="#ffffff"
+                      d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+              </svg>
+              Connect Facebook
+            </button>
+
+            <p class="connection-alternative body-smaller-text">
+              Or
+              <button class="link link-blue click-target-helper" (click)="skipFacebook()">continue without granting Facebook access</button>
+            </p>
+          </div>
+        } @else if (metaConnectionStatus() === 'connected') {
+          <div class="connection-status connected">
+            <mat-icon class="status-icon">check_circle</mat-icon>
+            <span class="status-text">Connected to Facebook</span>
+            <button type="button" class="link link-blue body-smaller-text click-target-helper" (click)="editConnection('meta')">(edit)
+            </button>
+          </div>
+        } @else if (metaConnectionStatus() === 'skipped') {
+          <div class="connection-status skipped">
+            <mat-icon class="status-icon">close</mat-icon>
+            <span class="status-text">Skipped Facebook</span>
+            <button type="button" class="link link-blue click-target-helper body-smaller-text" (click)="editConnection('meta')">(edit)
+            </button>
+          </div>
+        }
       </div>
+    }
 
-      @if (metaConnectionStatus() === 'disconnected') {
-        <div class="connection-content">
-          <p>Let's start by connecting Facebook</p>
-
-          <button type="button"
-                  class="facebook-connect-btn"
-                  (click)="connectFacebook()"
-                  [disabled]="isConnecting()">
-            <svg class="facebook-icon" viewBox="0 0 24 24" width="20" height="20">
-              <path fill="#ffffff"
-                    d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-            </svg>
-            Connect Facebook
-          </button>
-
-          <p class="connection-alternative body-smaller-text">
-            Or
-            <button class="link link-blue click-target-helper" (click)="skipFacebook()">continue without granting Facebook access</button>
-          </p>
+    @if (googleServicesText()) {
+      <div class="provider-section">
+        <div class="provider-header">
+          <img src="./assets/icons/google.svg" alt="Google" class="provider-icon-large" />
+          <h3 class="subtitle-medium">Google</h3>
         </div>
-      } @else if (metaConnectionStatus() === 'skipped') {
-        <div class="connection-status skipped">
-          <mat-icon class="status-icon">close</mat-icon>
-          <span class="status-text">Skipped Facebook</span>
-          <button type="button" class="link link-blue click-target-helper body-smaller-text" (click)="editConnection('meta')">(edit)
-          </button>
-        </div>
-      }
-    </div>
 
-    <div class="provider-section">
-      <div class="provider-header">
-        <img src="./assets/icons/google.svg" alt="Google" class="provider-icon-large" />
-        <h3 class="subtitle-medium">Google</h3>
+        @if (googleConnectionStatus() === 'disconnected') {
+          <div class="connection-content">
+            <asl-google-signin-button
+              type="standard"
+              size="large"
+              theme="outline"
+              text="signin_with"
+              shape="rectangular">
+            </asl-google-signin-button>
+
+            <p class="google-disclaimer">
+              Our use and transfer of information received from Google to any other app
+              adheres to the
+              <a href="https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes"
+                 target="_blank"
+                 class="link link-blue click-target-helper">
+                Google API Services User Data Policy</a>, including the Limited Use requirements.
+            </p>
+          </div>
+        } @else if (googleConnectionStatus() === 'connected') {
+          <div class="connection-status connected">
+            <mat-icon class="status-icon">check_circle</mat-icon>
+            <span class="status-text">Connected to Google</span>
+            <button type="button" class="link link-blue body-smaller-text click-target-helper" (click)="editConnection('google')">(edit)
+            </button>
+          </div>
+        }
       </div>
-
-      @if (googleConnectionStatus() === 'disconnected') {
-        <div class="connection-content">
-          <button
-            type="button"
-            class="google-signin-btn"
-            (click)="signInWithGoogle()"
-            [disabled]="isConnecting()">
-            <img src="./assets/icons/google.svg" alt="Google" class="google-icon" />
-            Sign in with Google
-          </button>
-
-          <p class="google-disclaimer">
-            Our use and transfer of information received from Google to any other app
-            adheres to the
-            <a href="https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes"
-               target="_blank"
-               class="link link-blue click-target-helper">Google API Services User Data Policy</a>, including the Limited Use requirements.
-          </p>
-        </div>
-      } @else if (googleConnectionStatus() === 'connected') {
-        <div class="connection-status connected">
-          <mat-icon class="status-icon">check_circle</mat-icon>
-          <span class="status-text">Connected to Google</span>
-          <button type="button" class="link link-blue body-smaller-text click-target-helper" (click)="editConnection('google')">(edit)
-          </button>
-        </div>
-      }
-    </div>
+    }
 
   </div>
 

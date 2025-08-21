@@ -73,7 +73,7 @@ export class GoogleAccessDto implements TGoogleAccessLink {
 
 export class FacebookAccessLinkWithId extends AccessLinkBase implements TFacebookAccessLinkWithId {
   @IsString()
-  @IsDefined()
+  @IsOptional()
   entityId: string;
 }
 

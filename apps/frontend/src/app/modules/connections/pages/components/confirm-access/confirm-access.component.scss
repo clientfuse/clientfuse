@@ -1,3 +1,132 @@
+@import "variables";
+
 :host {
   display: block;
+}
+
+.confirm-access-container {
+  width: 100%;
+  margin: 0 auto;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.provider-section {
+  margin-bottom: 24px;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+.header-info {
+  padding: 24px;
+  border-bottom: 1px solid $dark-40;
+  text-align: center;
+  background: $cloud;
+}
+
+.platform-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.platform-icon {
+  width: var(--spacing-8);
+  height: var(--spacing-8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-info {
+  text-align: left;
+}
+
+.email {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: $dark-100;
+}
+
+.manage-text {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: $dark-100;
+}
+
+.account-selections {
+  padding: 16px 24px;
+}
+
+.accordion-panel {
+  margin-bottom: 8px;
+}
+
+.account-content {
+  padding: 16px;
+  border-top: 1px solid $dark-20;
+}
+
+.account-item {
+  margin-bottom: 12px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.account-radio {
+  width: 100%;
+
+  ::ng-deep .mat-radio-container {
+    margin-right: 12px;
+  }
+
+  ::ng-deep .mat-radio-label-content {
+    width: 100%;
+  }
+}
+
+.account-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.account-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.account-details {
+  font-size: 12px;
+  color: $dark-60;
+}
+
+.no-accounts {
+  color: $dark-60;
+  font-size: 14px;
+  text-align: center;
+  padding: 16px 0;
+}
+
+.confirm-section {
+  padding: 24px;
+  border-top: 1px solid $dark-40;
+  background: $cloud;
+}
+
+.request-details {
+  margin-bottom: 24px;
+
+  h4 {
+    margin: 0 0 16px;
+    font-size: 16px;
+    font-weight: 500;
+  }
 }

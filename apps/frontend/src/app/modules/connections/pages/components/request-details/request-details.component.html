@@ -1,0 +1,20 @@
+<div class="request-details-grid">
+  @if (facebookServicesText()) {
+    <div class="detail-row">
+      <span class="detail-label">Meta Business Portfolio</span>
+      <span class="detail-value body-strong">{{ connectionSettings()?.email }}</span>
+    </div>
+  }
+
+  @if (googleServicesText()) {
+    <div class="detail-row">
+      <span class="detail-label">Google Account</span>
+      <span class="detail-value body-strong">{{ connectionSettings()?.email }}</span>
+    </div>
+  }
+
+  <div class="detail-row">
+    <span class="detail-label">Access Level</span>
+    <span class="detail-value body-strong">{{ accessTypeName() }}</span>
+  </div>
+</div>

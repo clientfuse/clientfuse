@@ -53,7 +53,7 @@ export const appConfig: ApplicationConfig = {
           },
           {
             id: FacebookLoginProvider.PROVIDER_ID,
-            provider: new FacebookLoginProvider('773161165226611', FACEBOOK_LOGIN_OPTIONS)
+            provider: new FacebookLoginProvider('1988517275256427', FACEBOOK_LOGIN_OPTIONS)
           }
         ],
         onError: (err: any) => {

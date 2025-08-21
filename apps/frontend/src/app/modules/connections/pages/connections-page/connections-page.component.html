@@ -36,6 +36,7 @@
 
                 <app-connect-accounts [connectionSettings]="connectionSettings()"
                                       [enabledGoogleServicesNames]="enabledGoogleServicesNames()"
+                                      [enabledFacebookServicesNames]="enabledFacebookServicesNames()"
                                       [accessType]="accessType()" />
 
                 <div class="step-actions">
@@ -51,7 +52,11 @@
                   <p class="body step-description">Review the permissions you're about to grant</p>
                 </div>
 
-                <app-confirm-access />
+                <app-confirm-access 
+                  [connectionSettings]="connectionSettings()"
+                  [accessType]="accessType()"
+                  [enabledGoogleServicesNames]="enabledGoogleServicesNames()"
+                  [enabledFacebookServicesNames]="enabledFacebookServicesNames()" />
 
                 <div class="step-actions">
                   <button mat-button (click)="previousStep()" class="button-medium">Back</button>

@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { ENDPOINTS, IResponse, IUserResponse } from '@clientfuse/models';
+import { ENDPOINTS, IResponse } from '@clientfuse/models';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 

@@ -15,14 +15,15 @@ import {
   TAccessLinkBaseKey,
   TAccessType,
   TFacebookAccessLinkKeys,
-  TGoogleAccessLinkKeys
+  TGoogleAccessLinkKeys,
+  TPlatformNamesKeys
 } from '@clientfuse/models';
-import { findKeyPath } from '@clientfuse/utils';
 import { cloneDeep, isEqual, isNil, set } from 'lodash';
 import { GOOGLE_ICON_PATHS } from '../../../../../utils/icon.utils';
 
 interface IPlatformSection {
   name: string;
+  platform: TPlatformNamesKeys;
   services: TServiceAccount[];
   expanded?: boolean;
   iconSrc: string;
@@ -33,6 +34,7 @@ type TServiceAccount = IAccessLinkBase & {
   name: string;
   email: string;
   iconSrc?: string;
+  platform: TPlatformNamesKeys;
 }
 
 export interface ICustomizeAccessLinkModalData {
@@ -66,45 +68,63 @@ export class CustomizeAccessLinkModalComponent {
   agency = signal<IAgencyResponse | null>(cloneDeep(this.data.agency));
   isChanged = computed<boolean>(() => !isEqual(this.initialAgency(), this.agency()));
   sections = computed<IPlatformSection[]>(() => {
-    const googleSection: IPlatformSection = {
-      name: 'Google Accounts',
-      expanded: true,
-      iconSrc: './assets/icons/google.svg',
-      services: Object.keys(this.data.agency?.defaultAccessLink.google || {})
-        .map((key: string) => {
-          const service = this.data.agency?.defaultAccessLink?.google?.[key as TGoogleAccessLinkKeys];
+    const sections: IPlatformSection[] = [];
+    const defaultAccessLink = this.data.agency?.defaultAccessLink;
 
-          return {
-            key,
-            name: ServiceNames[key as AllAccessLinkKeys] || key,
-            email: (<any>service)?.email || (<any>service)?.emailOrId || '',
-            iconSrc: this.googleIconPaths[key as TGoogleAccessLinkKeys] || '',
-            isViewAccessEnabled: service?.isViewAccessEnabled || false,
-            isManageAccessEnabled: service?.isManageAccessEnabled || false
-          };
-        })
-        .filter((service: TServiceAccount) => service.key !== '_id' && service.email)
-    };
+    if (!defaultAccessLink) {
+      return sections;
+    }
 
-    const metaSection: IPlatformSection = {
-      name: 'Meta Assets',
-      expanded: false,
-      iconSrc: './assets/icons/meta.svg',
-      services: Object.keys(this.data.agency?.defaultAccessLink.facebook || {})
-        .map((key: string) => {
-          const service = this.data.agency?.defaultAccessLink?.facebook?.[key as TFacebookAccessLinkKeys];
+    if (defaultAccessLink.google) {
+      const googleSection: IPlatformSection = {
+        name: 'Google Accounts',
+        platform: 'google' as TPlatformNamesKeys,
+        expanded: true,
+        iconSrc: './assets/icons/google.svg',
+        services: Object.keys(defaultAccessLink.google)
+          .map((key: string) => {
+            const service = defaultAccessLink.google?.[key as TGoogleAccessLinkKeys];
 
-          return {
-            key,
-            name: ServiceNames[key as AllAccessLinkKeys] || key,
-            email: service?.entityId || '',
-            isViewAccessEnabled: service?.isViewAccessEnabled || false,
-            isManageAccessEnabled: service?.isManageAccessEnabled || false
-          };
-        })
-        .filter((service: TServiceAccount) => service.key !== '_id' && service.email)
-    };
-    return [googleSection, metaSection];
+            return {
+              key,
+              name: ServiceNames[key as AllAccessLinkKeys] || key,
+              email: (<any>service)?.email || (<any>service)?.emailOrId || '',
+              iconSrc: this.googleIconPaths[key as TGoogleAccessLinkKeys] || '',
+              isViewAccessEnabled: service?.isViewAccessEnabled || false,
+              isManageAccessEnabled: service?.isManageAccessEnabled || false,
+              platform: 'google' as TPlatformNamesKeys
+            };
+          })
+          .filter((service: TServiceAccount) => service.key !== '_id' && service.email)
+      };
+      sections.push(googleSection);
+    }
+
+    if (defaultAccessLink.facebook) {
+      const metaSection: IPlatformSection = {
+        name: 'Meta Assets',
+        platform: 'facebook' as TPlatformNamesKeys,
+        expanded: false,
+        iconSrc: './assets/icons/meta.svg',
+        services: Object.keys(defaultAccessLink.facebook)
+          .map((key: string) => {
+            const service = defaultAccessLink.facebook?.[key as TFacebookAccessLinkKeys];
+
+            return {
+              key,
+              name: ServiceNames[key as AllAccessLinkKeys] || key,
+              email: service?.entityId || '',
+              isViewAccessEnabled: service?.isViewAccessEnabled || false,
+              isManageAccessEnabled: service?.isManageAccessEnabled || false,
+              platform: 'facebook' as TPlatformNamesKeys
+            };
+          })
+          .filter((service: TServiceAccount) => service.key !== '_id' && service.email)
+      };
+      sections.push(metaSection);
+    }
+
+    return sections;
   });
 
   onSubmit(): void {
@@ -123,13 +143,8 @@ export class CustomizeAccessLinkModalComponent {
       return;
     }
 
-    const path = findKeyPath(agency, service.key);
     const fieldToChange: TAccessLinkBaseKey = getAccessLinkBaseKey(this.data.accessType);
-    if (!path) {
-      console.warn(`Path not found for key: ${service.key}`);
-      return;
-    }
-    const fullPath = path + '.' + fieldToChange;
+    const fullPath = `defaultAccessLink.${service.platform}.${service.key}.${fieldToChange}`;
     set(agency, fullPath, value);
     this.agency.set(agency);
   }
