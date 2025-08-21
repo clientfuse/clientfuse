@@ -25,7 +25,10 @@ async function bootstrap() {
   app.useGlobalInterceptors(new TransformResponse());
 
   app.useGlobalPipes(new ValidationPipe({
-    transform: true
+    transform: true,
+    transformOptions: {
+      enableImplicitConversion: true
+    }
   }));
 
   const port = +process.env[ApiEnv.PORT] || 3000;
