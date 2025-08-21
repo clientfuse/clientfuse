@@ -1,4 +1,4 @@
-import { ApiEnv, ENDPOINTS, ServerErrorCode } from '@clientfuse/models';
+import { ApiEnv, ENDPOINTS, IGoogleConnectionResponse, IGoogleUserAccountsDataResponse, ServerErrorCode } from '@clientfuse/models';
 import { Body, Controller, Get, NotFoundException, Post, Query } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Public } from '../auth/decorators/is-public.decorator';
@@ -17,7 +17,7 @@ export class GoogleController {
 
   @Public()
   @Post(ENDPOINTS.google.connect)
-  async connections(@Body() body: GoogleConnectionDto) {
+  async connections(@Body() body: GoogleConnectionDto): Promise<IGoogleConnectionResponse> {
     const googleAccounts = new GoogleAccounts(
       this.configService.get(ApiEnv.GOOGLE_CLIENT_ID),
       this.configService.get(ApiEnv.GOOGLE_CLIENT_SECRET),
@@ -52,7 +52,7 @@ export class GoogleController {
    * Fetches user accounts data from Google using the user's access token.
    */
   @Get(ENDPOINTS.google.userAccountsData)
-  async getUserAccountsData(@Query() query: GetUserAccountsDto) {
+  async getUserAccountsData(@Query() query: GetUserAccountsDto): Promise<IGoogleUserAccountsDataResponse> {
     const user = await this.usersService.findUser({ _id: query.userId });
     if (!user) {
       throw new NotFoundException(ServerErrorCode.USER_NOT_FOUND);

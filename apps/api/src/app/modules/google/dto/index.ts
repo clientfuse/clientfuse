@@ -5,5 +5,4 @@ export * from './grant-readonly-access.dto';
 export * from './grant-custom-access.dto';
 export * from './get-entity-users.dto';
 export * from './revoke-agency-access.dto';
-export * from './set-credentials.dto';
 export * from './grant-agency-access.dto';

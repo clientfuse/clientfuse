@@ -1,3 +1,12 @@
+import {
+  analytics_v3,
+  content_v2_1,
+  mybusinessaccountmanagement_v1,
+  mybusinessbusinessinformation_v1,
+  searchconsole_v1,
+  tagmanager_v2
+} from 'googleapis';
+
 export interface ICustomAccessOptions {
   entityId: string;
   agencyEmail: string;
@@ -162,4 +171,80 @@ export interface IRevokeAgencyAccessDto {
   service: GoogleServiceType;
   entityId: string;
   linkId: string;
+}
+
+// Response Types
+export interface IGoogleConnectionResponse {
+  user: {
+    sub: string;
+    email: string;
+    email_verified: boolean;
+    name: string;
+    given_name: string;
+    family_name: string;
+    picture?: string;
+    aud: string;
+    iss: string;
+    iat: number;
+    exp: number;
+  };
+  hasValidTokens: boolean;
+  requiresReauth: boolean;
+  accounts: IGoogleAccountsData | null;
+}
+
+export interface IGoogleAccountsData {
+  googleAdsAccounts: IGoogleAdsAccount[];
+  googleAnalyticsAccounts: analytics_v3.Schema$Account[];
+  googleSearchConsoles: searchconsole_v1.Schema$WmxSite[];
+  googleTagManagers: tagmanager_v2.Schema$Account[];
+  googleMerchantCenters: content_v2_1.Schema$AccountIdentifier[];
+  googleMyBusinessAccounts: mybusinessaccountmanagement_v1.Schema$Account[];
+  googleMyBusinessLocations: mybusinessbusinessinformation_v1.Schema$Location[];
+  googleGrantedScopes: string[];
+}
+
+export interface IGoogleUserAccountsDataResponse {
+  data: IGoogleAccountsData;
+  tokens: {
+    access_token?: string;
+    refresh_token?: string;
+  };
+}
+
+export interface IGrantAccessResponse {
+  success: boolean;
+  service: GoogleServiceType;
+  accessType: 'management' | 'read-only' | 'custom';
+  entityId: string;
+  agencyEmail: string;
+  linkId?: string;
+  message?: string;
+  customOptions?: ICustomAccessOptions;
+}
+
+export interface IGetEntityUsersResponse {
+  service: GoogleServiceType;
+  entityId: string;
+  users: IBaseUserInfo[];
+  totalUsers: number;
+}
+
+export interface IRevokeAccessResponse {
+  success: boolean;
+  service: GoogleServiceType;
+  message?: string;
+}
+
+export interface IAvailableService {
+  name: GoogleServiceType;
+  requiredScopes: string[];
+  availablePermissions: string[];
+  defaultPermissions: string[];
+  description: string;
+}
+
+export interface IGetAvailableServicesResponse {
+  availableServices: IAvailableService[];
+  totalServices: number;
 }

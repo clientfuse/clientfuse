@@ -1,4 +1,13 @@
-import { ENDPOINTS, GoogleServiceType, IGoogleBaseAccessService, ServerErrorCode } from '@clientfuse/models';
+import {
+  ENDPOINTS,
+  GoogleServiceType,
+  IGetAvailableServicesResponse,
+  IGetEntityUsersResponse,
+  IGoogleBaseAccessService,
+  IGrantAccessResponse,
+  IRevokeAccessResponse,
+  ServerErrorCode
+} from '@clientfuse/models';
 import {
   BadRequestException,
   Body,
@@ -51,7 +60,7 @@ export class GoogleAccessController {
   }
 
   @Post(ENDPOINTS.google.accessManagement.grantManagementAccess)
-  async grantManagementAccess(@Body() dto: GrantManagementAccessDto) {
+  async grantManagementAccess(@Body() dto: GrantManagementAccessDto): Promise<IGrantAccessResponse> {
     const userId = dto.userId;
     await this.validateUserAndSetCredentials(userId, dto.service);
 
@@ -74,7 +83,7 @@ export class GoogleAccessController {
   }
 
   @Post(ENDPOINTS.google.accessManagement.grantReadonlyAccess)
-  async grantReadOnlyAccess(@Body() dto: GrantReadOnlyAccessDto) {
+  async grantReadOnlyAccess(@Body() dto: GrantReadOnlyAccessDto): Promise<IGrantAccessResponse> {
     const userId = dto.userId;
     await this.validateUserAndSetCredentials(userId, dto.service);
 
@@ -97,7 +106,7 @@ export class GoogleAccessController {
   }
 
   @Post(ENDPOINTS.google.accessManagement.grantCustomAccess)
-  async grantCustomServiceAccess(@Body() dto: GrantCustomAccessDto) {
+  async grantCustomServiceAccess(@Body() dto: GrantCustomAccessDto): Promise<IGrantAccessResponse> {
     const userId = dto.userId;
     await this.validateUserAndSetCredentials(userId, dto.service);
 
@@ -125,7 +134,7 @@ export class GoogleAccessController {
     @Query() query: GetEntityUsersQueryDto,
     @Param('service') serviceName: GoogleServiceType,
     @Param('entityId') entityId: string
-  ) {
+  ): Promise<IGetEntityUsersResponse> {
     const userId = query.userId;
     if (isEmpty(userId) || isEmpty(entityId)) {
       throw new BadRequestException(ServerErrorCode.INVALID_REQUEST);
@@ -161,7 +170,7 @@ export class GoogleAccessController {
   }
 
   @Delete(ENDPOINTS.google.accessManagement.revokeAgencyAccess)
-  async revokeAgencyAccess(@Body() dto: RevokeAgencyAccessDto) {
+  async revokeAgencyAccess(@Body() dto: RevokeAgencyAccessDto): Promise<IRevokeAccessResponse> {
     const { userId, service: serviceName, entityId, linkId } = dto;
     if (isEmpty(userId) || isEmpty(entityId) || isEmpty(linkId)) {
       throw new BadRequestException(ServerErrorCode.INVALID_REQUEST);
@@ -200,7 +209,7 @@ export class GoogleAccessController {
   }
 
   @Get(ENDPOINTS.google.accessManagement.getAvailableServices)
-  getAvailableServices() {
+  getAvailableServices(): IGetAvailableServicesResponse {
     const services = Array.from(this.serviceMap.keys()).map(serviceName => {
       const service = this.serviceMap.get(serviceName);
 
