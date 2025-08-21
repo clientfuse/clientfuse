@@ -116,3 +116,50 @@ export const GOOGLE_SCOPES = [
   GOOGLE_MY_BUSINESS_MANAGE_SCOPE,
   GOOGLE_ADWORDS_SCOPE
 ] as const;
+
+// DTO Interfaces
+export interface IGoogleConnectionDto {
+  idToken: string;
+  accessToken: string;
+}
+
+export interface IGetUserAccountsDto {
+  userId: string;
+}
+
+export interface IGetEntityUsersQueryDto {
+  userId: string;
+}
+
+export interface IGrantAgencyAccessDto {
+  entityId: string;
+  agencyEmail: string;
+  permissions: string[];
+}
+
+export interface IGrantManagementAccessDto {
+  userId: string;
+  service: GoogleServiceType;
+  entityId: string;
+  agencyEmail: string;
+}
+
+export interface IGrantReadOnlyAccessDto {
+  userId: string;
+  service: GoogleServiceType;
+  entityId: string;
+  agencyEmail: string;
+}
+
+export interface IGrantCustomAccessDto {
+  userId: string;
+  service: GoogleServiceType;
+  options: ICustomAccessOptions;
+}
+
+export interface IRevokeAgencyAccessDto {
+  userId: string;
+  service: GoogleServiceType;
+  entityId: string;
+  linkId: string;
+}

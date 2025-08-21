@@ -1,20 +1,10 @@
 import { ApiEnv, ENDPOINTS, ServerErrorCode } from '@clientfuse/models';
 import { Body, Controller, Get, NotFoundException, Post, Query } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { IsNotEmpty, IsString } from 'class-validator';
 import { Public } from '../auth/decorators/is-public.decorator';
 import { UsersService } from '../users/users.service';
 import { GoogleAccounts } from './classes/google-accounts.class';
-
-export class GoogleConnectionsDto {
-  @IsString()
-  @IsNotEmpty()
-  idToken: string;
-
-  @IsString()
-  @IsNotEmpty()
-  accessToken: string;
-}
+import { GoogleConnectionDto, GetUserAccountsDto } from './dto';
 
 @Controller(ENDPOINTS.google.root)
 export class GoogleController {
@@ -27,7 +17,7 @@ export class GoogleController {
 
   @Public()
   @Post(ENDPOINTS.google.connect)
-  async connections(@Body() body: GoogleConnectionsDto) {
+  async connections(@Body() body: GoogleConnectionDto) {
     const googleAccounts = new GoogleAccounts(
       this.configService.get(ApiEnv.GOOGLE_CLIENT_ID),
       this.configService.get(ApiEnv.GOOGLE_CLIENT_SECRET),
@@ -62,7 +52,7 @@ export class GoogleController {
    * Fetches user accounts data from Google using the user's access token.
    */
   @Get(ENDPOINTS.google.userAccountsData)
-  async getUserAccountsData(@Query() query: { userId: string }) {
+  async getUserAccountsData(@Query() query: GetUserAccountsDto) {
     const user = await this.usersService.findUser({ _id: query.userId });
     if (!user) {
       throw new NotFoundException(ServerErrorCode.USER_NOT_FOUND);

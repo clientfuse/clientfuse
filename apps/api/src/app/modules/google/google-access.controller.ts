@@ -1,4 +1,4 @@
-import { ENDPOINTS, ServerErrorCode } from '@clientfuse/models';
+import { ENDPOINTS, GoogleServiceType, IGoogleBaseAccessService, ServerErrorCode } from '@clientfuse/models';
 import {
   BadRequestException,
   Body,
@@ -13,7 +13,13 @@ import {
 } from '@nestjs/common';
 import { isEmpty, isNil } from 'lodash';
 import { UsersService } from '../users/users.service';
-import { GoogleServiceType, IGoogleBaseAccessService, ICustomAccessOptions } from '@clientfuse/models';
+import {
+  GetEntityUsersQueryDto,
+  GrantCustomAccessDto,
+  GrantManagementAccessDto,
+  GrantReadOnlyAccessDto,
+  RevokeAgencyAccessDto
+} from './dto';
 import { GoogleAdsAccessService } from './services/access/google-ads-access.service';
 import { GoogleAnalyticsAccessService } from './services/access/google-analytics-access.service';
 import { GoogleMerchantCenterAccessService } from './services/access/google-merchant-center-access.service';
@@ -45,14 +51,8 @@ export class GoogleAccessController {
   }
 
   @Post(ENDPOINTS.google.accessManagement.grantManagementAccess)
-  async grantManagementAccess(
-    @Query('userId') userId: string,
-    @Body() dto: {
-      service: GoogleServiceType;
-      entityId: string;
-      agencyEmail: string;
-    }
-  ) {
+  async grantManagementAccess(@Body() dto: GrantManagementAccessDto) {
+    const userId = dto.userId;
     await this.validateUserAndSetCredentials(userId, dto.service);
 
     const service = this.getService(dto.service);
@@ -74,14 +74,8 @@ export class GoogleAccessController {
   }
 
   @Post(ENDPOINTS.google.accessManagement.grantReadonlyAccess)
-  async grantReadOnlyAccess(
-    @Query('userId') userId: string,
-    @Body() dto: {
-      service: GoogleServiceType;
-      entityId: string;
-      agencyEmail: string;
-    }
-  ) {
+  async grantReadOnlyAccess(@Body() dto: GrantReadOnlyAccessDto) {
+    const userId = dto.userId;
     await this.validateUserAndSetCredentials(userId, dto.service);
 
     const service = this.getService(dto.service);
@@ -103,13 +97,8 @@ export class GoogleAccessController {
   }
 
   @Post(ENDPOINTS.google.accessManagement.grantCustomAccess)
-  async grantCustomServiceAccess(
-    @Query('userId') userId: string,
-    @Body() dto: {
-      service: GoogleServiceType;
-      options: ICustomAccessOptions;
-    }
-  ) {
+  async grantCustomServiceAccess(@Body() dto: GrantCustomAccessDto) {
+    const userId = dto.userId;
     await this.validateUserAndSetCredentials(userId, dto.service);
 
     const service = this.getService(dto.service);
@@ -133,10 +122,11 @@ export class GoogleAccessController {
 
   @Get(ENDPOINTS.google.accessManagement.getEntityUsers)
   async getEntityUsers(
-    @Query('userId') userId: string,
+    @Query() query: GetEntityUsersQueryDto,
     @Param('service') serviceName: GoogleServiceType,
     @Param('entityId') entityId: string
   ) {
+    const userId = query.userId;
     if (isEmpty(userId) || isEmpty(entityId)) {
       throw new BadRequestException(ServerErrorCode.INVALID_REQUEST);
     }
@@ -171,12 +161,8 @@ export class GoogleAccessController {
   }
 
   @Delete(ENDPOINTS.google.accessManagement.revokeAgencyAccess)
-  async revokeAgencyAccess(
-    @Query('userId') userId: string,
-    @Param('service') serviceName: GoogleServiceType,
-    @Param('entityId') entityId: string,
-    @Param('linkId') linkId: string
-  ) {
+  async revokeAgencyAccess(@Body() dto: RevokeAgencyAccessDto) {
+    const { userId, service: serviceName, entityId, linkId } = dto;
     if (isEmpty(userId) || isEmpty(entityId) || isEmpty(linkId)) {
       throw new BadRequestException(ServerErrorCode.INVALID_REQUEST);
     }
