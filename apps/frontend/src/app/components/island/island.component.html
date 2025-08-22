@@ -1,3 +1,12 @@
-<div class="island">
+<div class="island"
+     [class.island--success]="variant() === 'success'"
+     [class.island--error]="variant() === 'error'"
+     [class.island--warning]="variant() === 'warning'"
+     [class.island--info]="variant() === 'info'"
+     [class.island--neutral]="variant() === 'neutral'"
+     [class.island--border-accent]="borderAccent()"
+     [class.island--density-compact]="density() === 'compact'"
+     [class.island--density-default]="density() === 'default'"
+     [class.island--density-comfortable]="density() === 'comfortable'">
   <ng-content></ng-content>
 </div>

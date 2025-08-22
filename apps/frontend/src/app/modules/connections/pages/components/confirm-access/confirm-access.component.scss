@@ -7,31 +7,27 @@
 .confirm-access-container {
   width: 100%;
   margin: 0 auto;
-  background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
 }
 
-.provider-section {
-  margin-bottom: 24px;
-
+app-island {
   &:last-of-type {
     margin-bottom: 0;
   }
 }
 
 .header-info {
-  padding: 24px;
+  padding-bottom: var(--spacing-4);
   border-bottom: 1px solid $dark-40;
-  text-align: center;
-  background: $cloud;
+  margin-bottom: var(--spacing-4);
 }
 
 .platform-info {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--spacing-4);
 }
 
 .platform-icon {
@@ -40,6 +36,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
 }
 
 .user-info {
@@ -48,32 +50,36 @@
 
 .email {
   margin: 0;
-  font-size: 18px;
-  font-weight: 500;
+  font-size: var(--fs-18);
+  font-weight: var(--fw-medium);
   color: $dark-100;
 }
 
 .manage-text {
-  margin: 4px 0 0;
-  font-size: 14px;
+  margin: var(--spacing-1) 0 0;
+  font-size: var(--fs-14);
   color: $dark-100;
 }
 
 .account-selections {
-  padding: 16px 24px;
+  padding: 0;
 }
 
 .accordion-panel {
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-2);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
 .account-content {
-  padding: 16px;
+  padding: var(--spacing-4);
   border-top: 1px solid $dark-20;
 }
 
 .account-item {
-  margin-bottom: 12px;
+  margin-bottom: var(--spacing-3);
 
   &:last-child {
     margin-bottom: 0;
@@ -84,7 +90,7 @@
   width: 100%;
 
   ::ng-deep .mat-radio-container {
-    margin-right: 12px;
+    margin-right: var(--spacing-3);
   }
 
   ::ng-deep .mat-radio-label-content {
@@ -95,38 +101,29 @@
 .account-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-1);
 }
 
 .account-name {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+  color: $dark-100;
 }
 
 .account-details {
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: $dark-60;
 }
 
 .no-accounts {
   color: $dark-60;
-  font-size: 14px;
+  font-size: var(--fs-14);
   text-align: center;
-  padding: 16px 0;
+  padding: var(--spacing-4) 0;
 }
 
-.confirm-section {
-  padding: 24px;
-  border-top: 1px solid $dark-40;
-  background: $cloud;
-}
-
-.request-details {
-  margin-bottom: 24px;
-
-  h4 {
-    margin: 0 0 16px;
-    font-size: 16px;
-    font-weight: 500;
-  }
+h4 {
+  margin: 0;
+  font-size: var(--fs-16);
+  font-weight: var(--fw-medium);
 }

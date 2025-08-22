@@ -22,6 +22,7 @@ import { GoogleStoreService } from '../../../../../services/google/google-store.
 
 import { InstructionStepComponent } from '../instruction-step/instruction-step.component';
 import { RequestDetailsComponent } from '../request-details/request-details.component';
+import { IslandComponent } from '../../../../../components/island/island.component';
 
 type ConnectionStatus = 'disconnected' | 'connected' | 'skipped' | 'pending';
 
@@ -34,7 +35,8 @@ type ConnectionStatus = 'disconnected' | 'connected' | 'skipped' | 'pending';
     InstructionStepComponent,
     MatButtonModule,
     GoogleSigninButtonModule,
-    RequestDetailsComponent
+    RequestDetailsComponent,
+    IslandComponent
   ],
   templateUrl: './connect-accounts.component.html',
   styleUrl: './connect-accounts.component.scss'

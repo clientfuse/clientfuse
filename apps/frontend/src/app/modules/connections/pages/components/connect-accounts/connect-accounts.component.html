@@ -62,7 +62,7 @@
   <div class="connection-actions">
 
     @if (facebookServicesText()) {
-      <div class="provider-section">
+      <app-island [variant]="'neutral'">
         <div class="provider-header">
           <img src="./assets/icons/meta.svg" alt="Meta" class="provider-icon-large" />
           <h3 class="subtitle-medium">Meta</h3>
@@ -85,9 +85,10 @@
 
             <p class="connection-alternative body-smaller-text">
               Or
-              <button class="link link-blue click-target-helper" 
+              <button class="link link-blue click-target-helper"
                       (click)="skipFacebook()"
-                      [disabled]="metaConnectionStatus() === 'pending'">continue without granting Facebook access</button>
+                      [disabled]="metaConnectionStatus() === 'pending'">continue without granting Facebook access
+              </button>
             </p>
           </div>
         } @else if (metaConnectionStatus() === 'pending') {
@@ -110,114 +111,130 @@
             </button>
           </div>
         }
-      </div>
+      </app-island>
     }
 
     @if (googleServicesText()) {
-      <div class="provider-section">
-        <div class="provider-header">
-          <img src="./assets/icons/google.svg" alt="Google" class="provider-icon-large" />
-          <h3 class="subtitle-medium">Google</h3>
+      <app-island [variant]="'neutral'">
+        <div class="google-connection-island-content">
+          <div class="provider-header">
+            <img src="./assets/icons/google.svg" alt="Google" class="provider-icon-large" />
+            <h3 class="subtitle-medium">Google</h3>
+          </div>
+
+          @if (googleConnectionStatus() === 'disconnected') {
+            <div class="connection-content">
+              <asl-google-signin-button
+                type="standard"
+                size="large"
+                theme="outline"
+                text="signin_with"
+                shape="rectangular"
+                (click)="connectGoogle()">
+              </asl-google-signin-button>
+
+              <p class="google-disclaimer">
+                Our use and transfer of information received from Google to any other app
+                adheres to the
+                <a href="https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes"
+                   target="_blank"
+                   class="link link-blue click-target-helper">
+                  Google API Services User Data Policy</a>, including the Limited Use requirements.
+              </p>
+            </div>
+          } @else if (googleConnectionStatus() === 'pending') {
+            <div class="connection-status pending">
+              <mat-icon class="status-icon">hourglass_empty</mat-icon>
+              <span class="status-text">Connecting to Google...</span>
+            </div>
+          } @else if (googleConnectionStatus() === 'connected') {
+            <div class="connection-status connected">
+              <mat-icon class="status-icon">check_circle</mat-icon>
+              <span class="status-text">Connected to Google</span>
+              <button type="button" class="link link-blue body-smaller-text click-target-helper" (click)="editConnection('google')">(edit)
+              </button>
+            </div>
+
+            @if (isLoadingGoogleData()) {
+              <app-island [variant]="'info'" [borderAccent]="true">
+                <p>Loading Google accounts data...</p>
+              </app-island>
+            }
+
+            @if (googleError()) {
+              <app-island [variant]="'error'" [borderAccent]="true">
+                <p class="error-text">{{ googleError() }}</p>
+              </app-island>
+            }
+
+            @if (googleConnectionData()) {
+              <app-island [variant]="'info'">
+                <div class="user-info">
+                  <p class="body-smaller-text"><strong>Email:</strong> {{ googleConnectionData()?.user?.email }}</p>
+                  <p class="body-smaller-text"><strong>Name:</strong> {{ googleConnectionData()?.user?.name }}</p>
+                </div>
+              </app-island>
+            }
+
+            @if (googleConnectionData()?.accounts) {
+              <app-island [variant]="'neutral'">
+                <p class="subtitle-smaller">Available Accounts:</p>
+                <div class="accounts-list">
+                  @if (googleConnectionData()?.accounts?.googleAnalyticsAccounts?.length) {
+                    <div class="account-section">
+                      <p class="body-smaller-text"><strong>Google
+                                                           Analytics:</strong> {{ googleConnectionData()?.accounts?.googleAnalyticsAccounts?.length }}
+                        account(s)</p>
+                    </div>
+                  }
+                  @if (googleConnectionData()?.accounts?.googleAdsAccounts?.length) {
+                    <div class="account-section">
+                      <p class="body-smaller-text"><strong>Google
+                                                           Ads:</strong> {{ googleConnectionData()?.accounts?.googleAdsAccounts?.length }}
+                        account(s)</p>
+                    </div>
+                  }
+                  @if (googleConnectionData()?.accounts?.googleTagManagers?.length) {
+                    <div class="account-section">
+                      <p class="body-smaller-text"><strong>Tag
+                                                           Manager:</strong> {{ googleConnectionData()?.accounts?.googleTagManagers?.length }}
+                        account(s)</p>
+                    </div>
+                  }
+                  @if (googleConnectionData()?.accounts?.googleSearchConsoles?.length) {
+                    <div class="account-section">
+                      <p class="body-smaller-text"><strong>Search
+                                                           Console:</strong> {{ googleConnectionData()?.accounts?.googleSearchConsoles?.length }}
+                        site(s)</p>
+                    </div>
+                  }
+                  @if (googleConnectionData()?.accounts?.googleMerchantCenters?.length) {
+                    <div class="account-section">
+                      <p class="body-smaller-text"><strong>Merchant
+                                                           Center:</strong> {{ googleConnectionData()?.accounts?.googleMerchantCenters?.length }}
+                        account(s)</p>
+                    </div>
+                  }
+                  @if (googleConnectionData()?.accounts?.googleMyBusinessAccounts?.length) {
+                    <div class="account-section">
+                      <p class="body-smaller-text"><strong>My
+                                                           Business:</strong> {{ googleConnectionData()?.accounts?.googleMyBusinessAccounts?.length }}
+                        account(s)</p>
+                    </div>
+                  }
+                  @if (googleConnectionData()?.accounts?.googleMyBusinessLocations?.length) {
+                    <div class="account-section">
+                      <p class="body-smaller-text"><strong>My Business
+                                                           Locations:</strong> {{ googleConnectionData()?.accounts?.googleMyBusinessLocations?.length }}
+                        location(s)</p>
+                    </div>
+                  }
+                </div>
+              </app-island>
+            }
+          }
         </div>
-
-        @if (googleConnectionStatus() === 'disconnected') {
-          <div class="connection-content">
-            <asl-google-signin-button
-              type="standard"
-              size="large"
-              theme="outline"
-              text="signin_with"
-              shape="rectangular"
-              (click)="connectGoogle()">
-            </asl-google-signin-button>
-
-            <p class="google-disclaimer">
-              Our use and transfer of information received from Google to any other app
-              adheres to the
-              <a href="https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes"
-                 target="_blank"
-                 class="link link-blue click-target-helper">
-                Google API Services User Data Policy</a>, including the Limited Use requirements.
-            </p>
-          </div>
-        } @else if (googleConnectionStatus() === 'pending') {
-          <div class="connection-status pending">
-            <mat-icon class="status-icon">hourglass_empty</mat-icon>
-            <span class="status-text">Connecting to Google...</span>
-          </div>
-        } @else if (googleConnectionStatus() === 'connected') {
-          <div class="connection-status connected">
-            <mat-icon class="status-icon">check_circle</mat-icon>
-            <span class="status-text">Connected to Google</span>
-            <button type="button" class="link link-blue body-smaller-text click-target-helper" (click)="editConnection('google')">(edit)
-            </button>
-          </div>
-          
-          @if (isLoadingGoogleData()) {
-            <div class="loading-state">
-              <p>Loading Google accounts data...</p>
-            </div>
-          }
-          
-          @if (googleError()) {
-            <div class="error-state">
-              <p class="error-text">{{ googleError() }}</p>
-            </div>
-          }
-          
-          @if (googleConnectionData()) {
-            <div class="connection-info">
-              <div class="user-info">
-                <p class="body-smaller-text"><strong>Email:</strong> {{ googleConnectionData()?.user?.email }}</p>
-                <p class="body-smaller-text"><strong>Name:</strong> {{ googleConnectionData()?.user?.name }}</p>
-              </div>
-            </div>
-          }
-          
-          @if (googleConnectionData()?.accounts) {
-            <div class="accounts-info">
-              <p class="subtitle-smaller">Available Accounts:</p>
-              <div class="accounts-list">
-                @if (googleConnectionData()?.accounts?.googleAnalyticsAccounts?.length) {
-                  <div class="account-section">
-                    <p class="body-smaller-text"><strong>Google Analytics:</strong> {{ googleConnectionData()?.accounts?.googleAnalyticsAccounts?.length }} account(s)</p>
-                  </div>
-                }
-                @if (googleConnectionData()?.accounts?.googleAdsAccounts?.length) {
-                  <div class="account-section">
-                    <p class="body-smaller-text"><strong>Google Ads:</strong> {{ googleConnectionData()?.accounts?.googleAdsAccounts?.length }} account(s)</p>
-                  </div>
-                }
-                @if (googleConnectionData()?.accounts?.googleTagManagers?.length) {
-                  <div class="account-section">
-                    <p class="body-smaller-text"><strong>Tag Manager:</strong> {{ googleConnectionData()?.accounts?.googleTagManagers?.length }} account(s)</p>
-                  </div>
-                }
-                @if (googleConnectionData()?.accounts?.googleSearchConsoles?.length) {
-                  <div class="account-section">
-                    <p class="body-smaller-text"><strong>Search Console:</strong> {{ googleConnectionData()?.accounts?.googleSearchConsoles?.length }} site(s)</p>
-                  </div>
-                }
-                @if (googleConnectionData()?.accounts?.googleMerchantCenters?.length) {
-                  <div class="account-section">
-                    <p class="body-smaller-text"><strong>Merchant Center:</strong> {{ googleConnectionData()?.accounts?.googleMerchantCenters?.length }} account(s)</p>
-                  </div>
-                }
-                @if (googleConnectionData()?.accounts?.googleMyBusinessAccounts?.length) {
-                  <div class="account-section">
-                    <p class="body-smaller-text"><strong>My Business:</strong> {{ googleConnectionData()?.accounts?.googleMyBusinessAccounts?.length }} account(s)</p>
-                  </div>
-                }
-                @if (googleConnectionData()?.accounts?.googleMyBusinessLocations?.length) {
-                  <div class="account-section">
-                    <p class="body-smaller-text"><strong>My Business Locations:</strong> {{ googleConnectionData()?.accounts?.googleMyBusinessLocations?.length }} location(s)</p>
-                  </div>
-                }
-              </div>
-            </div>
-          }
-        }
-      </div>
+      </app-island>
     }
 
   </div>

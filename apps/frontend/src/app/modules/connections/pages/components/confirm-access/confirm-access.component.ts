@@ -19,6 +19,8 @@ import {
 import { analytics_v3, content_v2_1, mybusinessbusinessinformation_v1, searchconsole_v1, tagmanager_v2 } from 'googleapis';
 import { GOOGLE_ICON_PATHS } from '../../../../../utils/icon.utils';
 import { RequestDetailsComponent } from '../request-details/request-details.component';
+import { IslandComponent } from '../../../../../components/island/island.component';
+import { InstructionStepComponent } from '../instruction-step/instruction-step.component';
 
 interface ServicePanel {
   key: string;
@@ -44,7 +46,9 @@ interface ServicePanel {
     MatRadioButton,
     MatRadioGroup,
     MatButton,
-    RequestDetailsComponent
+    RequestDetailsComponent,
+    IslandComponent,
+    InstructionStepComponent
   ],
   templateUrl: './confirm-access.component.html',
   styleUrl: './confirm-access.component.scss'

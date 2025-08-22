@@ -1,7 +1,7 @@
 <div class="confirm-access-container">
   <!-- Google Section -->
   @if (hasGoogleServices()) {
-    <div class="provider-section google-section">
+    <app-island [variant]="'neutral'">
       <div class="header-info">
         <div class="platform-info">
           <div class="platform-icon"><img src="./assets/icons/google.svg" alt="Google" /></div>
@@ -54,12 +54,12 @@
           }
         </mat-accordion>
       </div>
-    </div>
+    </app-island>
   }
 
   <!-- Meta Section -->
   @if (hasMetaServices()) {
-    <div class="provider-section meta-section">
+    <app-island [variant]="'neutral'">
       <div class="header-info">
         <div class="platform-info">
           <div class="platform-icon"><img src="./assets/icons/meta.svg" alt="Meta" /></div>
@@ -112,12 +112,14 @@
           }
         </mat-accordion>
       </div>
-    </div>
+    </app-island>
   }
 
-  <div class="confirm-section">
-    <div class="request-details">
-      <h4>Request details</h4>
+  <app-instruction-step>
+    <div slot="header">
+      <h4 class="subtitle-medium">Request details</h4>
+    </div>
+    <div slot="content">
       <app-request-details
         [connectionSettings]="connectionSettings()"
         [accessType]="accessType()"
@@ -125,7 +127,8 @@
         [enabledFacebookServicesNames]="enabledFacebookServicesNames()">
       </app-request-details>
     </div>
-
-    <button mat-flat-button class="w-100" (click)="confirmAccess()">Confirm Access</button>
-  </div>
+    <div slot="actions">
+      <button mat-flat-button class="w-100" (click)="confirmAccess()">Confirm Access</button>
+    </div>
+  </app-instruction-step>
 </div>
