@@ -241,3 +241,77 @@
   line-height: 1.4;
   margin-top: var(--spacing-2);
 }
+
+.loading-state {
+  padding: var(--spacing-4);
+  background: $cloud;
+  border-radius: var(--br-2);
+  text-align: center;
+  color: $dark-80;
+  margin-top: var(--spacing-3);
+}
+
+.error-state {
+  padding: var(--spacing-4);
+  background: rgba(200, 0, 0, 0.05);
+  border: 1px solid rgba(200, 0, 0, 0.2);
+  border-radius: var(--br-2);
+  margin-top: var(--spacing-3);
+
+  .error-text {
+    color: $red-100;
+    margin: 0;
+  }
+}
+
+.connection-info {
+  padding: var(--spacing-4);
+  background: $cloud;
+  border-radius: var(--br-2);
+  margin-top: var(--spacing-3);
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+
+    p {
+      margin: 0;
+      color: $dark-80;
+    }
+  }
+}
+
+.accounts-info {
+  padding: var(--spacing-4);
+  background: white;
+  border: 1px solid $dark-40;
+  border-radius: var(--br-2);
+  margin-top: var(--spacing-3);
+
+  .subtitle-smaller {
+    margin: 0 0 var(--spacing-3) 0;
+    color: $dark-100;
+    font-weight: var(--fw-medium);
+  }
+
+  .accounts-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+
+  .account-section {
+    padding: var(--spacing-2) 0;
+    border-bottom: 1px solid $dark-20;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    p {
+      margin: 0;
+      color: $dark-80;
+    }
+  }
+}

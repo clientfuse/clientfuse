@@ -75,7 +75,7 @@
             <button type="button"
                     class="facebook-connect-btn"
                     (click)="connectFacebook()"
-                    [disabled]="isConnecting()">
+                    [disabled]="metaConnectionStatus() === 'pending'">
               <svg class="facebook-icon" viewBox="0 0 24 24" width="20" height="20">
                 <path fill="#ffffff"
                       d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -85,8 +85,15 @@
 
             <p class="connection-alternative body-smaller-text">
               Or
-              <button class="link link-blue click-target-helper" (click)="skipFacebook()">continue without granting Facebook access</button>
+              <button class="link link-blue click-target-helper" 
+                      (click)="skipFacebook()"
+                      [disabled]="metaConnectionStatus() === 'pending'">continue without granting Facebook access</button>
             </p>
+          </div>
+        } @else if (metaConnectionStatus() === 'pending') {
+          <div class="connection-status pending">
+            <mat-icon class="status-icon">hourglass_empty</mat-icon>
+            <span class="status-text">Connecting to Facebook...</span>
           </div>
         } @else if (metaConnectionStatus() === 'connected') {
           <div class="connection-status connected">
@@ -120,7 +127,8 @@
               size="large"
               theme="outline"
               text="signin_with"
-              shape="rectangular">
+              shape="rectangular"
+              (click)="connectGoogle()">
             </asl-google-signin-button>
 
             <p class="google-disclaimer">
@@ -132,6 +140,11 @@
                 Google API Services User Data Policy</a>, including the Limited Use requirements.
             </p>
           </div>
+        } @else if (googleConnectionStatus() === 'pending') {
+          <div class="connection-status pending">
+            <mat-icon class="status-icon">hourglass_empty</mat-icon>
+            <span class="status-text">Connecting to Google...</span>
+          </div>
         } @else if (googleConnectionStatus() === 'connected') {
           <div class="connection-status connected">
             <mat-icon class="status-icon">check_circle</mat-icon>
@@ -139,6 +152,70 @@
             <button type="button" class="link link-blue body-smaller-text click-target-helper" (click)="editConnection('google')">(edit)
             </button>
           </div>
+          
+          @if (isLoadingGoogleData()) {
+            <div class="loading-state">
+              <p>Loading Google accounts data...</p>
+            </div>
+          }
+          
+          @if (googleError()) {
+            <div class="error-state">
+              <p class="error-text">{{ googleError() }}</p>
+            </div>
+          }
+          
+          @if (googleConnectionData()) {
+            <div class="connection-info">
+              <div class="user-info">
+                <p class="body-smaller-text"><strong>Email:</strong> {{ googleConnectionData()?.user?.email }}</p>
+                <p class="body-smaller-text"><strong>Name:</strong> {{ googleConnectionData()?.user?.name }}</p>
+              </div>
+            </div>
+          }
+          
+          @if (googleConnectionData()?.accounts) {
+            <div class="accounts-info">
+              <p class="subtitle-smaller">Available Accounts:</p>
+              <div class="accounts-list">
+                @if (googleConnectionData()?.accounts?.googleAnalyticsAccounts?.length) {
+                  <div class="account-section">
+                    <p class="body-smaller-text"><strong>Google Analytics:</strong> {{ googleConnectionData()?.accounts?.googleAnalyticsAccounts?.length }} account(s)</p>
+                  </div>
+                }
+                @if (googleConnectionData()?.accounts?.googleAdsAccounts?.length) {
+                  <div class="account-section">
+                    <p class="body-smaller-text"><strong>Google Ads:</strong> {{ googleConnectionData()?.accounts?.googleAdsAccounts?.length }} account(s)</p>
+                  </div>
+                }
+                @if (googleConnectionData()?.accounts?.googleTagManagers?.length) {
+                  <div class="account-section">
+                    <p class="body-smaller-text"><strong>Tag Manager:</strong> {{ googleConnectionData()?.accounts?.googleTagManagers?.length }} account(s)</p>
+                  </div>
+                }
+                @if (googleConnectionData()?.accounts?.googleSearchConsoles?.length) {
+                  <div class="account-section">
+                    <p class="body-smaller-text"><strong>Search Console:</strong> {{ googleConnectionData()?.accounts?.googleSearchConsoles?.length }} site(s)</p>
+                  </div>
+                }
+                @if (googleConnectionData()?.accounts?.googleMerchantCenters?.length) {
+                  <div class="account-section">
+                    <p class="body-smaller-text"><strong>Merchant Center:</strong> {{ googleConnectionData()?.accounts?.googleMerchantCenters?.length }} account(s)</p>
+                  </div>
+                }
+                @if (googleConnectionData()?.accounts?.googleMyBusinessAccounts?.length) {
+                  <div class="account-section">
+                    <p class="body-smaller-text"><strong>My Business:</strong> {{ googleConnectionData()?.accounts?.googleMyBusinessAccounts?.length }} account(s)</p>
+                  </div>
+                }
+                @if (googleConnectionData()?.accounts?.googleMyBusinessLocations?.length) {
+                  <div class="account-section">
+                    <p class="body-smaller-text"><strong>My Business Locations:</strong> {{ googleConnectionData()?.accounts?.googleMyBusinessLocations?.length }} location(s)</p>
+                  </div>
+                }
+              </div>
+            </div>
+          }
         }
       </div>
     }

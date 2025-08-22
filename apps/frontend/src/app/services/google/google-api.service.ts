@@ -36,15 +36,6 @@ export class GoogleApiService {
     );
   }
 
-  async getUserAccountsData(dto: IGetUserAccountsDto): Promise<IResponse<IGoogleUserAccountsDataResponse>> {
-    return firstValueFrom(
-      this.httpClient.get<IResponse<IGoogleUserAccountsDataResponse>>(
-        `${environment.API_URL}/${ENDPOINTS.google.root}/${ENDPOINTS.google.userAccountsData}`,
-        { params: { userId: dto.userId } }
-      )
-    );
-  }
-
   async grantManagementAccess(dto: IGrantManagementAccessDto): Promise<IResponse<IGrantAccessResponse>> {
     return firstValueFrom(
       this.httpClient.post<IResponse<IGrantAccessResponse>>(

@@ -9,13 +9,21 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, computed, inject, input, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { IAgencyResponse, ServiceNames, TAccessType, TFacebookAccessLinkKeys, TGoogleAccessLinkKeys } from '@clientfuse/models';
+import {
+  IAgencyResponse,
+  IGoogleConnectionDto,
+  ServiceNames,
+  TAccessType,
+  TFacebookAccessLinkKeys,
+  TGoogleAccessLinkKeys
+} from '@clientfuse/models';
 import { ListFormatter } from '@clientfuse/utils';
+import { GoogleStoreService } from '../../../../../services/google/google-store.service';
 
 import { InstructionStepComponent } from '../instruction-step/instruction-step.component';
 import { RequestDetailsComponent } from '../request-details/request-details.component';
 
-type ConnectionStatus = 'disconnected' | 'connected' | 'skipped';
+type ConnectionStatus = 'disconnected' | 'connected' | 'skipped' | 'pending';
 
 @Component({
   selector: 'app-connect-accounts',
@@ -34,6 +42,7 @@ type ConnectionStatus = 'disconnected' | 'connected' | 'skipped';
 export class ConnectAccountsComponent implements OnInit {
   private socialAuthService = inject(SocialAuthService);
   private platformId = inject(PLATFORM_ID);
+  private googleStoreService = inject(GoogleStoreService);
 
   readonly connectionSettings = input.required<IAgencyResponse | null>();
   readonly accessType = input.required<TAccessType>();
@@ -42,7 +51,9 @@ export class ConnectAccountsComponent implements OnInit {
   readonly metaConnectionStatus = signal<ConnectionStatus>('disconnected');
   readonly googleConnectionStatus = signal<ConnectionStatus>('disconnected');
   readonly isConnecting = signal(false);
-  readonly currentUser = signal<SocialUser | null>(null);
+  readonly googleConnectionData = computed(() => this.googleStoreService.connectionData());
+  readonly isLoadingGoogleData = computed(() => this.googleStoreService.isLoading());
+  readonly googleError = computed(() => this.googleStoreService.error());
 
   readonly googleServicesText = computed(() => {
     const enabledGoogleServices = this.enabledGoogleServicesNames().map(service => ServiceNames[service as keyof typeof ServiceNames] || service);
@@ -66,18 +77,12 @@ export class ConnectAccountsComponent implements OnInit {
 
   private initializeAuthService(): void {
     this.socialAuthService.authState.subscribe(async (user: SocialUser) => {
-      this.currentUser.set(user);
-
       if (user) {
         if (user.provider === FacebookLoginProvider.PROVIDER_ID) {
           console.log('Facebook User', user);
           this.metaConnectionStatus.set('connected');
         } else if (user.provider === GoogleLoginProvider.PROVIDER_ID) {
-          const accessToken = await this.socialAuthService.getAccessToken(GoogleLoginProvider.PROVIDER_ID);
-          console.log('User', user);
-          console.log('User', user.response);
-          console.log('Google Access Token:', accessToken);
-          this.googleConnectionStatus.set('connected');
+          await this.handleGoogleSignIn(user);
         }
       } else {
         this.metaConnectionStatus.set('disconnected');
@@ -88,13 +93,35 @@ export class ConnectAccountsComponent implements OnInit {
     });
   }
 
+  private async handleGoogleSignIn(user: SocialUser): Promise<void> {
+    try {
+      const accessToken = await this.socialAuthService.getAccessToken(GoogleLoginProvider.PROVIDER_ID);
+      const idToken = user.idToken;
+
+      console.log('Google User', user);
+
+      const connectionDto: IGoogleConnectionDto = { idToken, accessToken };
+
+      await this.googleStoreService.connectGoogle(connectionDto);
+      this.googleConnectionStatus.set('connected');
+    } catch (error) {
+      console.error('Failed to connect Google account:', error);
+      this.googleConnectionStatus.set('disconnected');
+    }
+  }
+
   async connectFacebook(): Promise<void> {
+    // Set pending status immediately to prevent multiple clicks
+    this.metaConnectionStatus.set('pending');
+
     try {
       this.isConnecting.set(true);
       await this.socialAuthService.signIn(FacebookLoginProvider.PROVIDER_ID);
+      // Status will be set to 'connected' in the authState subscription
     } catch (error) {
       console.error('Facebook connection failed:', error);
       this.isConnecting.set(false);
+      this.metaConnectionStatus.set('disconnected');
     }
   }
 
@@ -102,13 +129,19 @@ export class ConnectAccountsComponent implements OnInit {
     this.metaConnectionStatus.set('skipped');
   }
 
-  editConnection(provider: 'meta' | 'google'): void {
+  connectGoogle(): void {
+    if (this.googleConnectionStatus() === 'pending') return;
+    this.googleConnectionStatus.set('pending');
+  }
+
+  async editConnection(provider: 'meta' | 'google'): Promise<void> {
     if (provider === 'meta') {
       this.metaConnectionStatus.set('disconnected');
-      this.socialAuthService.signOut();
+      await this.socialAuthService.signOut();
     } else if (provider === 'google') {
       this.googleConnectionStatus.set('disconnected');
-      this.socialAuthService.signOut();
+      this.googleStoreService.clearAll();
+      await this.socialAuthService.signOut();
     }
   }
 }
