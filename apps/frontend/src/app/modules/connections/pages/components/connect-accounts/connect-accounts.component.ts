@@ -6,7 +6,7 @@ import {
   SocialUser
 } from '@abacritt/angularx-social-login';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, computed, inject, input, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, OnInit, output, PLATFORM_ID, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import {
@@ -18,11 +18,11 @@ import {
   TGoogleAccessLinkKeys
 } from '@clientfuse/models';
 import { ListFormatter } from '@clientfuse/utils';
+import { IslandComponent } from '../../../../../components/island/island.component';
 import { GoogleStoreService } from '../../../../../services/google/google-store.service';
 
 import { InstructionStepComponent } from '../instruction-step/instruction-step.component';
 import { RequestDetailsComponent } from '../request-details/request-details.component';
-import { IslandComponent } from '../../../../../components/island/island.component';
 
 type ConnectionStatus = 'disconnected' | 'connected' | 'skipped' | 'pending';
 
@@ -46,10 +46,18 @@ export class ConnectAccountsComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private googleStoreService = inject(GoogleStoreService);
 
+  constructor() {
+    effect(() => {
+      const hasConnections = this.hasAtLeastOneConnection();
+      this.connectionStatusChanged.emit(hasConnections);
+    });
+  }
+
   readonly connectionSettings = input.required<IAgencyResponse | null>();
   readonly accessType = input.required<TAccessType>();
   readonly enabledGoogleServicesNames = input.required<TGoogleAccessLinkKeys[]>();
   readonly enabledFacebookServicesNames = input.required<TFacebookAccessLinkKeys[]>();
+  readonly connectionStatusChanged = output<boolean>();
   readonly metaConnectionStatus = signal<ConnectionStatus>('disconnected');
   readonly googleConnectionStatus = signal<ConnectionStatus>('disconnected');
   readonly isConnecting = signal(false);
@@ -71,10 +79,28 @@ export class ConnectAccountsComponent implements OnInit {
     return !this.facebookServicesText() && !this.googleServicesText();
   });
 
+  readonly hasAtLeastOneConnection = computed(() => {
+    const googleConnected = this.googleConnectionStatus() === 'connected';
+    const metaConnected = this.metaConnectionStatus() === 'connected';
+    return googleConnected || metaConnected;
+  });
+
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       this.initializeAuthService();
+      this.checkInitialConnectionStatus();
     }
+  }
+
+  private async checkInitialConnectionStatus(): Promise<void> {
+    if (this.googleConnectionData()) {
+      this.googleConnectionStatus.set('connected');
+    }
+
+    // Emit initial status after a small delay to ensure parent is ready
+    setTimeout(() => {
+      this.connectionStatusChanged.emit(this.hasAtLeastOneConnection());
+    }, 100);
   }
 
   private initializeAuthService(): void {
@@ -129,6 +155,10 @@ export class ConnectAccountsComponent implements OnInit {
 
   skipFacebook(): void {
     this.metaConnectionStatus.set('skipped');
+  }
+
+  skipGoogle(): void {
+    this.googleConnectionStatus.set('skipped');
   }
 
   connectGoogle(): void {

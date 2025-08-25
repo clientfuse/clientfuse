@@ -51,6 +51,7 @@ export class ConnectionsPageComponent implements OnInit {
   currentStepIndex = signal(0);
   isLinear = signal(true);
   connectionSettings = signal<IAgencyResponse | null>(null);
+  hasValidConnections = signal(false);
   readonly urlSegments = toSignal(this.route.url, { initialValue: [] });
   readonly accessType = computed<TAccessType>(() => {
     const segments = this.urlSegments();
@@ -110,6 +111,14 @@ export class ConnectionsPageComponent implements OnInit {
 
   nextStep(): void {
     const currentIndex = this.currentStepIndex();
+    
+    // Check if moving from step 0 to step 1
+    if (currentIndex === 0 && !this.hasValidConnections()) {
+      // Prevent navigation if no platforms are connected
+      console.warn('At least one platform must be connected before proceeding');
+      return;
+    }
+    
     if (currentIndex < this.connectionSteps().length - 1) {
       const nextIndex = currentIndex + 1;
 
@@ -155,5 +164,9 @@ export class ConnectionsPageComponent implements OnInit {
 
     const steps = this.connectionSteps();
     return stepIndex === 0 || steps[stepIndex - 1]?.completed === true;
+  }
+
+  onConnectionStatusChanged(hasConnections: boolean): void {
+    this.hasValidConnections.set(hasConnections);
   }
 }

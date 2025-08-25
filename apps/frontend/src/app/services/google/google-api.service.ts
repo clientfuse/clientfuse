@@ -3,13 +3,10 @@ import { inject, Injectable } from '@angular/core';
 import {
   ENDPOINTS,
   GoogleServiceType,
-  IGetAvailableServicesResponse,
   IGetEntityUsersQueryDto,
   IGetEntityUsersResponse,
-  IGetUserAccountsDto,
   IGoogleConnectionDto,
   IGoogleConnectionResponse,
-  IGoogleUserAccountsDataResponse,
   IGrantAccessResponse,
   IGrantCustomAccessDto,
   IGrantManagementAccessDto,
@@ -77,14 +74,6 @@ export class GoogleApiService {
     const url = `${environment.API_URL}/${ENDPOINTS.google.root}/${ENDPOINTS.google.accessManagement.root}/revoke/${dto.service}/${dto.entityId}/${dto.linkId}`;
     return firstValueFrom(
       this.httpClient.delete<IResponse<IRevokeAccessResponse>>(url, { body: dto })
-    );
-  }
-
-  async getAvailableServices(): Promise<IResponse<IGetAvailableServicesResponse>> {
-    return firstValueFrom(
-      this.httpClient.get<IResponse<IGetAvailableServicesResponse>>(
-        `${environment.API_URL}/${ENDPOINTS.google.root}/${ENDPOINTS.google.accessManagement.root}/${ENDPOINTS.google.accessManagement.getAvailableServices}`
-      )
     );
   }
 }

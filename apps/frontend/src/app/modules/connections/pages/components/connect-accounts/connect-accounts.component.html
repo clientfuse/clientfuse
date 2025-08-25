@@ -141,6 +141,14 @@
                    class="link link-blue click-target-helper">
                   Google API Services User Data Policy</a>, including the Limited Use requirements.
               </p>
+              
+              <p class="connection-alternative body-smaller-text">
+                Or
+                <button class="link link-blue click-target-helper"
+                        (click)="skipGoogle()"
+                        [disabled]="googleConnectionStatus() === 'pending'">continue without granting Google access
+                </button>
+              </p>
             </div>
           } @else if (googleConnectionStatus() === 'pending') {
             <div class="connection-status pending">
@@ -232,6 +240,13 @@
                 </div>
               </app-island>
             }
+          } @else if (googleConnectionStatus() === 'skipped') {
+            <div class="connection-status skipped">
+              <mat-icon class="status-icon">close</mat-icon>
+              <span class="status-text">Skipped Google</span>
+              <button type="button" class="link link-blue click-target-helper body-smaller-text" (click)="editConnection('google')">(edit)
+              </button>
+            </div>
           }
         </div>
       </app-island>

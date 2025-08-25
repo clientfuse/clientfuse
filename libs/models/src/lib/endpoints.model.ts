@@ -24,8 +24,7 @@ export const ENDPOINTS = {
       grantReadonlyAccess: 'grant-readonly-access',
       grantCustomAccess: 'grant-custom-access',
       getEntityUsers: 'users/:service/:entityId',
-      revokeAgencyAccess: 'revoke/:service/:entityId/:linkId',
-      getAvailableServices: 'services'
+      revokeAgencyAccess: 'revoke/:service/:entityId/:linkId'
     }
   },
   users: {

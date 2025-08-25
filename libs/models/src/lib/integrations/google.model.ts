@@ -235,16 +235,3 @@ export interface IRevokeAccessResponse {
   service: GoogleServiceType;
   message?: string;
 }
-
-export interface IAvailableService {
-  name: GoogleServiceType;
-  requiredScopes: string[];
-  availablePermissions: string[];
-  defaultPermissions: string[];
-  description: string;
-}
-
-export interface IGetAvailableServicesResponse {
-  availableServices: IAvailableService[];
-  totalServices: number;
-}

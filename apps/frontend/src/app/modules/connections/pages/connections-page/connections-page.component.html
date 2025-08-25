@@ -37,10 +37,21 @@
                 <app-connect-accounts [connectionSettings]="connectionSettings()"
                                       [enabledGoogleServicesNames]="enabledGoogleServicesNames()"
                                       [enabledFacebookServicesNames]="enabledFacebookServicesNames()"
-                                      [accessType]="accessType()" />
+                                      [accessType]="accessType()"
+                                      (connectionStatusChanged)="onConnectionStatusChanged($event)" />
 
                 <div class="step-actions">
-                  <button (click)="nextStep()" mat-button>Next</button>
+                  @if (!hasValidConnections()) {
+                    <span class="connection-warning">
+                      Please connect at least one platform to continue
+                    </span>
+                  }
+                  <button (click)="nextStep()" 
+                          mat-button 
+                          [disabled]="!hasValidConnections()"
+                          [attr.title]="!hasValidConnections() ? 'Please connect at least one platform before proceeding' : null">
+                    Next
+                  </button>
                 </div>
               </div>
             }

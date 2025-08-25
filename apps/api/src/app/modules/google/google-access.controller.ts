@@ -1,7 +1,6 @@
 import {
   ENDPOINTS,
   GoogleServiceType,
-  IGetAvailableServicesResponse,
   IGetEntityUsersResponse,
   IGoogleBaseAccessService,
   IGrantAccessResponse,
@@ -205,26 +204,6 @@ export class GoogleAccessController {
       success: true,
       service: serviceName,
       message: result.message
-    };
-  }
-
-  @Get(ENDPOINTS.google.accessManagement.getAvailableServices)
-  getAvailableServices(): IGetAvailableServicesResponse {
-    const services = Array.from(this.serviceMap.keys()).map(serviceName => {
-      const service = this.serviceMap.get(serviceName);
-
-      return {
-        name: serviceName,
-        requiredScopes: service?.getRequiredScopes() || [],
-        availablePermissions: service?.getAllAvailablePermissions() || [],
-        defaultPermissions: service?.getDefaultAgencyPermissions() || [],
-        description: this.getServiceDescription(serviceName)
-      };
-    });
-
-    return {
-      availableServices: services,
-      totalServices: services.length
     };
   }
 

@@ -1,7 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import {
   GoogleServiceType,
-  IGetAvailableServicesResponse,
   IGetEntityUsersQueryDto,
   IGetEntityUsersResponse,
   IGoogleConnectionDto,
@@ -18,7 +17,6 @@ import { GoogleApiService } from './google-api.service';
 export interface GoogleStoreState {
   connectionData: IGoogleConnectionResponse | null;
   entityUsers: IGetEntityUsersResponse | null;
-  availableServices: IGetAvailableServicesResponse | null;
   currentUserId: string | null;
   isLoading: boolean;
   error: string | null;
@@ -33,7 +31,6 @@ export class GoogleStoreService {
   private state = signal<GoogleStoreState>({
     connectionData: null,
     entityUsers: null,
-    availableServices: null,
     currentUserId: null,
     isLoading: false,
     error: null
@@ -41,7 +38,6 @@ export class GoogleStoreService {
 
   readonly connectionData = computed(() => this.state().connectionData);
   readonly entityUsers = computed(() => this.state().entityUsers);
-  readonly availableServices = computed(() => this.state().availableServices);
   readonly currentUserId = computed(() => this.state().currentUserId);
   readonly isLoading = computed(() => this.state().isLoading);
   readonly error = computed(() => this.state().error);
@@ -177,28 +173,6 @@ export class GoogleStoreService {
     }
   }
 
-  async loadAvailableServices(): Promise<void> {
-    this.setLoading(true);
-    this.clearError();
-
-    try {
-      const response = await this.googleApiService.getAvailableServices();
-      if (response.payload) {
-        this.state.update(state => ({
-          ...state,
-          availableServices: response.payload
-        }));
-      } else {
-        this.setError('Failed to load available services');
-      }
-    } catch (error) {
-      this.setError('An error occurred while loading available services');
-      throw error;
-    } finally {
-      this.setLoading(false);
-    }
-  }
-
   private async refreshEntityUsers(): Promise<void> {
     const currentEntityUsers = this.state().entityUsers;
     const currentUserId = this.state().currentUserId;
@@ -218,13 +192,6 @@ export class GoogleStoreService {
     }));
   }
 
-  clearUserAccountsData(): void {
-    this.state.update(state => ({
-      ...state,
-      userAccountsData: null
-    }));
-  }
-
   clearEntityUsers(): void {
     this.state.update(state => ({
       ...state,
@@ -232,18 +199,10 @@ export class GoogleStoreService {
     }));
   }
 
-  clearAvailableServices(): void {
-    this.state.update(state => ({
-      ...state,
-      availableServices: null
-    }));
-  }
-
   clearAll(): void {
     this.state.set({
       connectionData: null,
       entityUsers: null,
-      availableServices: null,
       currentUserId: null,
       isLoading: false,
       error: null
