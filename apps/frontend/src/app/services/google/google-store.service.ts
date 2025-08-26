@@ -7,7 +7,7 @@ import {
   IGoogleConnectionResponse,
   IGrantAccessResponse,
   IGrantManagementAccessDto,
-  IGrantReadOnlyAccessDto,
+  IGrantViewAccessDto,
   IRevokeAccessResponse,
   IRevokeAgencyAccessDto
 } from '@clientfuse/models';
@@ -97,7 +97,7 @@ export class GoogleStoreService {
     }
   }
 
-  async grantReadOnlyAccess(dto: Omit<IGrantReadOnlyAccessDto, 'accessToken'>): Promise<IGrantAccessResponse | null> {
+  async grantViewAccess(dto: Omit<IGrantViewAccessDto, 'accessToken'>): Promise<IGrantAccessResponse | null> {
     this.setLoading(true);
     this.clearError();
 
@@ -113,17 +113,17 @@ export class GoogleStoreService {
       const fullDto = {
         ...dto,
         accessToken
-      } as IGrantReadOnlyAccessDto;
+      } as IGrantViewAccessDto;
 
-      const response = await this.googleApiService.grantReadOnlyAccess(fullDto);
+      const response = await this.googleApiService.grantViewAccess(fullDto);
       if (response.payload) {
         return response.payload;
       } else {
-        this.setError('Failed to grant read-only access');
+        this.setError('Failed to grant view access');
         return null;
       }
     } catch (error) {
-      this.setError('An error occurred while granting read-only access');
+      this.setError('An error occurred while granting view access');
       throw error;
     } finally {
       this.setLoading(false);

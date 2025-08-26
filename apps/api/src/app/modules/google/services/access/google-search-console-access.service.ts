@@ -35,8 +35,8 @@ export class GoogleSearchConsoleAccessService implements IGoogleBaseAccessServic
     });
   }
 
-  async grantReadOnlyAccess(siteUrl: string, agencyEmail: string): Promise<IBaseAccessResponse> {
-    this.logger.log(`Granting Search Console read-only access to ${agencyEmail} for site ${siteUrl}`);
+  async grantViewAccess(siteUrl: string, agencyEmail: string): Promise<IBaseAccessResponse> {
+    this.logger.log(`Granting Search Console view access to ${agencyEmail} for site ${siteUrl}`);
 
     return this.grantAgencyAccess({
       entityId: siteUrl,

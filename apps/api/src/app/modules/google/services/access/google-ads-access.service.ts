@@ -43,8 +43,8 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
     });
   }
 
-  async grantReadOnlyAccess(customerId: string, agencyEmail: string): Promise<IBaseAccessResponse> {
-    this.logger.log(`Granting Google Ads read-only access to ${agencyEmail} for account ${customerId}`);
+  async grantViewAccess(customerId: string, agencyEmail: string): Promise<IBaseAccessResponse> {
+    this.logger.log(`Granting Google Ads view access to ${agencyEmail} for account ${customerId}`);
 
     return this.grantAgencyAccess({
       entityId: customerId,

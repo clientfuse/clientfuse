@@ -37,8 +37,8 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
     });
   }
 
-  async grantReadOnlyAccess(accountName: string, agencyEmail: string): Promise<IBaseAccessResponse> {
-    this.logger.log(`Granting My Business read-only access to ${agencyEmail} for account ${accountName}`);
+  async grantViewAccess(accountName: string, agencyEmail: string): Promise<IBaseAccessResponse> {
+    this.logger.log(`Granting My Business view access to ${agencyEmail} for account ${accountName}`);
 
     return this.grantAgencyAccess({
       entityId: accountName,

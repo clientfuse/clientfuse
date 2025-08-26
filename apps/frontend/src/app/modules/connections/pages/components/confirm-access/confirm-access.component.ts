@@ -400,11 +400,11 @@ export class ConfirmAccessComponent {
         if (accessType === 'manage') {
           response = await this.googleStoreService.grantManagementAccess(dto);
         } else {
-          response = await this.googleStoreService.grantReadOnlyAccess(dto);
+          response = await this.googleStoreService.grantViewAccess(dto);
         }
 
         if (response) {
-          const accessTypeText = accessType === 'manage' ? 'Management' : 'Read-only';
+          const accessTypeText = accessType === 'manage' ? 'Management' : 'View';
           this.snackbarService.success(
             `${accessTypeText} access granted successfully for ${panel.name}`
           );

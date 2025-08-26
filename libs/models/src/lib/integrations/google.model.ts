@@ -35,7 +35,7 @@ export interface IGoogleBaseAccessService {
 
   grantManagementAccess(entityId: string, agencyEmail: string): Promise<IBaseAccessResponse>;
 
-  grantReadOnlyAccess(entityId: string, agencyEmail: string): Promise<IBaseAccessResponse>;
+  grantViewAccess(entityId: string, agencyEmail: string): Promise<IBaseAccessResponse>;
 
   grantAgencyAccess(request: IBaseAccessRequest): Promise<IBaseAccessResponse>;
 
@@ -121,7 +121,7 @@ export interface IGrantManagementAccessDto {
   agencyEmail: string;
 }
 
-export interface IGrantReadOnlyAccessDto {
+export interface IGrantViewAccessDto {
   accessToken: string;
   service: GoogleServiceType;
   entityId: string;
@@ -169,7 +169,7 @@ export interface IGoogleAccountsData {
 export interface IGrantAccessResponse {
   success: boolean;
   service: GoogleServiceType;
-  accessType: 'management' | 'read-only';
+  accessType: 'management' | 'view';
   entityId: string;
   agencyEmail: string;
   linkId?: string;

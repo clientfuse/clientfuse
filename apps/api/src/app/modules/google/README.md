@@ -30,7 +30,7 @@ The Google module provides comprehensive integration with various Google service
 
 | Service | Description | Key Features |
 |---------|-------------|--------------|
-| **Google Ads** | Advertising platform management | Account access, campaign permissions, read-only/admin roles |
+| **Google Ads** | Advertising platform management | Account access, campaign permissions, view/admin roles |
 | **Google Analytics** | Web analytics access control | Property management, user permissions, data access levels |
 | **Tag Manager** | GTM container management | Container access, workspace permissions, publishing rights |
 | **Search Console** | Website performance monitoring | Site verification, property access, data viewing permissions |
@@ -47,7 +47,7 @@ All DTOs implement interfaces from `@clientfuse/models` for type safety across f
 
 ### Access Management DTOs
 - `IGrantManagementAccessDto` - Grant full management permissions
-- `IGrantReadOnlyAccessDto` - Grant read-only access
+- `IGrantViewAccessDto` - Grant view access
 - `IRevokeAgencyAccessDto` - Revoke existing access
 
 ### Query DTOs
@@ -76,9 +76,9 @@ POST /google/grant-management-access
 Body: IGrantManagementAccessDto
 Description: Grant full management permissions to a service
 
-POST /google/grant-readonly-access
-Body: IGrantReadOnlyAccessDto
-Description: Grant read-only access to a service
+POST /google/grant-view-access
+Body: IGrantViewAccessDto
+Description: Grant view access to a service
 
 POST /google/revoke-agency-access
 Body: IRevokeAgencyAccessDto

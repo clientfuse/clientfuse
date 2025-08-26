@@ -38,8 +38,8 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
     });
   }
 
-  async grantReadOnlyAccess(merchantId: string, agencyEmail: string): Promise<IBaseAccessResponse> {
-    this.logger.log(`Granting Merchant Center read-only access to ${agencyEmail} for merchant ${merchantId}`);
+  async grantViewAccess(merchantId: string, agencyEmail: string): Promise<IBaseAccessResponse> {
+    this.logger.log(`Granting Merchant Center view access to ${agencyEmail} for merchant ${merchantId}`);
 
     return this.grantAgencyAccess({
       entityId: merchantId,

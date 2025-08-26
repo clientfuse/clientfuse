@@ -9,7 +9,7 @@ import {
   IGoogleConnectionResponse,
   IGrantAccessResponse,
   IGrantManagementAccessDto,
-  IGrantReadOnlyAccessDto,
+  IGrantViewAccessDto,
   IResponse,
   IRevokeAccessResponse,
   IRevokeAgencyAccessDto
@@ -41,10 +41,10 @@ export class GoogleApiService {
     );
   }
 
-  async grantReadOnlyAccess(dto: IGrantReadOnlyAccessDto): Promise<IResponse<IGrantAccessResponse>> {
+  async grantViewAccess(dto: IGrantViewAccessDto): Promise<IResponse<IGrantAccessResponse>> {
     return firstValueFrom(
       this.httpClient.post<IResponse<IGrantAccessResponse>>(
-        `${environment.API_URL}/${ENDPOINTS.google.root}/${ENDPOINTS.google.accessManagement.root}/${ENDPOINTS.google.accessManagement.grantReadonlyAccess}`,
+        `${environment.API_URL}/${ENDPOINTS.google.root}/${ENDPOINTS.google.accessManagement.root}/${ENDPOINTS.google.accessManagement.grantViewAccess}`,
         dto
       )
     );

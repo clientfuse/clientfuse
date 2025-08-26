@@ -1,7 +1,7 @@
-import { GoogleServiceType, IGrantReadOnlyAccessDto } from '@clientfuse/models';
+import { GoogleServiceType, IGrantViewAccessDto } from '@clientfuse/models';
 import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
 
-export class GrantReadOnlyAccessDto implements IGrantReadOnlyAccessDto {
+export class GrantViewAccessDto implements IGrantViewAccessDto {
   @IsString()
   @IsNotEmpty()
   accessToken: string;

@@ -197,8 +197,8 @@ export class GoogleAnalyticsAccessService implements IGoogleBaseAccessService {
     });
   }
 
-  async grantReadOnlyAccess(accountId: string, agencyEmail: string): Promise<IBaseAccessResponse> {
-    this.logger.log(`Granting read-only access to ${agencyEmail} for Analytics account ${accountId}`);
+  async grantViewAccess(accountId: string, agencyEmail: string): Promise<IBaseAccessResponse> {
+    this.logger.log(`Granting view access to ${agencyEmail} for Analytics account ${accountId}`);
 
     return this.grantAgencyAccess({
       entityId: accountId,

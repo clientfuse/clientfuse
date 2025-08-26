@@ -44,8 +44,8 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
     });
   }
 
-  async grantReadOnlyAccess(accountId: string, agencyEmail: string): Promise<IBaseAccessResponse> {
-    this.logger.log(`Granting GTM read-only access to ${agencyEmail} for account ${accountId}`);
+  async grantViewAccess(accountId: string, agencyEmail: string): Promise<IBaseAccessResponse> {
+    this.logger.log(`Granting GTM view access to ${agencyEmail} for account ${accountId}`);
 
     return this.grantAgencyAccess({
       entityId: accountId,

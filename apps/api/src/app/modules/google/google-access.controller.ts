@@ -13,7 +13,7 @@ import { Public } from '../auth/decorators/is-public.decorator';
 import {
   GetEntityUsersQueryDto,
   GrantManagementAccessDto,
-  GrantReadOnlyAccessDto,
+  GrantViewAccessDto,
   RevokeAgencyAccessDto
 } from './dto';
 import { GoogleAdsAccessService } from './services/access/google-ads-access.service';
@@ -69,21 +69,21 @@ export class GoogleAccessController {
   }
 
   @Public()
-  @Post(ENDPOINTS.google.accessManagement.grantReadonlyAccess)
-  async grantReadOnlyAccess(@Body() dto: GrantReadOnlyAccessDto): Promise<IGrantAccessResponse> {
+  @Post(ENDPOINTS.google.accessManagement.grantViewAccess)
+  async grantViewAccess(@Body() dto: GrantViewAccessDto): Promise<IGrantAccessResponse> {
     await this.validateAndSetTokenCredentials(dto.accessToken, dto.service);
 
     const service = this.getService(dto.service);
-    const result = await service.grantReadOnlyAccess(dto.entityId, dto.agencyEmail);
+    const result = await service.grantViewAccess(dto.entityId, dto.agencyEmail);
 
     if (!result.success) {
-      throw new BadRequestException(result.error || 'Failed to grant read-only access');
+      throw new BadRequestException(result.error || 'Failed to grant view access');
     }
 
     return {
       success: true,
       service: dto.service,
-      accessType: 'read-only',
+      accessType: 'view',
       entityId: dto.entityId,
       agencyEmail: dto.agencyEmail,
       linkId: result.linkId,

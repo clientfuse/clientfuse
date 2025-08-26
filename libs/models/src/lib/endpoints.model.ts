@@ -20,7 +20,7 @@ export const ENDPOINTS = {
     accessManagement: {
       root: 'access-management',
       grantManagementAccess: 'grant-management-access',
-      grantReadonlyAccess: 'grant-readonly-access',
+      grantViewAccess: 'grant-view-access',
       getEntityUsers: 'users/:service/:entityId',
       revokeAgencyAccess: 'revoke/:service/:entityId/:linkId'
     }
