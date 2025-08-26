@@ -7,23 +7,11 @@ import {
   IRevokeAccessResponse,
   ServerErrorCode
 } from '@clientfuse/models';
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Delete,
-  ForbiddenException,
-  Get,
-  NotFoundException,
-  Param,
-  Post,
-  Query
-} from '@nestjs/common';
-import { isEmpty, isNil } from 'lodash';
-import { UsersService } from '../users/users.service';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
+import { isEmpty } from 'lodash';
+import { Public } from '../auth/decorators/is-public.decorator';
 import {
   GetEntityUsersQueryDto,
-  GrantCustomAccessDto,
   GrantManagementAccessDto,
   GrantReadOnlyAccessDto,
   RevokeAgencyAccessDto
@@ -41,7 +29,6 @@ export class GoogleAccessController {
   private readonly serviceMap: Map<GoogleServiceType, IGoogleBaseAccessService>;
 
   constructor(
-    private readonly usersService: UsersService,
     private readonly googleAnalyticsAccessService: GoogleAnalyticsAccessService,
     private readonly googleAdsAccessService: GoogleAdsAccessService,
     private readonly googleTagManagerAccessService: GoogleTagManagerAccessService,
@@ -58,10 +45,10 @@ export class GoogleAccessController {
     this.serviceMap.set('myBusiness', this.googleMyBusinessAccessService);
   }
 
+  @Public()
   @Post(ENDPOINTS.google.accessManagement.grantManagementAccess)
   async grantManagementAccess(@Body() dto: GrantManagementAccessDto): Promise<IGrantAccessResponse> {
-    const userId = dto.userId;
-    await this.validateUserAndSetCredentials(userId, dto.service);
+    await this.validateAndSetTokenCredentials(dto.accessToken, dto.service);
 
     const service = this.getService(dto.service);
     const result = await service.grantManagementAccess(dto.entityId, dto.agencyEmail);
@@ -81,10 +68,10 @@ export class GoogleAccessController {
     };
   }
 
+  @Public()
   @Post(ENDPOINTS.google.accessManagement.grantReadonlyAccess)
   async grantReadOnlyAccess(@Body() dto: GrantReadOnlyAccessDto): Promise<IGrantAccessResponse> {
-    const userId = dto.userId;
-    await this.validateUserAndSetCredentials(userId, dto.service);
+    await this.validateAndSetTokenCredentials(dto.accessToken, dto.service);
 
     const service = this.getService(dto.service);
     const result = await service.grantReadOnlyAccess(dto.entityId, dto.agencyEmail);
@@ -104,48 +91,16 @@ export class GoogleAccessController {
     };
   }
 
-  @Post(ENDPOINTS.google.accessManagement.grantCustomAccess)
-  async grantCustomServiceAccess(@Body() dto: GrantCustomAccessDto): Promise<IGrantAccessResponse> {
-    const userId = dto.userId;
-    await this.validateUserAndSetCredentials(userId, dto.service);
 
-    const service = this.getService(dto.service);
-    const result = await service.grantCustomAccess(dto.options);
-
-    if (!result.success) {
-      throw new BadRequestException(result.error || 'Failed to grant custom access');
-    }
-
-    return {
-      success: true,
-      service: dto.service,
-      accessType: 'custom',
-      entityId: dto.options.entityId,
-      agencyEmail: dto.options.agencyEmail,
-      linkId: result.linkId,
-      message: result.message,
-      customOptions: dto.options
-    };
-  }
-
+  @Public()
   @Get(ENDPOINTS.google.accessManagement.getEntityUsers)
   async getEntityUsers(
     @Query() query: GetEntityUsersQueryDto,
     @Param('service') serviceName: GoogleServiceType,
     @Param('entityId') entityId: string
   ): Promise<IGetEntityUsersResponse> {
-    const userId = query.userId;
-    if (isEmpty(userId) || isEmpty(entityId)) {
+    if (isEmpty(query.accessToken) || isEmpty(entityId)) {
       throw new BadRequestException(ServerErrorCode.INVALID_REQUEST);
-    }
-
-    const user = await this.usersService.findUser({ _id: userId });
-    if (!user) {
-      throw new NotFoundException(ServerErrorCode.USER_NOT_FOUND);
-    }
-
-    if (isNil(user.google?.accessToken) || isNil(user.google?.refreshToken)) {
-      throw new ForbiddenException('User must be authenticated with Google');
     }
 
     const service = this.getService(serviceName);
@@ -154,8 +109,7 @@ export class GoogleAccessController {
     }
 
     service.setCredentials({
-      access_token: user.google.accessToken,
-      refresh_token: user.google.refreshToken
+      access_token: query.accessToken
     });
 
     const users = await service.getEntityUsers(entityId);
@@ -168,20 +122,12 @@ export class GoogleAccessController {
     };
   }
 
+  @Public()
   @Delete(ENDPOINTS.google.accessManagement.revokeAgencyAccess)
   async revokeAgencyAccess(@Body() dto: RevokeAgencyAccessDto): Promise<IRevokeAccessResponse> {
-    const { userId, service: serviceName, entityId, linkId } = dto;
-    if (isEmpty(userId) || isEmpty(entityId) || isEmpty(linkId)) {
+    const { accessToken, service: serviceName, entityId, linkId } = dto;
+    if (isEmpty(accessToken) || isEmpty(entityId) || isEmpty(linkId)) {
       throw new BadRequestException(ServerErrorCode.INVALID_REQUEST);
-    }
-
-    const user = await this.usersService.findUser({ _id: userId });
-    if (!user) {
-      throw new NotFoundException(ServerErrorCode.USER_NOT_FOUND);
-    }
-
-    if (isNil(user.google?.accessToken) || isNil(user.google?.refreshToken)) {
-      throw new ForbiddenException('User must be authenticated with Google');
     }
 
     const service = this.getService(serviceName);
@@ -190,8 +136,7 @@ export class GoogleAccessController {
     }
 
     service.setCredentials({
-      access_token: user.google.accessToken,
-      refresh_token: user.google.refreshToken
+      access_token: accessToken
     });
 
     const result = await service.revokeUserAccess(entityId, linkId);
@@ -211,31 +156,9 @@ export class GoogleAccessController {
     return this.serviceMap.get(serviceName) || null;
   }
 
-  private getServiceDescription(serviceName: GoogleServiceType): string {
-    const descriptions = {
-      analytics: 'Google Analytics - Web analytics and reporting',
-      ads: 'Google Ads - Online advertising platform',
-      tagManager: 'Google Tag Manager - Tag management system',
-      searchConsole: 'Google Search Console - Search performance monitoring',
-      merchantCenter: 'Google Merchant Center - Product listings for shopping',
-      myBusiness: 'Google My Business - Local business management'
-    };
-
-    return descriptions[serviceName] || 'Unknown service';
-  }
-
-  private async validateUserAndSetCredentials(userId: string, serviceName: GoogleServiceType): Promise<void> {
-    if (isEmpty(userId)) {
+  private async validateAndSetTokenCredentials(accessToken: string, serviceName: GoogleServiceType): Promise<void> {
+    if (isEmpty(accessToken)) {
       throw new BadRequestException(ServerErrorCode.INVALID_REQUEST);
-    }
-
-    const user = await this.usersService.findUser({ _id: userId });
-    if (!user) {
-      throw new NotFoundException(ServerErrorCode.USER_NOT_FOUND);
-    }
-
-    if (isNil(user.google?.accessToken) || isNil(user.google?.refreshToken)) {
-      throw new ForbiddenException('User must be authenticated with Google');
     }
 
     const service = this.getService(serviceName);
@@ -244,16 +167,7 @@ export class GoogleAccessController {
     }
 
     service.setCredentials({
-      access_token: user.google.accessToken,
-      refresh_token: user.google.refreshToken
+      access_token: accessToken
     });
-
-    const hasRequiredScopes = service.validateRequiredScopes(
-      user.google.grantedScopes || []
-    );
-
-    if (!hasRequiredScopes) {
-      throw new ForbiddenException(`User does not have required ${serviceName} permissions`);
-    }
   }
 }

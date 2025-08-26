@@ -5,7 +5,6 @@ import {
   IBaseAccessRequest,
   IBaseAccessResponse,
   IBaseUserInfo,
-  ICustomAccessOptions,
   IGoogleBaseAccessService
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
@@ -46,13 +45,6 @@ export class GoogleSearchConsoleAccessService implements IGoogleBaseAccessServic
     });
   }
 
-  async grantCustomAccess(options: ICustomAccessOptions): Promise<IBaseAccessResponse> {
-    this.logger.warn(`Granting custom access is not supported for Google Search Console. Use management or read-only access instead.`);
-    return {
-      success: false,
-      error: 'Custom access is not supported for Google Search Console. Use management or read-only access instead.'
-    };
-  }
 
   setCredentials(tokens: { access_token?: string; refresh_token?: string }): void {
     if (isEmpty(tokens) || isNil(tokens)) {
@@ -76,14 +68,6 @@ export class GoogleSearchConsoleAccessService implements IGoogleBaseAccessServic
   async getEntityUsers(entityId: string): Promise<IBaseUserInfo[]> {
     this.logger.warn('Google Search Console API does not support user listing');
     return [];
-  }
-
-  async updateUserPermissions(entityId: string, linkId: string, permissions: string[]): Promise<IBaseAccessResponse> {
-    this.logger.warn('Google Search Console API does not support user permission updates');
-    return {
-      success: false,
-      error: 'Google Search Console API does not support user permission updates. Changes must be made through the web interface.'
-    };
   }
 
   async revokeUserAccess(entityId: string, linkId: string): Promise<IBaseAccessResponse> {

@@ -122,6 +122,16 @@ app-island {
   padding: var(--spacing-4) 0;
 }
 
+.panel-actions {
+  margin-top: var(--spacing-4);
+  padding-top: var(--spacing-4);
+  border-top: 1px solid $dark-20;
+  
+  .grant-access-btn {
+    width: 100%;
+  }
+}
+
 h4 {
   margin: 0;
   font-size: var(--fs-16);

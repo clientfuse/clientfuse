@@ -4,7 +4,7 @@ import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
 export class GrantManagementAccessDto implements IGrantManagementAccessDto {
   @IsString()
   @IsNotEmpty()
-  userId: string;
+  accessToken: string;
 
   @IsEnum(['analytics', 'ads', 'tagManager', 'searchConsole', 'merchantCenter', 'myBusiness'])
   @IsNotEmpty()

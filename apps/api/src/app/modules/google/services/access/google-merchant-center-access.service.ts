@@ -5,7 +5,6 @@ import {
   IBaseAccessRequest,
   IBaseAccessResponse,
   IBaseUserInfo,
-  ICustomAccessOptions,
   IGoogleBaseAccessService,
   ServerErrorCode
 } from '@clientfuse/models';
@@ -49,37 +48,6 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
     });
   }
 
-  async grantCustomAccess(options: ICustomAccessOptions): Promise<IBaseAccessResponse> {
-    try {
-      this.logger.log(`Granting Merchant Center custom access to ${options.agencyEmail} for merchant ${options.entityId}`);
-      this.logger.log(`Custom options: ${JSON.stringify({
-        permissions: options.permissions,
-        notifyUser: options.notifyUser
-      })}`);
-
-      const customOptions = options;
-
-      const result = await this.grantAgencyAccess({
-        entityId: options.entityId,
-        agencyEmail: options.agencyEmail,
-        permissions: options.permissions
-      });
-
-      if (options.customMessage && result.success) {
-        result.message = `${result.message} - ${options.customMessage}`;
-      }
-
-      return result;
-
-    } catch (error) {
-      this.logger.error(`Failed to grant Merchant Center custom access: ${error.message}`, error);
-
-      return {
-        success: false,
-        error: `Failed to grant custom access: ${error.message}`
-      };
-    }
-  }
 
   setCredentials(tokens: { access_token?: string; refresh_token?: string }): void {
     if (isEmpty(tokens) || isNil(tokens)) {

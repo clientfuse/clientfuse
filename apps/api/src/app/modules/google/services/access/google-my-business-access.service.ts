@@ -5,7 +5,6 @@ import {
   IBaseAccessRequest,
   IBaseAccessResponse,
   IBaseUserInfo,
-  ICustomAccessOptions,
   IGoogleBaseAccessService,
   ServerErrorCode
 } from '@clientfuse/models';
@@ -48,56 +47,6 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
     });
   }
 
-  async grantCustomAccess(options: ICustomAccessOptions): Promise<IBaseAccessResponse> {
-    try {
-      this.logger.log(`Granting My Business custom access to ${options.agencyEmail} for account ${options.entityId}`);
-      this.logger.log(`Custom options: ${JSON.stringify({
-        permissions: options.permissions,
-        locationName: options.locationName,
-        specificLocations: options.specificLocations,
-        notifyUser: options.notifyUser
-      })}`);
-
-      const customOptions = options;
-
-      if (customOptions.locationName) {
-        return this.grantLocationAccess(
-          options.entityId,
-          customOptions.locationName,
-          options.agencyEmail,
-          options.permissions[0] as GoogleMyBusinessPermission
-        );
-      }
-
-      if (customOptions.specificLocations && customOptions.specificLocations.length > 0) {
-        return this.grantMultipleLocationAccess(
-          options.entityId,
-          customOptions.specificLocations,
-          options.agencyEmail,
-          options.permissions[0] as GoogleMyBusinessPermission
-        );
-      }
-
-      const result = await this.grantAgencyAccess({
-        entityId: options.entityId,
-        agencyEmail: options.agencyEmail,
-        permissions: options.permissions
-      });
-
-      if (options.customMessage && result.success) {
-        result.message = `${result.message} - ${options.customMessage}`;
-      }
-
-      return result;
-    } catch (error) {
-      this.logger.error(`Failed to grant My Business custom access: ${error.message}`, error);
-
-      return {
-        success: false,
-        error: `Failed to grant custom access: ${error.message}`
-      };
-    }
-  }
 
   setCredentials(tokens: { access_token?: string; refresh_token?: string }): void {
     if (isEmpty(tokens) || isNil(tokens)) {
@@ -266,85 +215,5 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
 
   getRequiredScopes(): string[] {
     return [GOOGLE_MY_BUSINESS_MANAGE_SCOPE];
-  }
-
-  async grantMultipleLocationAccess(
-    accountName: string,
-    locationNames: string[],
-    agencyEmail: string,
-    role: GoogleMyBusinessPermission
-  ): Promise<IBaseAccessResponse> {
-    try {
-      this.logger.log(`Granting My Business access to ${locationNames.length} locations for ${agencyEmail}`);
-
-      const results = [];
-      for (const locationName of locationNames) {
-        try {
-          const result = await this.grantLocationAccess(accountName, locationName, agencyEmail, role);
-          results.push({ locationName, success: result.success, linkId: result.linkId });
-        } catch (error) {
-          results.push({ locationName, success: false, error: error.message });
-        }
-      }
-
-      const successCount = results.filter(r => r.success).length;
-      const failureCount = results.filter(r => !r.success).length;
-
-      return {
-        success: successCount > 0,
-        message: `Multi-location access: ${successCount} successful, ${failureCount} failed`,
-        linkId: `multi-location-${Date.now()}`
-      };
-
-    } catch (error) {
-      this.logger.error(`Failed to grant My Business multi-location access: ${error.message}`, error);
-
-      return {
-        success: false,
-        error: `Failed to grant multi-location access: ${error.message}`
-      };
-    }
-  }
-
-  async grantLocationAccess(
-    accountName: string,
-    locationName: string,
-    agencyEmail: string,
-    role: GoogleMyBusinessPermission
-  ): Promise<IBaseAccessResponse> {
-    try {
-      const myBusinessAccountManagement = google.mybusinessaccountmanagement({
-        version: 'v1',
-        auth: this.oauth2Client
-      });
-
-      const invitation = {
-        targetLocation: locationName,
-        targetType: 'LOCATION',
-        role: role,
-        inviterAccountId: accountName
-      };
-
-      const response = await myBusinessAccountManagement.locations.admins.create({
-        parent: locationName,
-        requestBody: invitation
-      });
-
-      this.logger.log(`Successfully created location invitation for ${agencyEmail} to location ${locationName}`);
-
-      return {
-        success: true,
-        linkId: response.data.name || 'location-invitation-created',
-        message: `Location access invitation sent successfully to ${agencyEmail}`
-      };
-
-    } catch (error) {
-      this.logger.error(`Failed to grant My Business location access: ${error.message}`, error);
-
-      return {
-        success: false,
-        error: `Failed to grant location access: ${error.message}`
-      };
-    }
   }
 }

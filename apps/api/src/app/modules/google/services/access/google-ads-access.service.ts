@@ -5,7 +5,6 @@ import {
   IBaseAccessRequest,
   IBaseAccessResponse,
   IBaseUserInfo,
-  ICustomAccessOptions,
   IGoogleBaseAccessService,
   ServerErrorCode
 } from '@clientfuse/models';
@@ -54,29 +53,6 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
     });
   }
 
-  async grantCustomAccess(options: ICustomAccessOptions): Promise<IBaseAccessResponse> {
-    try {
-      this.logger.log(`Granting Google Ads custom access to ${options.agencyEmail} for account ${options.entityId}`);
-
-      const result = await this.grantAgencyAccess({
-        entityId: options.entityId,
-        agencyEmail: options.agencyEmail,
-        permissions: options.permissions
-      });
-
-      if (options.customMessage && result.success) {
-        result.message = `${result.message} - ${options.customMessage}`;
-      }
-
-      return result;
-    } catch (error) {
-      this.logger.error(`Failed to grant Google Ads custom access: ${error.message}`, error);
-      return {
-        success: false,
-        error: `Failed to grant custom access: ${error.message}`
-      };
-    }
-  }
 
   async grantAgencyAccess(request: IBaseAccessRequest): Promise<IBaseAccessResponse> {
     try {

@@ -7,25 +7,6 @@ import {
   tagmanager_v2
 } from 'googleapis';
 
-export interface ICustomAccessOptions {
-  entityId: string;
-  agencyEmail: string;
-  permissions: string[];
-  notifyUser?: boolean;
-  customMessage?: string;
-  expirationDate?: Date;
-
-  // Service-specific options (will be extended by each service)
-  accountId?: string;
-  propertyId?: string, // Analytics specific
-  viewId?: string, // Analytics specific
-  containerId?: string, // GTM specific
-  locationName?: string, // My Business specific
-  specificLocations?: string[]; // My Business specific
-  propertyType?: string; // Search Console specific
-  verificationMethod?: string; // Search Console specific
-  workspaceId?: string; // Tag Manager specific
-}
 
 export interface IBaseAccessRequest {
   entityId: string; // account/property/site ID etc.
@@ -58,8 +39,6 @@ export interface IGoogleBaseAccessService {
 
   grantAgencyAccess(request: IBaseAccessRequest): Promise<IBaseAccessResponse>;
 
-  grantCustomAccess(options: ICustomAccessOptions): Promise<IBaseAccessResponse>;
-
   checkExistingUserAccess(entityId: string, email: string): Promise<IBaseUserInfo | null>;
 
   getEntityUsers(entityId: string): Promise<IBaseUserInfo[]>;
@@ -84,7 +63,6 @@ export type GoogleMerchantCenterPermission = 'ADMIN' | 'STANDARD';
 export type GoogleMyBusinessPermission = 'OWNER' | 'MANAGER' | 'SITE_MANAGER';
 
 export type GoogleServiceType = 'analytics' | 'ads' | 'tagManager' | 'searchConsole' | 'merchantCenter' | 'myBusiness';
-
 
 export interface IGoogleAdsAccount {
   id: string;
@@ -132,42 +110,26 @@ export interface IGoogleConnectionDto {
   accessToken: string;
 }
 
-export interface IGetUserAccountsDto {
-  userId: string;
-}
-
 export interface IGetEntityUsersQueryDto {
-  userId: string;
-}
-
-export interface IGrantAgencyAccessDto {
-  entityId: string;
-  agencyEmail: string;
-  permissions: string[];
+  accessToken: string;
 }
 
 export interface IGrantManagementAccessDto {
-  userId: string;
+  accessToken: string;
   service: GoogleServiceType;
   entityId: string;
   agencyEmail: string;
 }
 
 export interface IGrantReadOnlyAccessDto {
-  userId: string;
+  accessToken: string;
   service: GoogleServiceType;
   entityId: string;
   agencyEmail: string;
 }
 
-export interface IGrantCustomAccessDto {
-  userId: string;
-  service: GoogleServiceType;
-  options: ICustomAccessOptions;
-}
-
 export interface IRevokeAgencyAccessDto {
-  userId: string;
+  accessToken: string;
   service: GoogleServiceType;
   entityId: string;
   linkId: string;
@@ -204,23 +166,14 @@ export interface IGoogleAccountsData {
   googleGrantedScopes: string[];
 }
 
-export interface IGoogleUserAccountsDataResponse {
-  data: IGoogleAccountsData;
-  tokens: {
-    access_token?: string;
-    refresh_token?: string;
-  };
-}
-
 export interface IGrantAccessResponse {
   success: boolean;
   service: GoogleServiceType;
-  accessType: 'management' | 'read-only' | 'custom';
+  accessType: 'management' | 'read-only';
   entityId: string;
   agencyEmail: string;
   linkId?: string;
   message?: string;
-  customOptions?: ICustomAccessOptions;
 }
 
 export interface IGetEntityUsersResponse {

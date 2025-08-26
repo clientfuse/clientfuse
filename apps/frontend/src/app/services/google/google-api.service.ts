@@ -8,7 +8,6 @@ import {
   IGoogleConnectionDto,
   IGoogleConnectionResponse,
   IGrantAccessResponse,
-  IGrantCustomAccessDto,
   IGrantManagementAccessDto,
   IGrantReadOnlyAccessDto,
   IResponse,
@@ -51,22 +50,14 @@ export class GoogleApiService {
     );
   }
 
-  async grantCustomAccess(dto: IGrantCustomAccessDto): Promise<IResponse<IGrantAccessResponse>> {
-    return firstValueFrom(
-      this.httpClient.post<IResponse<IGrantAccessResponse>>(
-        `${environment.API_URL}/${ENDPOINTS.google.root}/${ENDPOINTS.google.accessManagement.root}/${ENDPOINTS.google.accessManagement.grantCustomAccess}`,
-        dto
-      )
-    );
-  }
-
   async getEntityUsers(dto: IGetEntityUsersQueryDto & {
     service: GoogleServiceType;
     entityId: string
   }): Promise<IResponse<IGetEntityUsersResponse>> {
     const url = `${environment.API_URL}/${ENDPOINTS.google.root}/${ENDPOINTS.google.accessManagement.root}/users/${dto.service}/${dto.entityId}`;
+    const { accessToken } = dto;
     return firstValueFrom(
-      this.httpClient.get<IResponse<IGetEntityUsersResponse>>(url, { params: { userId: dto.userId } })
+      this.httpClient.get<IResponse<IGetEntityUsersResponse>>(url, { params: { accessToken } })
     );
   }
 

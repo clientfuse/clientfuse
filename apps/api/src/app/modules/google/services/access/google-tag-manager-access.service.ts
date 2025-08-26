@@ -1,11 +1,9 @@
 import {
   ApiEnv,
   GOOGLE_TAGMANAGER_MANAGE_USERS_SCOPE,
-  GoogleTagManagerPermission,
   IBaseAccessRequest,
   IBaseAccessResponse,
   IBaseUserInfo,
-  ICustomAccessOptions,
   IGoogleBaseAccessService,
   ServerErrorCode
 } from '@clientfuse/models';
@@ -15,14 +13,6 @@ import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import { google } from 'googleapis';
 import { isEmpty, isNil } from 'lodash';
 
-export interface IGoogleTagManagerCustomOptions extends ICustomAccessOptions {
-  accountId: string;
-  containerId?: string;
-  containerPermissions?: {
-    containerId: string;
-    permission: GoogleTagManagerPermission;
-  }[];
-}
 
 @Injectable()
 export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
@@ -64,49 +54,6 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
     });
   }
 
-  async grantCustomAccess(options: ICustomAccessOptions): Promise<IBaseAccessResponse> {
-    try {
-      this.logger.log(`Granting GTM custom access to ${options.agencyEmail} for account ${options.entityId}`);
-
-      const customOptions = options as IGoogleTagManagerCustomOptions;
-
-      if (customOptions.containerPermissions && customOptions.containerPermissions.length > 0) {
-        return this.grantContainerSpecificAccess(
-          options.entityId,
-          options.agencyEmail,
-          customOptions.containerPermissions
-        );
-      }
-
-      if (customOptions.containerId) {
-        return this.grantContainerAccess(
-          options.entityId,
-          customOptions.containerId,
-          options.agencyEmail,
-          options.permissions[0] as GoogleTagManagerPermission
-        );
-      }
-
-      const result = await this.grantAgencyAccess({
-        entityId: options.entityId,
-        agencyEmail: options.agencyEmail,
-        permissions: options.permissions
-      });
-
-      if (options.customMessage && result.success) {
-        result.message = `${result.message} - ${options.customMessage}`;
-      }
-
-      return result;
-
-    } catch (error) {
-      this.logger.error(`Failed to grant GTM custom access: ${error.message}`, error);
-      return {
-        success: false,
-        error: `Failed to grant custom access: ${error.message}`
-      };
-    }
-  }
 
   async grantAgencyAccess(request: IBaseAccessRequest): Promise<IBaseAccessResponse> {
     try {
@@ -272,106 +219,6 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
     return [GOOGLE_TAGMANAGER_MANAGE_USERS_SCOPE];
   }
 
-  getPermissionDescriptions(): Record<string, string> {
-    return {
-      'user': 'View account information and container details',
-      'admin': 'Full administrative access including user management'
-    };
-  }
-
-  async grantContainerAccess(
-    accountId: string,
-    containerId: string,
-    agencyEmail: string,
-    permission: GoogleTagManagerPermission
-  ): Promise<IBaseAccessResponse> {
-    try {
-      this.logger.log(`Granting GTM container access to ${agencyEmail} for container ${containerId}`);
-
-      const containerPermission = this.mapPermissionToContainerPermission(permission);
-
-      const userPermission = {
-        emailAddress: agencyEmail.toLowerCase().trim(),
-        accountAccess: {
-          permission: 'user'
-        },
-        containerAccess: [
-          {
-            containerId: containerId,
-            permission: containerPermission
-          }
-        ]
-      };
-
-      const tagManager = google.tagmanager({ version: 'v2', auth: this.oauth2Client });
-
-      const response = await tagManager.accounts.user_permissions.create({
-        parent: `accounts/${accountId}`,
-        requestBody: userPermission
-      });
-
-      this.logger.log(`Successfully granted GTM container access to ${agencyEmail}`);
-
-      return {
-        success: true,
-        linkId: response.data.path || `accounts/${accountId}/user_permissions/${agencyEmail}`,
-        message: `GTM container access granted successfully to ${agencyEmail}`
-      };
-
-    } catch (error) {
-      this.logger.error(`Failed to grant GTM container access: ${error.message}`, error);
-      return {
-        success: false,
-        error: `Failed to grant container access: ${error.message}`
-      };
-    }
-  }
-
-  async grantContainerSpecificAccess(
-    accountId: string,
-    agencyEmail: string,
-    containerPermissions: { containerId: string; permission: GoogleTagManagerPermission }[]
-  ): Promise<IBaseAccessResponse> {
-    try {
-      this.logger.log(`Granting GTM access to ${containerPermissions.length} containers for ${agencyEmail}`);
-
-      const mappedContainerAccess = containerPermissions.map(cp => ({
-        containerId: cp.containerId,
-        permission: this.mapPermissionToContainerPermission(cp.permission)
-      }));
-
-      const userPermission = {
-        emailAddress: agencyEmail.toLowerCase().trim(),
-        accountAccess: {
-          permission: 'user'
-        },
-        containerAccess: mappedContainerAccess
-      };
-
-      const tagManager = google.tagmanager({ version: 'v2', auth: this.oauth2Client });
-
-      const response = await tagManager.accounts.user_permissions.create({
-        parent: `accounts/${accountId}`,
-        requestBody: userPermission
-      });
-
-      this.logger.log(`Successfully granted multi-container GTM access to ${agencyEmail}`);
-
-      return {
-        success: true,
-        linkId: response.data.path || `accounts/${accountId}/user_permissions/${agencyEmail}`,
-        message: `GTM multi-container access granted successfully to ${agencyEmail}`
-      };
-
-    } catch (error) {
-      this.logger.error(`Failed to grant GTM multi-container access: ${error.message}`, error);
-      return {
-        success: false,
-        error: `Failed to grant multi-container access: ${error.message}`
-      };
-    }
-  }
-
   private mapPermissionToAccountPermission(permission: string): string {
     const permissionMap: Record<string, string> = {
       'read': 'user',
@@ -382,16 +229,5 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
     };
 
     return permissionMap[permission] || 'user';
-  }
-
-  private mapPermissionToContainerPermission(permission: GoogleTagManagerPermission): string {
-    const permissionMap: Record<string, string> = {
-      'read': 'read',
-      'edit': 'edit',
-      'delete': 'edit',
-      'publish': 'publish'
-    };
-
-    return permissionMap[permission] || 'read';
   }
 }

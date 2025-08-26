@@ -6,7 +6,6 @@ import {
   IGoogleConnectionDto,
   IGoogleConnectionResponse,
   IGrantAccessResponse,
-  IGrantCustomAccessDto,
   IGrantManagementAccessDto,
   IGrantReadOnlyAccessDto,
   IRevokeAccessResponse,
@@ -17,7 +16,7 @@ import { GoogleApiService } from './google-api.service';
 export interface GoogleStoreState {
   connectionData: IGoogleConnectionResponse | null;
   entityUsers: IGetEntityUsersResponse | null;
-  currentUserId: string | null;
+  accessToken: string | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -31,14 +30,14 @@ export class GoogleStoreService {
   private state = signal<GoogleStoreState>({
     connectionData: null,
     entityUsers: null,
-    currentUserId: null,
+    accessToken: null,
     isLoading: false,
     error: null
   });
 
   readonly connectionData = computed(() => this.state().connectionData);
   readonly entityUsers = computed(() => this.state().entityUsers);
-  readonly currentUserId = computed(() => this.state().currentUserId);
+  readonly accessToken = computed(() => this.state().accessToken);
   readonly isLoading = computed(() => this.state().isLoading);
   readonly error = computed(() => this.state().error);
 
@@ -51,7 +50,8 @@ export class GoogleStoreService {
       if (response.payload) {
         this.state.update(state => ({
           ...state,
-          connectionData: response.payload
+          connectionData: response.payload,
+          accessToken: dto.accessToken
         }));
       } else {
         this.setError('Failed to connect Google account');
@@ -64,12 +64,25 @@ export class GoogleStoreService {
     }
   }
 
-  async grantManagementAccess(dto: IGrantManagementAccessDto): Promise<IGrantAccessResponse | null> {
+  async grantManagementAccess(dto: Omit<IGrantManagementAccessDto, 'accessToken'>): Promise<IGrantAccessResponse | null> {
     this.setLoading(true);
     this.clearError();
 
+    const accessToken = this.state().accessToken;
+
+    if (!accessToken) {
+      this.setError('User must be authenticated with Google');
+      this.setLoading(false);
+      return null;
+    }
+
     try {
-      const response = await this.googleApiService.grantManagementAccess(dto);
+      const fullDto = {
+        ...dto,
+        accessToken
+      } as IGrantManagementAccessDto;
+
+      const response = await this.googleApiService.grantManagementAccess(fullDto);
       if (response.payload) {
         return response.payload;
       } else {
@@ -84,12 +97,25 @@ export class GoogleStoreService {
     }
   }
 
-  async grantReadOnlyAccess(dto: IGrantReadOnlyAccessDto): Promise<IGrantAccessResponse | null> {
+  async grantReadOnlyAccess(dto: Omit<IGrantReadOnlyAccessDto, 'accessToken'>): Promise<IGrantAccessResponse | null> {
     this.setLoading(true);
     this.clearError();
 
+    const accessToken = this.state().accessToken;
+
+    if (!accessToken) {
+      this.setError('User must be authenticated with Google');
+      this.setLoading(false);
+      return null;
+    }
+
     try {
-      const response = await this.googleApiService.grantReadOnlyAccess(dto);
+      const fullDto = {
+        ...dto,
+        accessToken
+      } as IGrantReadOnlyAccessDto;
+
+      const response = await this.googleApiService.grantReadOnlyAccess(fullDto);
       if (response.payload) {
         return response.payload;
       } else {
@@ -104,40 +130,33 @@ export class GoogleStoreService {
     }
   }
 
-  async grantCustomAccess(dto: IGrantCustomAccessDto): Promise<IGrantAccessResponse | null> {
-    this.setLoading(true);
-    this.clearError();
 
-    try {
-      const response = await this.googleApiService.grantCustomAccess(dto);
-      if (response.payload) {
-        return response.payload;
-      } else {
-        this.setError('Failed to grant custom access');
-        return null;
-      }
-    } catch (error) {
-      this.setError('An error occurred while granting custom access');
-      throw error;
-    } finally {
-      this.setLoading(false);
-    }
-  }
-
-  async loadEntityUsers(dto: IGetEntityUsersQueryDto & {
+  async loadEntityUsers(dto: Omit<IGetEntityUsersQueryDto, 'accessToken'> & {
     service: GoogleServiceType;
     entityId: string;
   }): Promise<void> {
     this.setLoading(true);
     this.clearError();
 
+    const accessToken = this.state().accessToken;
+
+    if (!accessToken) {
+      this.setError('User must be authenticated with Google');
+      this.setLoading(false);
+      return;
+    }
+
     try {
-      const response = await this.googleApiService.getEntityUsers(dto);
+      const fullDto = {
+        ...dto,
+        accessToken
+      } as IGetEntityUsersQueryDto & { service: GoogleServiceType; entityId: string };
+
+      const response = await this.googleApiService.getEntityUsers(fullDto);
       if (response.payload) {
         this.state.update(state => ({
           ...state,
-          entityUsers: response.payload,
-          currentUserId: dto.userId
+          entityUsers: response.payload
         }));
       } else {
         this.setError('Failed to load entity users');
@@ -150,12 +169,25 @@ export class GoogleStoreService {
     }
   }
 
-  async revokeAgencyAccess(dto: IRevokeAgencyAccessDto): Promise<IRevokeAccessResponse | null> {
+  async revokeAgencyAccess(dto: Omit<IRevokeAgencyAccessDto, 'accessToken'>): Promise<IRevokeAccessResponse | null> {
     this.setLoading(true);
     this.clearError();
 
+    const accessToken = this.state().accessToken;
+
+    if (!accessToken) {
+      this.setError('User must be authenticated with Google');
+      this.setLoading(false);
+      return null;
+    }
+
     try {
-      const response = await this.googleApiService.revokeAgencyAccess(dto);
+      const fullDto = {
+        ...dto,
+        accessToken
+      } as IRevokeAgencyAccessDto;
+
+      const response = await this.googleApiService.revokeAgencyAccess(fullDto);
       if (response.payload) {
         if (this.state().entityUsers) {
           await this.refreshEntityUsers();
@@ -175,12 +207,10 @@ export class GoogleStoreService {
 
   private async refreshEntityUsers(): Promise<void> {
     const currentEntityUsers = this.state().entityUsers;
-    const currentUserId = this.state().currentUserId;
-    if (currentEntityUsers && currentEntityUsers.entityId && currentEntityUsers.service && currentUserId) {
+    if (currentEntityUsers && currentEntityUsers.entityId && currentEntityUsers.service) {
       await this.loadEntityUsers({
         service: currentEntityUsers.service as GoogleServiceType,
-        entityId: currentEntityUsers.entityId,
-        userId: currentUserId
+        entityId: currentEntityUsers.entityId
       });
     }
   }
@@ -203,7 +233,7 @@ export class GoogleStoreService {
     this.state.set({
       connectionData: null,
       entityUsers: null,
-      currentUserId: null,
+      accessToken: null,
       isLoading: false,
       error: null
     });

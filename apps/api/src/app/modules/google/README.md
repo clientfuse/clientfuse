@@ -48,8 +48,6 @@ All DTOs implement interfaces from `@clientfuse/models` for type safety across f
 ### Access Management DTOs
 - `IGrantManagementAccessDto` - Grant full management permissions
 - `IGrantReadOnlyAccessDto` - Grant read-only access
-- `IGrantCustomAccessDto` - Grant custom permission sets
-- `IGrantAgencyAccessDto` - Grant agency-level access
 - `IRevokeAgencyAccessDto` - Revoke existing access
 
 ### Query DTOs
@@ -81,14 +79,6 @@ Description: Grant full management permissions to a service
 POST /google/grant-readonly-access
 Body: IGrantReadOnlyAccessDto
 Description: Grant read-only access to a service
-
-POST /google/grant-custom-access
-Body: IGrantCustomAccessDto
-Description: Grant custom permission set
-
-POST /google/grant-agency-access
-Body: IGrantAgencyAccessDto
-Description: Grant agency-level permissions
 
 POST /google/revoke-agency-access
 Body: IRevokeAgencyAccessDto
@@ -180,27 +170,6 @@ const accessRequest: IGrantManagementAccessDto = {
 };
 
 await api.post('/google/grant-management-access', accessRequest);
-```
-
-### Custom Access Configuration
-```typescript
-// Grant custom GTM access
-const customAccess: IGrantCustomAccessDto = {
-  userId: 'user_123',
-  service: 'tagManager',
-  options: {
-    entityId: 'GTM_CONTAINER_ID',
-    agencyEmail: 'agency@example.com',
-    permissions: ['read', 'edit'],
-    notifyUser: true,
-    customMessage: 'Access granted for campaign setup',
-    expirationDate: new Date('2024-12-31'),
-    containerId: 'GTM-XXXXX',
-    workspaceId: 'workspace_123'
-  }
-};
-
-await api.post('/google/grant-custom-access', customAccess);
 ```
 
 ### Revoking Access

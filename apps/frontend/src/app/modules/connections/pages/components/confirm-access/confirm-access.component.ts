@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, input } from '@angular/core';
+import { Component, effect, inject, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
@@ -9,6 +9,7 @@ import {
   FacebookBusinessAccount,
   FacebookCatalog,
   FacebookPage,
+  GoogleServiceType,
   IAgencyResponse,
   IGoogleAdsAccount,
   TAccessType,
@@ -17,10 +18,12 @@ import {
   TPlatformNamesKeys
 } from '@clientfuse/models';
 import { analytics_v3, content_v2_1, mybusinessbusinessinformation_v1, searchconsole_v1, tagmanager_v2 } from 'googleapis';
-import { GOOGLE_ICON_PATHS } from '../../../../../utils/icon.utils';
-import { RequestDetailsComponent } from '../request-details/request-details.component';
 import { IslandComponent } from '../../../../../components/island/island.component';
+import { GoogleStoreService } from '../../../../../services/google/google-store.service';
+import { SnackbarService } from '../../../../../services/snackbar.service';
+import { GOOGLE_ICON_PATHS } from '../../../../../utils/icon.utils';
 import { InstructionStepComponent } from '../instruction-step/instruction-step.component';
+import { RequestDetailsComponent } from '../request-details/request-details.component';
 
 interface ServicePanel {
   key: string;
@@ -54,6 +57,9 @@ interface ServicePanel {
   styleUrl: './confirm-access.component.scss'
 })
 export class ConfirmAccessComponent {
+  private readonly googleStoreService = inject(GoogleStoreService);
+  private readonly snackbarService = inject(SnackbarService);
+
   readonly connectionSettings = input.required<IAgencyResponse | null>();
   readonly accessType = input.required<TAccessType>();
   readonly enabledGoogleServicesNames = input<TGoogleAccessLinkKeys[]>([]);
@@ -66,63 +72,6 @@ export class ConfirmAccessComponent {
   readonly googleIcons = GOOGLE_ICON_PATHS;
   servicePanels: ServicePanel[] = [];
 
-  // Mock data for Google services using googleapis types
-  mockGoogleAdsAccounts: IGoogleAdsAccount[] = [
-    {
-      id: '1234567890',
-      name: 'Connected Test Account',
-      hasNoPermissions: false,
-      customerId: '1234567890',
-      currencyCode: 'USD',
-      timeZone: 'America/New_York',
-      _id: '1'
-    }
-  ];
-
-  mockAnalyticsAccounts: analytics_v3.Schema$Account[] = [
-    {
-      id: 'analytics_123',
-      name: 'Test Analytics Account',
-      kind: 'analytics#account',
-      selfLink: 'https://www.googleapis.com/analytics/v3/management/accounts/analytics_123',
-      created: '2024-01-01T00:00:00.000Z',
-      updated: '2024-01-01T00:00:00.000Z'
-    }
-  ];
-
-  mockSearchConsoleSites: searchconsole_v1.Schema$WmxSite[] = [
-    {
-      siteUrl: 'https://profitkit.io',
-      permissionLevel: 'siteFullUser'
-    }
-  ];
-
-  mockTagManagerAccounts: tagmanager_v2.Schema$Account[] = [
-    {
-      accountId: 'gtm_123',
-      name: 'Test Tag Manager Account',
-      path: 'accounts/gtm_123',
-      fingerprint: '1234567890'
-    }
-  ];
-
-  mockMerchantCenterAccounts: content_v2_1.Schema$AccountIdentifier[] = [
-    {
-      merchantId: '123456789',
-      aggregatorId: '987654321'
-    }
-  ];
-
-  mockBusinessLocations: mybusinessbusinessinformation_v1.Schema$Location[] = [
-    {
-      name: 'locations/loc_123',
-      title: 'Test Business Location',
-      storeCode: 'STORE001',
-      languageCode: 'en'
-    }
-  ];
-
-  // Mock data for Facebook services
   mockFacebookAdsAccounts: FacebookAdAccount[] = [
     {
       id: 'act_123456789',
@@ -169,8 +118,8 @@ export class ConfirmAccessComponent {
 
   private initializeServicePanels() {
     const panels: ServicePanel[] = [];
+    const connectionData = this.googleStoreService.connectionData();
 
-    // Add Google service panels
     const googleServices = this.enabledGoogleServicesNames();
     if (googleServices.includes('ads')) {
       panels.push({
@@ -179,7 +128,7 @@ export class ConfirmAccessComponent {
         iconPath: this.googleIcons.ads,
         expanded: panels.length === 0,
         provider: 'google',
-        accounts: this.mockGoogleAdsAccounts,
+        accounts: connectionData?.accounts?.googleAdsAccounts || [],
         selectedAccount: '',
         noAccountsMessage: 'No Ads Account found.'
       });
@@ -192,7 +141,7 @@ export class ConfirmAccessComponent {
         iconPath: this.googleIcons.analytics,
         expanded: false,
         provider: 'google',
-        accounts: this.mockAnalyticsAccounts,
+        accounts: connectionData?.accounts?.googleAnalyticsAccounts || [],
         selectedAccount: '',
         noAccountsMessage: 'No Analytics Account found.'
       });
@@ -205,7 +154,7 @@ export class ConfirmAccessComponent {
         iconPath: this.googleIcons.searchConsole,
         expanded: false,
         provider: 'google',
-        accounts: this.mockSearchConsoleSites,
+        accounts: connectionData?.accounts?.googleSearchConsoles || [],
         selectedAccount: '',
         noAccountsMessage: 'No Search Console found.'
       });
@@ -218,7 +167,7 @@ export class ConfirmAccessComponent {
         iconPath: this.googleIcons.tagManager,
         expanded: false,
         provider: 'google',
-        accounts: this.mockTagManagerAccounts,
+        accounts: connectionData?.accounts?.googleTagManagers || [],
         selectedAccount: '',
         noAccountsMessage: 'No Tag Manager found.'
       });
@@ -231,7 +180,7 @@ export class ConfirmAccessComponent {
         iconPath: this.googleIcons.merchantCenter,
         expanded: false,
         provider: 'google',
-        accounts: this.mockMerchantCenterAccounts,
+        accounts: connectionData?.accounts?.googleMerchantCenters || [],
         selectedAccount: '',
         noAccountsMessage: 'No Merchant Center found.'
       });
@@ -244,13 +193,12 @@ export class ConfirmAccessComponent {
         iconPath: this.googleIcons.myBusiness,
         expanded: false,
         provider: 'google',
-        accounts: this.mockBusinessLocations,
+        accounts: connectionData?.accounts?.googleMyBusinessLocations || [],
         selectedAccount: '',
         noAccountsMessage: 'No Business Profile Location found.'
       });
     }
 
-    // Add Facebook service panels
     const facebookServices = this.enabledFacebookServicesNames();
     if (facebookServices.includes('ads')) {
       panels.push({
@@ -304,7 +252,6 @@ export class ConfirmAccessComponent {
   }
 
   getAccountValue(account: any, panel: ServicePanel): string {
-    // Google specific
     if (panel.key === 'googleAds') {
       return (account as IGoogleAdsAccount).customerId || (account as IGoogleAdsAccount).id;
     }
@@ -324,17 +271,14 @@ export class ConfirmAccessComponent {
       return (account as mybusinessbusinessinformation_v1.Schema$Location).name || '';
     }
 
-    // Facebook specific
     if (panel.provider === 'facebook' && panel.key === 'facebookAds') {
       return (account as FacebookAdAccount).account_id;
     }
 
-    // Default for entities with id
     return account.id || '';
   }
 
   getAccountDisplayName(account: any, panel: ServicePanel): string {
-    // Google specific
     if (panel.key === 'googleAds') {
       return (account as IGoogleAdsAccount).name;
     }
@@ -354,17 +298,14 @@ export class ConfirmAccessComponent {
       return (account as mybusinessbusinessinformation_v1.Schema$Location).title || 'Business Location';
     }
 
-    // Facebook specific
     if (panel.provider === 'facebook') {
       return account.name || 'Account';
     }
 
-    // Default for entities with name
     return account.name || 'Account';
   }
 
   getAccountDetails(account: any, panel: ServicePanel): string {
-    // Google specific
     if (panel.key === 'googleAds') {
       const adsAccount = account as IGoogleAdsAccount;
       return `${adsAccount.customerId || adsAccount.id} • ${adsAccount.currencyCode}`;
@@ -387,7 +328,6 @@ export class ConfirmAccessComponent {
       return location.storeCode ? `${location.name} • ${location.storeCode}` : location.name || '';
     }
 
-    // Facebook specific
     if (panel.key === 'facebookAds') {
       const adAccount = account as FacebookAdAccount;
       return `${adAccount.account_id} • ${adAccount.currency}`;
@@ -424,14 +364,78 @@ export class ConfirmAccessComponent {
     return this.enabledFacebookServicesNames().length > 0;
   }
 
-  confirmAccess() {
-    const selectedAccounts: Record<string, string> = {};
-    this.servicePanels.forEach(panel => {
-      if (panel.selectedAccount) {
-        selectedAccounts[panel.key] = panel.selectedAccount;
-      }
-    });
+  isLoading(): boolean {
+    return this.googleStoreService.isLoading();
+  }
 
-    console.log('Confirmed access for accounts:', selectedAccounts);
+  getGrantButtonText(): string {
+    const accessType = this.accessType();
+    return accessType === 'manage' ? 'Grant Manage Access' : 'Grant View Access';
+  }
+
+  async grantAccess(panel: ServicePanel): Promise<void> {
+    if (!panel.selectedAccount) {
+      this.snackbarService.warn('Please select an account first');
+      return;
+    }
+
+    const accessType = this.accessType();
+    const agencyEmail = this.connectionSettings()?.email || '';
+
+    if (panel.provider === 'google') {
+      const service = this.mapPanelKeyToServiceType(panel.key);
+      if (!service) {
+        this.snackbarService.error('Unknown service type');
+        return;
+      }
+
+      const dto = {
+        service: service,
+        entityId: panel.selectedAccount,
+        agencyEmail: agencyEmail
+      };
+
+      try {
+        let response;
+        if (accessType === 'manage') {
+          response = await this.googleStoreService.grantManagementAccess(dto);
+        } else {
+          response = await this.googleStoreService.grantReadOnlyAccess(dto);
+        }
+
+        if (response) {
+          const accessTypeText = accessType === 'manage' ? 'Management' : 'Read-only';
+          this.snackbarService.success(
+            `${accessTypeText} access granted successfully for ${panel.name}`
+          );
+
+          panel.selectedAccount = '';
+        } else {
+          const errorMessage = this.googleStoreService.error();
+          if (errorMessage) {
+            this.snackbarService.error(errorMessage);
+          }
+        }
+      } catch (error: any) {
+        console.error('Failed to grant access:', error);
+        const errorMessage = error?.error?.message || error?.message ||
+          'An error occurred while granting access. Please try again later.';
+        this.snackbarService.error(errorMessage);
+      }
+    } else {
+      this.snackbarService.info('Facebook/Meta access grant will be available soon');
+    }
+  }
+
+  private mapPanelKeyToServiceType(key: string): GoogleServiceType | null {
+    const mapping: Record<string, GoogleServiceType> = {
+      'googleAds': 'ads',
+      'googleAnalytics': 'analytics',
+      'googleSearchConsole': 'searchConsole',
+      'googleTagManager': 'tagManager',
+      'googleMerchantCenter': 'merchantCenter',
+      'googleMyBusiness': 'myBusiness'
+    };
+    return mapping[key] || null;
   }
 }

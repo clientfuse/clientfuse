@@ -44,6 +44,15 @@
                       </mat-radio-group>
                     </div>
                   }
+                  <div class="panel-actions">
+                    <button 
+                      mat-flat-button 
+                      class="grant-access-btn"
+                      [disabled]="!panel.selectedAccount || isLoading()"
+                      (click)="grantAccess(panel)">
+                      {{ getGrantButtonText() }}
+                    </button>
+                  </div>
                 } @else {
                   <div class="no-accounts">
                     <span>{{ panel.noAccountsMessage }}</span>
@@ -102,6 +111,15 @@
                       </mat-radio-group>
                     </div>
                   }
+                  <div class="panel-actions">
+                    <button 
+                      mat-flat-button 
+                      class="grant-access-btn"
+                      [disabled]="!panel.selectedAccount || isLoading()"
+                      (click)="grantAccess(panel)">
+                      {{ getGrantButtonText() }}
+                    </button>
+                  </div>
                 } @else {
                   <div class="no-accounts">
                     <span>{{ panel.noAccountsMessage }}</span>
@@ -126,9 +144,6 @@
         [enabledGoogleServicesNames]="enabledGoogleServicesNames()"
         [enabledFacebookServicesNames]="enabledFacebookServicesNames()">
       </app-request-details>
-    </div>
-    <div slot="actions">
-      <button mat-flat-button class="w-100" (click)="confirmAccess()">Confirm Access</button>
     </div>
   </app-instruction-step>
 </div>

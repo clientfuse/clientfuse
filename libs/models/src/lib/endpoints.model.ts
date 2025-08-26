@@ -16,13 +16,11 @@ export const ENDPOINTS = {
   },
   google: {
     root: 'google',
-    userAccountsData: 'user-accounts-data',
     connect: 'connect',
     accessManagement: {
       root: 'access-management',
       grantManagementAccess: 'grant-management-access',
       grantReadonlyAccess: 'grant-readonly-access',
-      grantCustomAccess: 'grant-custom-access',
       getEntityUsers: 'users/:service/:entityId',
       revokeAgencyAccess: 'revoke/:service/:entityId/:linkId'
     }
