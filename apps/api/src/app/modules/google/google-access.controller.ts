@@ -60,7 +60,7 @@ export class GoogleAccessController {
     return {
       success: true,
       service: dto.service,
-      accessType: 'management',
+      accessType: 'manage',
       entityId: dto.entityId,
       agencyEmail: dto.agencyEmail,
       linkId: result.linkId,

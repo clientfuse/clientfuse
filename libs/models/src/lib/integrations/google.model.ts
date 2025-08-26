@@ -6,6 +6,7 @@ import {
   searchconsole_v1,
   tagmanager_v2
 } from 'googleapis';
+import { TAccessType } from '../agency.model';
 
 
 export interface IBaseAccessRequest {
@@ -169,7 +170,7 @@ export interface IGoogleAccountsData {
 export interface IGrantAccessResponse {
   success: boolean;
   service: GoogleServiceType;
-  accessType: 'management' | 'view';
+  accessType: TAccessType;
   entityId: string;
   agencyEmail: string;
   linkId?: string;
