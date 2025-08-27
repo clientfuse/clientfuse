@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, input } from '@angular/core';
+import { Component, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
@@ -34,6 +34,8 @@ interface ServicePanel {
   accounts: any[];
   selectedAccount: string;
   noAccountsMessage: string;
+  existingUsers?: Map<string, string[]>;
+  loadingUsers?: Set<string>;
 }
 
 @Component({
@@ -64,13 +66,27 @@ export class ConfirmAccessComponent {
   readonly accessType = input.required<TAccessType>();
   readonly enabledGoogleServicesNames = input<TGoogleAccessLinkKeys[]>([]);
   readonly enabledFacebookServicesNames = input<TFacebookAccessLinkKeys[]>([]);
+
+  private isInitializingPanels = false;
   readonly servicesEffect = effect(() => {
-    this.initializeServicePanels();
-  });
+    // Read the signals to track changes
+    const connectionData = this.googleStoreService.connectionData();
+    const googleServices = this.enabledGoogleServicesNames();
+    const facebookServices = this.enabledFacebookServicesNames();
+
+    if (!this.isInitializingPanels) {
+      this.isInitializingPanels = true;
+      setTimeout(() => {
+        this.initializeServicePanels();
+        this.isInitializingPanels = false;
+      }, 0);
+    }
+  }, { allowSignalWrites: true });
 
 
   readonly googleIcons = GOOGLE_ICON_PATHS;
   servicePanels: ServicePanel[] = [];
+  readonly entityUsersCache = signal<Map<string, { users: string[]; timestamp: number }>>(new Map());
 
   mockFacebookAdsAccounts: FacebookAdAccount[] = [
     {
@@ -130,7 +146,9 @@ export class ConfirmAccessComponent {
         provider: 'google',
         accounts: connectionData?.accounts?.googleAdsAccounts || [],
         selectedAccount: '',
-        noAccountsMessage: 'No Ads Account found.'
+        noAccountsMessage: 'No Ads Account found.',
+        existingUsers: new Map(),
+        loadingUsers: new Set()
       });
     }
 
@@ -143,7 +161,9 @@ export class ConfirmAccessComponent {
         provider: 'google',
         accounts: connectionData?.accounts?.googleAnalyticsAccounts || [],
         selectedAccount: '',
-        noAccountsMessage: 'No Analytics Account found.'
+        noAccountsMessage: 'No Analytics Account found.',
+        existingUsers: new Map(),
+        loadingUsers: new Set()
       });
     }
 
@@ -156,7 +176,9 @@ export class ConfirmAccessComponent {
         provider: 'google',
         accounts: connectionData?.accounts?.googleSearchConsoles || [],
         selectedAccount: '',
-        noAccountsMessage: 'No Search Console found.'
+        noAccountsMessage: 'No Search Console found.',
+        existingUsers: new Map(),
+        loadingUsers: new Set()
       });
     }
 
@@ -169,7 +191,9 @@ export class ConfirmAccessComponent {
         provider: 'google',
         accounts: connectionData?.accounts?.googleTagManagers || [],
         selectedAccount: '',
-        noAccountsMessage: 'No Tag Manager found.'
+        noAccountsMessage: 'No Tag Manager found.',
+        existingUsers: new Map(),
+        loadingUsers: new Set()
       });
     }
 
@@ -182,7 +206,9 @@ export class ConfirmAccessComponent {
         provider: 'google',
         accounts: connectionData?.accounts?.googleMerchantCenters || [],
         selectedAccount: '',
-        noAccountsMessage: 'No Merchant Center found.'
+        noAccountsMessage: 'No Merchant Center found.',
+        existingUsers: new Map(),
+        loadingUsers: new Set()
       });
     }
 
@@ -195,7 +221,9 @@ export class ConfirmAccessComponent {
         provider: 'google',
         accounts: connectionData?.accounts?.googleMyBusinessLocations || [],
         selectedAccount: '',
-        noAccountsMessage: 'No Business Profile Location found.'
+        noAccountsMessage: 'No Business Profile Location found.',
+        existingUsers: new Map(),
+        loadingUsers: new Set()
       });
     }
 
@@ -208,7 +236,9 @@ export class ConfirmAccessComponent {
         provider: 'facebook',
         accounts: this.mockFacebookAdsAccounts,
         selectedAccount: '',
-        noAccountsMessage: 'No Meta Ads Account found.'
+        noAccountsMessage: 'No Meta Ads Account found.',
+        existingUsers: new Map(),
+        loadingUsers: new Set()
       });
     }
 
@@ -220,7 +250,9 @@ export class ConfirmAccessComponent {
         provider: 'facebook',
         accounts: this.mockFacebookBusinessAccounts,
         selectedAccount: '',
-        noAccountsMessage: 'No Meta Business Account found.'
+        noAccountsMessage: 'No Meta Business Account found.',
+        existingUsers: new Map(),
+        loadingUsers: new Set()
       });
     }
 
@@ -232,7 +264,9 @@ export class ConfirmAccessComponent {
         provider: 'facebook',
         accounts: this.mockFacebookPages,
         selectedAccount: '',
-        noAccountsMessage: 'No Meta Pages found.'
+        noAccountsMessage: 'No Meta Pages found.',
+        existingUsers: new Map(),
+        loadingUsers: new Set()
       });
     }
 
@@ -244,11 +278,24 @@ export class ConfirmAccessComponent {
         provider: 'facebook',
         accounts: this.mockFacebookCatalogs,
         selectedAccount: '',
-        noAccountsMessage: 'No Meta Catalogs found.'
+        noAccountsMessage: 'No Meta Catalogs found.',
+        existingUsers: new Map(),
+        loadingUsers: new Set()
       });
     }
 
     this.servicePanels = panels;
+
+    panels.forEach(panel => {
+      if (panel.accounts.length > 0 && panel.provider === 'google') {
+        panel.accounts.forEach(async account => {
+          const accountValue = this.getAccountValue(account, panel);
+          if (accountValue) {
+            await this.checkAccountUsers(panel, accountValue);
+          }
+        });
+      }
+    });
   }
 
   getAccountValue(account: any, panel: ServicePanel): string {
@@ -409,6 +456,34 @@ export class ConfirmAccessComponent {
             `${accessTypeText} access granted successfully for ${panel.name}`
           );
 
+          // Update the existing users list to include the agency email
+          if (panel.existingUsers) {
+            const currentUsers = panel.existingUsers.get(panel.selectedAccount) || [];
+            if (!currentUsers.some(email => email.toLowerCase() === agencyEmail.toLowerCase())) {
+              panel.existingUsers.set(panel.selectedAccount, [...currentUsers, agencyEmail]);
+            }
+          }
+
+          // Update the cache
+          const cacheKey = `${panel.key}_${panel.selectedAccount}`;
+          const updatedCache = new Map(this.entityUsersCache());
+          const cachedEntry = updatedCache.get(cacheKey);
+          if (cachedEntry) {
+            if (!cachedEntry.users.some(email => email.toLowerCase() === agencyEmail.toLowerCase())) {
+              cachedEntry.users.push(agencyEmail);
+            }
+            updatedCache.set(cacheKey, {
+              users: cachedEntry.users,
+              timestamp: Date.now()
+            });
+          } else {
+            updatedCache.set(cacheKey, {
+              users: [agencyEmail],
+              timestamp: Date.now()
+            });
+          }
+          this.entityUsersCache.set(updatedCache);
+
           panel.selectedAccount = '';
         } else {
           const errorMessage = this.googleStoreService.error();
@@ -425,6 +500,73 @@ export class ConfirmAccessComponent {
     } else {
       this.snackbarService.info('Facebook/Meta access grant will be available soon');
     }
+  }
+
+  async onAccountSelectionChange(panel: ServicePanel, accountValue: string): Promise<void> {
+    panel.selectedAccount = accountValue;
+    await this.checkAccountUsers(panel, accountValue);
+  }
+
+  async checkAccountUsers(panel: ServicePanel, accountValue: string): Promise<void> {
+    if (!accountValue || panel.provider !== 'google') {
+      return;
+    }
+
+    const cacheKey = `${panel.key}_${accountValue}`;
+    const cached = this.entityUsersCache();
+    const cachedEntry = cached.get(cacheKey);
+
+    const CACHE_DURATION = 5 * 60 * 1000;
+    if (cachedEntry && (Date.now() - cachedEntry.timestamp) < CACHE_DURATION) {
+      panel.existingUsers?.set(accountValue, cachedEntry.users);
+      return;
+    }
+
+    const service = this.mapPanelKeyToServiceType(panel.key);
+    if (!service) {
+      return;
+    }
+
+    panel.loadingUsers?.add(accountValue);
+
+    try {
+      await this.googleStoreService.loadEntityUsers({
+        service: service,
+        entityId: accountValue
+      });
+
+      const entityUsers = this.googleStoreService.entityUsers();
+      if (entityUsers && entityUsers.users) {
+        const userEmails = entityUsers.users.map(user => user.email);
+        panel.existingUsers?.set(accountValue, userEmails);
+
+        const updatedCache = new Map(this.entityUsersCache());
+        updatedCache.set(cacheKey, {
+          users: userEmails,
+          timestamp: Date.now()
+        });
+        this.entityUsersCache.set(updatedCache);
+      }
+    } catch (error) {
+      console.error('Failed to load entity users:', error);
+    } finally {
+      panel.loadingUsers?.delete(accountValue);
+    }
+  }
+
+  isAccountDisabled(panel: ServicePanel, accountValue: string): boolean {
+    const agencyEmail = this.connectionSettings()?.email?.toLowerCase() || '';
+    const existingUsers = panel.existingUsers?.get(accountValue) || [];
+    return existingUsers.some(email => email.toLowerCase() === agencyEmail);
+  }
+
+  getAlreadyConnectedText(panel: ServicePanel, accountValue: string): string {
+    const agencyEmail = this.connectionSettings()?.email || '';
+    return `The agency ${agencyEmail} already has access to this account`;
+  }
+
+  isLoadingUsers(panel: ServicePanel, accountValue: string): boolean {
+    return panel.loadingUsers?.has(accountValue) || false;
   }
 
   private mapPanelKeyToServiceType(key: string): GoogleServiceType | null {

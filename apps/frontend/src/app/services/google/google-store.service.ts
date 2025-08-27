@@ -17,6 +17,7 @@ export interface GoogleStoreState {
   connectionData: IGoogleConnectionResponse | null;
   entityUsers: IGetEntityUsersResponse | null;
   accessToken: string | null;
+  grantedAccesses: IGrantAccessResponse[];
   isLoading: boolean;
   error: string | null;
 }
@@ -31,6 +32,7 @@ export class GoogleStoreService {
     connectionData: null,
     entityUsers: null,
     accessToken: null,
+    grantedAccesses: [],
     isLoading: false,
     error: null
   });
@@ -38,6 +40,7 @@ export class GoogleStoreService {
   readonly connectionData = computed(() => this.state().connectionData);
   readonly entityUsers = computed(() => this.state().entityUsers);
   readonly accessToken = computed(() => this.state().accessToken);
+  readonly grantedAccesses = computed(() => this.state().grantedAccesses);
   readonly isLoading = computed(() => this.state().isLoading);
   readonly error = computed(() => this.state().error);
 
@@ -84,6 +87,10 @@ export class GoogleStoreService {
 
       const response = await this.googleApiService.grantManagementAccess(fullDto);
       if (response.payload) {
+        this.state.update(state => ({
+          ...state,
+          grantedAccesses: [...state.grantedAccesses, response.payload]
+        }));
         return response.payload;
       } else {
         this.setError('Failed to grant management access');
@@ -117,6 +124,10 @@ export class GoogleStoreService {
 
       const response = await this.googleApiService.grantViewAccess(fullDto);
       if (response.payload) {
+        this.state.update(state => ({
+          ...state,
+          grantedAccesses: [...state.grantedAccesses, response.payload]
+        }));
         return response.payload;
       } else {
         this.setError('Failed to grant view access');
@@ -234,9 +245,33 @@ export class GoogleStoreService {
       connectionData: null,
       entityUsers: null,
       accessToken: null,
+      grantedAccesses: [],
       isLoading: false,
       error: null
     });
+  }
+
+  getGrantedAccessByEntity(service: string, entityId: string): IGrantAccessResponse | undefined {
+    return this.state().grantedAccesses.find(
+      access => access.service === service && access.entityId === entityId
+    );
+  }
+
+  getSessionSummary(): { totalGranted: number; services: string[] } {
+    const accesses = this.state().grantedAccesses;
+    const uniqueServices = [...new Set(accesses.map(a => a.service))];
+
+    return {
+      totalGranted: accesses.length,
+      services: uniqueServices
+    };
+  }
+
+  clearGrantedAccesses(): void {
+    this.state.update(state => ({
+      ...state,
+      grantedAccesses: []
+    }));
   }
 
   private setLoading(isLoading: boolean): void {

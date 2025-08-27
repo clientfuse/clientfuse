@@ -33,23 +33,36 @@
                 @if (panel.accounts.length > 0) {
                   @for (
                     account of panel.accounts; track account.id || account.siteUrl || account.accountId || account.merchantId || account.name || $index) {
-                    <div class="account-item">
-                      <mat-radio-group [(ngModel)]="panel.selectedAccount">
-                        <mat-radio-button [value]="getAccountValue(account, panel)" class="account-radio">
+                    @let accountValue = getAccountValue(account, panel);
+                    @let isDisabled = isAccountDisabled(panel, accountValue);
+                    @let isLoading = isLoadingUsers(panel, accountValue);
+
+                    <div class="account-item"
+                         [class.disabled]="isDisabled">
+                      <mat-radio-group [ngModel]="panel.selectedAccount"
+                                       (ngModelChange)="onAccountSelectionChange(panel, $event)">
+                        <mat-radio-button [value]="accountValue"
+                                          [disabled]="isDisabled || isLoading"
+                                          class="account-radio">
                           <div class="account-info">
                             <span class="account-name">{{ getAccountDisplayName(account, panel) }}</span>
                             <span class="account-details">{{ getAccountDetails(account, panel) }}</span>
+                            @if (isDisabled) {
+                              <span class="already-connected-text">{{ getAlreadyConnectedText(panel, accountValue) }}</span>
+                            }
+                            @if (isLoading) {
+                              <span class="loading-text">Checking access...</span>
+                            }
                           </div>
                         </mat-radio-button>
                       </mat-radio-group>
                     </div>
                   }
                   <div class="panel-actions">
-                    <button 
-                      mat-flat-button 
-                      class="grant-access-btn"
-                      [disabled]="!panel.selectedAccount || isLoading()"
-                      (click)="grantAccess(panel)">
+                    <button mat-flat-button
+                            class="grant-access-btn"
+                            [disabled]="!panel.selectedAccount || isLoading()"
+                            (click)="grantAccess(panel)">
                       {{ getGrantButtonText() }}
                     </button>
                   </div>
@@ -100,23 +113,36 @@
                 @if (panel.accounts.length > 0) {
                   @for (
                     account of panel.accounts; track account.id || account.siteUrl || account.accountId || account.merchantId || account.name || $index) {
-                    <div class="account-item">
-                      <mat-radio-group [(ngModel)]="panel.selectedAccount">
-                        <mat-radio-button [value]="getAccountValue(account, panel)" class="account-radio">
+                    @let accountValue = getAccountValue(account, panel);
+                    @let isDisabled = isAccountDisabled(panel, accountValue);
+                    @let isLoading = isLoadingUsers(panel, accountValue);
+
+                    <div class="account-item"
+                         [class.disabled]="isDisabled">
+                      <mat-radio-group [ngModel]="panel.selectedAccount"
+                                       (ngModelChange)="onAccountSelectionChange(panel, $event)">
+                        <mat-radio-button [value]="accountValue"
+                                          [disabled]="isDisabled || isLoading"
+                                          class="account-radio">
                           <div class="account-info">
                             <span class="account-name">{{ getAccountDisplayName(account, panel) }}</span>
                             <span class="account-details">{{ getAccountDetails(account, panel) }}</span>
+                            @if (isDisabled) {
+                              <span class="already-connected-text">{{ getAlreadyConnectedText(panel, accountValue) }}</span>
+                            }
+                            @if (isLoading) {
+                              <span class="loading-text">Checking access...</span>
+                            }
                           </div>
                         </mat-radio-button>
                       </mat-radio-group>
                     </div>
                   }
                   <div class="panel-actions">
-                    <button 
-                      mat-flat-button 
-                      class="grant-access-btn"
-                      [disabled]="!panel.selectedAccount || isLoading()"
-                      (click)="grantAccess(panel)">
+                    <button mat-flat-button
+                            class="grant-access-btn"
+                            [disabled]="!panel.selectedAccount || isLoading()"
+                            (click)="grantAccess(panel)">
                       {{ getGrantButtonText() }}
                     </button>
                   </div>
