@@ -156,6 +156,7 @@ export class GoogleAccounts {
       }
 
       const accounts = [];
+      const userEmail = this.verifiedUser?.email;
 
       for (const resourceName of customerResourceNames) {
         try {
@@ -173,11 +174,16 @@ export class GoogleAccounts {
                    customer.time_zone,
                    customer.auto_tagging_enabled,
                    customer.status,
-                   customer.resource_name
-            FROM customer LIMIT 1
+                   customer.resource_name,
+                   customer_user_access.access_role,
+                   customer_user_access.email_address
+            FROM customer_user_access
+            WHERE customer_user_access.email_address = '${userEmail}' LIMIT 1
           `);
 
-          if (customerDetails) {
+          // Only include accounts where user has ADMIN access role
+          // Access roles: ADMIN, STANDARD, READ_ONLY, EMAIL_ONLY
+          if (customerDetails && customerDetails.customer_user_access?.access_role === 'ADMIN') {
             accounts.push({
               id: customerDetails.customer.id,
               name: customerDetails.customer.descriptive_name || `Account ${customerDetails.customer.id}`,
@@ -189,7 +195,7 @@ export class GoogleAccounts {
             });
           }
         } catch (accountError) {
-          Logger.error(`Error fetching Google Ads account details for ${resourceName}:`);
+          Logger.warn(`Error fetching Google Ads account details for ${resourceName}:`);
           console.error(accountError);
         }
       }
@@ -216,7 +222,13 @@ export class GoogleAccounts {
         return [];
       }
 
-      return response.data.items;
+      // Filter to only return accounts where user has MANAGE_USERS permission (owner/admin)
+      const ownedAccounts = response.data.items.filter(account => {
+        const permissions = account.permissions?.effective || [];
+        return permissions.includes('MANAGE_USERS');
+      });
+
+      return ownedAccounts;
     } catch (error) {
       Logger.error('Error fetching Analytics accounts:', error);
       return [];
@@ -233,7 +245,13 @@ export class GoogleAccounts {
         return [];
       }
 
-      return response.data.siteEntry;
+      // Filter to only return sites where user is an owner
+      // Search Console permissions: 'siteOwner', 'siteFullUser', 'siteRestrictedUser', 'siteUnverifiedUser'
+      const ownedSites = response.data.siteEntry.filter(site => {
+        return site.permissionLevel === 'siteOwner';
+      });
+
+      return ownedSites;
     } catch (error) {
       Logger.error('Error fetching Search Console sites:', error);
       return [];
@@ -250,7 +268,35 @@ export class GoogleAccounts {
         return [];
       }
 
-      return response.data.account;
+      const userEmail = this.verifiedUser?.email;
+      if (!userEmail) {
+        return response.data.account;
+      }
+
+      const ownedAccounts = [];
+
+      for (const account of response.data.account) {
+        try {
+          const permissionsResponse = await tagManager.accounts.user_permissions.list({
+            parent: account.path
+          });
+
+          if (permissionsResponse.data.userPermission) {
+            const userPermission = permissionsResponse.data.userPermission.find(
+              perm => perm.emailAddress?.toLowerCase() === userEmail.toLowerCase()
+            );
+
+            if (userPermission?.accountAccess?.permission === 'admin') {
+              ownedAccounts.push(account);
+            }
+          }
+        } catch (permError) {
+          Logger.warn(`Could not fetch permissions for GTM account ${account.accountId}:`, permError);
+          ownedAccounts.push(account);
+        }
+      }
+
+      return ownedAccounts;
     } catch (error) {
       Logger.error('Error fetching Tag Manager accounts:', error);
       return [];
@@ -267,6 +313,10 @@ export class GoogleAccounts {
         return [];
       }
 
+      // For Merchant Center, we'll return all accessible accounts
+      // The Content API v2.1 doesn't provide a direct way to check admin status
+      // without additional permissions that may not be granted
+      // Filtering can be done at a higher level if needed
       return response.data.accountIdentifiers;
     } catch (error) {
       Logger.error('Error fetching Merchant Center accounts:', error);
@@ -287,7 +337,35 @@ export class GoogleAccounts {
         return [];
       }
 
-      return response.data.accounts;
+      const userEmail = this.verifiedUser?.email;
+      if (!userEmail) {
+        return response.data.accounts;
+      }
+
+      const ownedAccounts = [];
+
+      for (const account of response.data.accounts) {
+        try {
+          const adminsResponse = await myBusiness.accounts.admins.list({
+            parent: account.name
+          });
+
+          if (adminsResponse.data.accountAdmins) {
+            const currentUserAdmin = adminsResponse.data.accountAdmins.find(
+              admin => admin.admin?.toLowerCase() === userEmail.toLowerCase()
+            );
+
+            if (currentUserAdmin?.role === 'PRIMARY_OWNER' || currentUserAdmin?.role === 'OWNER') {
+              ownedAccounts.push(account);
+            }
+          }
+        } catch (adminError) {
+          // If we can't fetch admins, skip this account
+          Logger.warn(`Could not fetch admins for My Business account ${account.name}:`, adminError);
+        }
+      }
+
+      return ownedAccounts;
     } catch (error) {
       Logger.error('Error fetching My Business accounts:', error);
       return [];
