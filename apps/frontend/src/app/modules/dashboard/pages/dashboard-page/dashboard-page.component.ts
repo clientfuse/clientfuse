@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ClipboardModule } from '@angular/cdk/clipboard';
 import { IAgencyResponse, TAccessType } from '@clientfuse/models';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
@@ -20,7 +21,7 @@ import {
 @Component({
   selector: 'app-dashboard-page',
   standalone: true,
-  imports: [CommonModule, MatTabsModule, MatFormFieldModule, MatInputModule, MatIconModule, MatButtonModule, MatTooltipModule],
+  imports: [CommonModule, MatTabsModule, MatFormFieldModule, MatInputModule, MatIconModule, MatButtonModule, MatTooltipModule, ClipboardModule],
   templateUrl: './dashboard-page.component.html',
   styleUrl: './dashboard-page.component.scss'
 })
@@ -43,14 +44,8 @@ export class DashboardPageComponent {
       : '';
   });
 
-  async copyToClipboard(text: string): Promise<void> {
-    try {
-      await navigator.clipboard.writeText(text);
-      this.snackbarService.success('Link copied to clipboard');
-    } catch (err) {
-      console.error('Failed to copy to clipboard:', err);
-      this.snackbarService.error('Failed to copy link to clipboard');
-    }
+  onCopySuccess(): void {
+    this.snackbarService.success('Link copied to clipboard');
   }
 
   openInNewTab(url: string): void {

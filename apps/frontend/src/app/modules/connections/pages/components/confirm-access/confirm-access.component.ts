@@ -18,11 +18,17 @@ import {
   TPlatformNamesKeys
 } from '@clientfuse/models';
 import { analytics_v3, content_v2_1, mybusinessbusinessinformation_v1, searchconsole_v1, tagmanager_v2 } from 'googleapis';
+import { firstValueFrom } from 'rxjs';
 import { IslandComponent } from '../../../../../components/island/island.component';
+import { DialogService } from '../../../../../services/dialog.service';
 import { GoogleStoreService } from '../../../../../services/google/google-store.service';
 import { SnackbarService } from '../../../../../services/snackbar.service';
 import { GOOGLE_ICON_PATHS } from '../../../../../utils/icon.utils';
 import { InstructionStepComponent } from '../instruction-step/instruction-step.component';
+import {
+  GoogleAdsDomainModalComponent,
+  IGoogleAdsDomainModalData
+} from '../modals/google-ads-domain-modal/google-ads-domain-modal.component';
 import { RequestDetailsComponent } from '../request-details/request-details.component';
 
 interface ServicePanel {
@@ -61,6 +67,7 @@ interface ServicePanel {
 export class ConfirmAccessComponent {
   private readonly googleStoreService = inject(GoogleStoreService);
   private readonly snackbarService = inject(SnackbarService);
+  private readonly dialogService = inject(DialogService);
 
   readonly connectionSettings = input.required<IAgencyResponse | null>();
   readonly accessType = input.required<TAccessType>();
@@ -215,13 +222,13 @@ export class ConfirmAccessComponent {
     if (googleServices.includes('myBusiness')) {
       panels.push({
         key: 'googleMyBusiness',
-        name: 'Google Business Profile Location',
+        name: 'Google Business Profile',
         iconPath: this.googleIcons.myBusiness,
         expanded: false,
         provider: 'google',
         accounts: connectionData?.accounts?.googleMyBusinessLocations || [],
         selectedAccount: '',
-        noAccountsMessage: 'No Business Profile Location found.',
+        noAccountsMessage: 'No Business Profile found.',
         existingUsers: new Map(),
         loadingUsers: new Set()
       });
@@ -434,6 +441,19 @@ export class ConfirmAccessComponent {
       if (!service) {
         this.snackbarService.error('Unknown service type');
         return;
+      }
+
+      if (panel.key === 'googleAds' && agencyEmail && !agencyEmail.toLowerCase().endsWith('@gmail.com')) {
+        const domain = agencyEmail.split('@')[1];
+
+        const dialogRef = this.dialogService.open<GoogleAdsDomainModalComponent, IGoogleAdsDomainModalData>(
+          GoogleAdsDomainModalComponent,
+          { domain: domain }
+        );
+
+        const result = await firstValueFrom(dialogRef.afterClosed());
+
+        if (!result) return;
       }
 
       const dto = {

@@ -1,0 +1,82 @@
+<div class="google-ads-domain-modal">
+  <div class="modal-header">
+    <h2 class="modal-title subtitle-medium">Granting Google Ads Access</h2>
+    <button mat-icon-button (click)="onClose()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="modal-body">
+    <p class="body">
+      To give Google Ads access, you <strong>must add a domain</strong> to your
+      <strong>list of allowed domains</strong> in your Google Ads settings (if it is not already there).
+    </p>
+
+    <ol class="instructions-list">
+      <li class="instruction-item">
+        <span class="instruction-text">Copy this domain:</span>
+        <div class="domain-input-group">
+          <mat-form-field appearance="outline" class="domain-field">
+            <input matInput
+                   [value]="data.domain"
+                   readonly
+                   class="domain-input">
+          </mat-form-field>
+          <button mat-flat-button
+                  color="primary"
+                  [cdkCopyToClipboard]="data.domain"
+                  (cdkCopyToClipboardCopied)="copyDomain()"
+                  class="copy-button"
+                  [class.copied]="isCopied()">
+            {{ copyButtonText() }}
+          </button>
+        </div>
+      </li>
+
+      <li class="instruction-item">
+        <span class="instruction-text">
+          Go to your
+          <a href="https://ads.google.com/aw/accountaccess/settings"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="link link-blue">
+            <strong>allowed domains</strong>
+          </a>
+        </span>
+      </li>
+
+      <li class="instruction-item">
+        <span class="instruction-text">
+          Expand the <strong>Allowed domains</strong> section
+        </span>
+      </li>
+
+      <li class="instruction-item">
+        <span class="instruction-text">
+          Click on <strong>Add domain</strong>
+        </span>
+      </li>
+
+      <li class="instruction-item">
+        <span class="instruction-text">
+          Paste in this domain
+        </span>
+      </li>
+
+      <li class="instruction-item">
+        <span class="instruction-text">
+          Click <strong>Save</strong>
+        </span>
+      </li>
+    </ol>
+
+    <div class="modal-actions">
+      <button mat-flat-button
+              color="primary"
+              (click)="onContinue()"
+              class="continue-button">
+        Continue
+      </button>
+    </div>
+  </div>
+</div>
