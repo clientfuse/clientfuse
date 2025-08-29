@@ -16,10 +16,7 @@
           <div class="connect-link-row">
             <mat-form-field appearance="outline">
               <mat-label>'Manage Access' Link</mat-label>
-              <input readonly matInput placeholder="Placeholder" value="https://connectly.io/connect/f6104c484d095739/manage" />
-              <button matSuffix mat-icon-button matTooltip="Copy link">
-                <mat-icon>content_copy</mat-icon>
-              </button>
+              <input readonly matInput placeholder="Placeholder" [value]="manageAccessLink()" />
               <mat-hint>Copy the link and share it with your client</mat-hint>
             </mat-form-field>
 
@@ -27,7 +24,11 @@
               <mat-icon>settings</mat-icon>
             </button>
 
-            <button mat-icon-button matTooltip="Open this link in a new tab">
+            <button mat-icon-button matTooltip="Copy link" (click)="copyToClipboard(manageAccessLink())">
+              <mat-icon>content_copy</mat-icon>
+            </button>
+
+            <button mat-icon-button matTooltip="Open this link in a new tab" (click)="openInNewTab(manageAccessLink())">
               <mat-icon>open_in_new</mat-icon>
             </button>
           </div>
@@ -51,10 +52,7 @@
           <div class="connect-link-row">
             <mat-form-field appearance="outline">
               <mat-label>'View Access' Link</mat-label>
-              <input readonly matInput placeholder="Placeholder" value="https://connectly.io/connect/f6104c484d095739/manage" />
-              <button matSuffix mat-icon-button matTooltip="Copy link">
-                <mat-icon>content_copy</mat-icon>
-              </button>
+              <input readonly matInput placeholder="Placeholder" [value]="viewAccessLink()" />
               <mat-hint>Copy the link and share it with your client</mat-hint>
             </mat-form-field>
 
@@ -62,7 +60,11 @@
               <mat-icon>settings</mat-icon>
             </button>
 
-            <button mat-icon-button matTooltip="Open this link in a new tab">
+            <button mat-icon-button matTooltip="Copy link" (click)="copyToClipboard(viewAccessLink())">
+              <mat-icon>content_copy</mat-icon>
+            </button>
+
+            <button mat-icon-button matTooltip="Open this link in a new tab" (click)="openInNewTab(viewAccessLink())">
               <mat-icon>open_in_new</mat-icon>
             </button>
           </div>

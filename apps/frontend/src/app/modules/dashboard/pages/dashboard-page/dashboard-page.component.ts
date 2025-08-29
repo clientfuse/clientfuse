@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,8 +8,10 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { IAgencyResponse, TAccessType } from '@clientfuse/models';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../../../environments/environment';
 import { AgencyStoreService } from '../../../../services/agency/agency-store.service';
 import { DialogService } from '../../../../services/dialog.service';
+import { SnackbarService } from '../../../../services/snackbar.service';
 import {
   CustomizeAccessLinkModalComponent,
   ICustomizeAccessLinkModalData
@@ -25,6 +27,37 @@ import {
 export class DashboardPageComponent {
   private readonly dialogService = inject(DialogService);
   private readonly agencyStoreService = inject(AgencyStoreService);
+  private readonly snackbarService = inject(SnackbarService);
+
+  readonly agency = this.agencyStoreService.agency;
+  readonly manageAccessLink = computed(() => {
+    const agency = this.agency();
+    return agency?._id 
+      ? `${environment.CLIENT_APP_URL}/connect/${agency._id}/manage`
+      : '';
+  });
+  readonly viewAccessLink = computed(() => {
+    const agency = this.agency();
+    return agency?._id 
+      ? `${environment.CLIENT_APP_URL}/connect/${agency._id}/view`
+      : '';
+  });
+
+  async copyToClipboard(text: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(text);
+      this.snackbarService.success('Link copied to clipboard');
+    } catch (err) {
+      console.error('Failed to copy to clipboard:', err);
+      this.snackbarService.error('Failed to copy link to clipboard');
+    }
+  }
+
+  openInNewTab(url: string): void {
+    if (url) {
+      window.open(url, '_blank');
+    }
+  }
 
   async openCustomizeAccessLinkModal(accessType: TAccessType): Promise<void> {
     const result: IAgencyResponse | null = await firstValueFrom(

@@ -20,7 +20,6 @@ import {
 import { ListFormatter } from '@clientfuse/utils';
 import { IslandComponent } from '../../../../../components/island/island.component';
 import { GoogleStoreService } from '../../../../../services/google/google-store.service';
-
 import { InstructionStepComponent } from '../instruction-step/instruction-step.component';
 import { RequestDetailsComponent } from '../request-details/request-details.component';
 
