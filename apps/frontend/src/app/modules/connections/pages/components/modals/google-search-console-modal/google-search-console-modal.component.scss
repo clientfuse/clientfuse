@@ -2,58 +2,6 @@
 @import 'fonts';
 @import 'material-overrides/mat-modal';
 
-.status-indicator {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-2);
-
-  mat-icon {
-    margin-top: 2px;
-  }
-
-  &.granted {
-    color: $green-80;
-
-    mat-icon {
-      color: $green-80;
-    }
-  }
-
-  &.not-granted {
-    color: $blue-80;
-
-    mat-icon {
-      color: $blue-80;
-    }
-  }
-
-  &.incorrect {
-    color: $orange-80;
-
-    mat-icon {
-      color: $orange-80;
-    }
-  }
-
-  .status-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-1);
-    flex: 1;
-
-    .status-text {
-      font-weight: 500;
-    }
-
-    .status-message {
-      margin: 0;
-      font-size: 14px;
-      line-height: 1.5;
-      opacity: 0.9;
-    }
-  }
-}
-
 .manual-step-list {
   list-style: none;
   padding: 0;

@@ -1,0 +1,21 @@
+<app-island
+  [variant]="variant()"
+  [density]="density()"
+  [borderAccent]="true">
+  <div class="status-card"
+       [class.success]="variant() === 'success'"
+       [class.warning]="variant() === 'warning'"
+       [class.error]="variant() === 'error'"
+       [class.info]="variant() === 'info'"
+       [class.neutral]="variant() === 'neutral'">
+    <div class="status-header">
+      @if (showIcon()) {
+        <mat-icon class="status-icon">{{ iconName() }}</mat-icon>
+      }
+      <span class="status-title">{{ header() }}</span>
+    </div>
+    <div class="status-content">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</app-island>

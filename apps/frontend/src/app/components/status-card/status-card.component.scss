@@ -1,0 +1,73 @@
+@import 'variables';
+
+.status-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .status-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .status-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .status-title {
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 20px;
+    }
+  }
+
+  .status-content {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  &.success {
+    .status-icon,
+    .status-title,
+    .status-content {
+      color: $green-100;
+    }
+  }
+
+  &.warning {
+    .status-icon,
+    .status-title,
+    .status-content {
+      color: $orange-100;
+    }
+  }
+
+  &.error {
+    .status-icon,
+    .status-title,
+    .status-content {
+      color: $red-100;
+    }
+  }
+
+  &.info {
+    .status-icon,
+    .status-title,
+    .status-content {
+      color: $blue-100;
+    }
+  }
+
+  &.neutral {
+    .status-icon,
+    .status-title {
+      color: $dark-80;
+    }
+    
+    .status-content {
+      color: $dark-60;
+    }
+  }
+}

@@ -75,31 +75,17 @@
       </li>
     </ol>
 
-    <app-island
-      [variant]="accessStatus() === 'granted' ? 'success' : accessStatus() === 'incorrect_access' ? 'warning' : 'info'"
-      density="compact"
-      *ngIf="accessStatus() !== 'pending'">
-      <div class="status-indicator"
-           [class.granted]="accessStatus() === 'granted'"
-           [class.not-granted]="accessStatus() === 'not_granted'"
-           [class.incorrect]="accessStatus() === 'incorrect_access'">
-        <mat-icon *ngIf="accessStatus() === 'granted'">check_circle</mat-icon>
-        <mat-icon *ngIf="accessStatus() === 'not_granted'">info</mat-icon>
-        <mat-icon *ngIf="accessStatus() === 'incorrect_access'">warning</mat-icon>
-        <div class="status-content">
-          <span class="status-text">
-            {{
-              accessStatus() === 'granted' ? 'Access Granted' :
-                accessStatus() === 'incorrect_access' ? 'Incorrect Access Level' :
-                  'Access Not Yet Granted'
-            }}
-          </span>
-          <p class="status-message" *ngIf="accessMessage()">
-            {{ accessMessage() }}
-          </p>
-        </div>
-      </div>
-    </app-island>
+    @if (accessStatus() !== 'pending') {
+      <app-status-card
+        [variant]="accessStatus() === 'granted' ? 'success' : accessStatus() === 'incorrect_access' ? 'warning' : 'info'"
+        [header]="accessStatus() === 'granted' ? 'Access Granted' : 
+                  accessStatus() === 'incorrect_access' ? 'Incorrect Access Level' : 
+                  'Access Not Yet Granted'">
+        @if (accessMessage()) {
+          <p>{{ accessMessage() }}</p>
+        }
+      </app-status-card>
+    }
 
     <div class="connectly-modal-actions">
       <button mat-stroked-button (click)="onClose()">

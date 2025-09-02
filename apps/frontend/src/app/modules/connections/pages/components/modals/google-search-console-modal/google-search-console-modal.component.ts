@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { GoogleSearchConsolePermissionLevel, GoogleServiceType, TAccessType } from '@clientfuse/models';
 import { IslandComponent } from '../../../../../../components/island/island.component';
+import { StatusCardComponent } from '../../../../../../components/status-card/status-card.component';
 import { GoogleStoreService } from '../../../../../../services/google/google-store.service';
 import { SnackbarService } from '../../../../../../services/snackbar.service';
 
@@ -31,7 +32,8 @@ export interface IGoogleSearchConsoleModalData {
     MatFormFieldModule,
     MatSnackBarModule,
     ClipboardModule,
-    IslandComponent
+    IslandComponent,
+    StatusCardComponent
   ],
   templateUrl: './google-search-console-modal.component.html',
   styleUrl: './google-search-console-modal.component.scss'

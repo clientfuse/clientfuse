@@ -96,11 +96,11 @@ app-island {
 }
 
 .facebook-connect-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-2);
-  padding: var(--spacing-3) var(--spacing-6);
+  padding: 0 var(--spacing-6);
   background: $blue-80;
   color: white;
   border: none;
@@ -109,29 +109,32 @@ app-island {
   font-size: var(--fs-16);
   line-height: var(--fs-16-lh);
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition: background-color 0.2s ease;
   min-height: 44px;
+  min-width: 200px;
 
   .facebook-icon {
+    position: absolute;
+    left: var(--spacing-4);
     flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
   }
 
   @include mouseOrTrackpadNavigation {
     &:hover:not([disabled]) {
       background: $blue-100;
-      transform: translateY(-1px);
     }
   }
 
   &:active:not([disabled]) {
     background: darken($blue-100, 10%);
-    transform: translateY(0);
   }
 
   &:disabled {
     background: $dark-60;
     cursor: not-allowed;
-    transform: none;
   }
 }
 
