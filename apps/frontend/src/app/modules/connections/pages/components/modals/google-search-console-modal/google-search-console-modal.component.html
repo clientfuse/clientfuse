@@ -1,0 +1,116 @@
+<div class="connectly-modal">
+  <div class="connectly-modal-header">
+    <h2 class="subtitle-medium">Granting Google Search Console Access</h2>
+    <button mat-icon-button (click)="onClose()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="connectly-modal-description" *ngIf="accessStatus() === 'pending'">
+    <p>
+      Google Search Console API does not support direct user management for URL-prefix properties.
+      Please follow these manual steps to grant access to <strong>{{ data.domain }}</strong>:
+    </p>
+  </div>
+
+  <div class="connectly-modal-content">
+    <ol class="manual-step-list">
+      <li class="manual-step-list-item">
+        <app-island variant="neutral" density="compact">
+          <div class="step-content-wrapper">
+            <div class="step-content">
+              <p class="step-title">Copy your Agency's email address:</p>
+              <div class="email-copy-section">
+                <mat-form-field appearance="outline" class="agency-email-field">
+                  <input matInput
+                         [value]="data.agencyEmail"
+                         readonly>
+                </mat-form-field>
+                <button mat-flat-button
+                        color="primary"
+                        [cdkCopyToClipboard]="data.agencyEmail"
+                        (cdkCopyToClipboardCopied)="copyEmail()">
+                  {{ copyButtonText() }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </app-island>
+      </li>
+
+      <li class="manual-step-list-item">
+        <app-island variant="neutral" density="compact">
+          <div class="step-content-wrapper">
+            <div class="step-content">
+              <p class="step-title">Visit the Google Search Console settings page for your property:</p>
+              <button mat-flat-button
+                      color="primary"
+                      (click)="openSettingsPage()">
+                Open Settings Page
+              </button>
+            </div>
+          </div>
+        </app-island>
+      </li>
+
+      <li class="manual-step-list-item">
+        <app-island variant="neutral" density="compact">
+          <div class="step-content-wrapper">
+            <div class="step-content">
+              <p class="step-title">In the Google Search Console settings, add your agency as a user:</p>
+              <ul class="sub-steps">
+                <li>Click on the "ADD USER" button</li>
+                <li>Paste your Agency's email address: <strong>{{ data.agencyEmail }}</strong></li>
+                <li *ngIf="data.accessType === 'view'">Assign the role <strong>"Restricted"</strong> for view access</li>
+                <li *ngIf="data.accessType === 'manage'">Assign the role <strong>"Owner"</strong> for manage access</li>
+                <li>Click "Add" to save</li>
+              </ul>
+            </div>
+            <div class="step-image">
+              <img src="/assets/images/search-console-helper.png"
+                   alt="Google Search Console Add User">
+            </div>
+          </div>
+        </app-island>
+      </li>
+    </ol>
+
+    <app-island
+      [variant]="accessStatus() === 'granted' ? 'success' : accessStatus() === 'incorrect_access' ? 'warning' : 'info'"
+      density="compact"
+      *ngIf="accessStatus() !== 'pending'">
+      <div class="status-indicator"
+           [class.granted]="accessStatus() === 'granted'"
+           [class.not-granted]="accessStatus() === 'not_granted'"
+           [class.incorrect]="accessStatus() === 'incorrect_access'">
+        <mat-icon *ngIf="accessStatus() === 'granted'">check_circle</mat-icon>
+        <mat-icon *ngIf="accessStatus() === 'not_granted'">info</mat-icon>
+        <mat-icon *ngIf="accessStatus() === 'incorrect_access'">warning</mat-icon>
+        <div class="status-content">
+          <span class="status-text">
+            {{
+              accessStatus() === 'granted' ? 'Access Granted' :
+                accessStatus() === 'incorrect_access' ? 'Incorrect Access Level' :
+                  'Access Not Yet Granted'
+            }}
+          </span>
+          <p class="status-message" *ngIf="accessMessage()">
+            {{ accessMessage() }}
+          </p>
+        </div>
+      </div>
+    </app-island>
+
+    <div class="connectly-modal-actions">
+      <button mat-stroked-button (click)="onClose()">
+        Cancel
+      </button>
+      <button mat-flat-button
+              color="primary"
+              (click)="checkAccess()"
+              [disabled]="isChecking()">
+        <span>{{ isChecking() ? 'Checking...' : 'Check Access' }}</span>
+      </button>
+    </div>
+  </div>
+</div>

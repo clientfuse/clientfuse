@@ -1,0 +1,130 @@
+@import 'variables';
+@import 'fonts';
+@import 'material-overrides/mat-modal';
+
+.status-indicator {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-2);
+
+  mat-icon {
+    margin-top: 2px;
+  }
+
+  &.granted {
+    color: $green-80;
+
+    mat-icon {
+      color: $green-80;
+    }
+  }
+
+  &.not-granted {
+    color: $blue-80;
+
+    mat-icon {
+      color: $blue-80;
+    }
+  }
+
+  &.incorrect {
+    color: $orange-80;
+
+    mat-icon {
+      color: $orange-80;
+    }
+  }
+
+  .status-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+    flex: 1;
+
+    .status-text {
+      font-weight: 500;
+    }
+
+    .status-message {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.5;
+      opacity: 0.9;
+    }
+  }
+}
+
+.manual-step-list {
+  list-style: none;
+  padding: 0;
+  margin: var(--spacing-4) 0;
+  counter-reset: step-counter;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+
+  .manual-step-list-item {
+    position: relative;
+    counter-increment: step-counter;
+    padding-left: 60px;
+
+    &::before {
+      content: counter(step-counter);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: $blue-80;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .step-content-wrapper {
+      .step-content {
+        .step-title {
+          margin: 0 0 var(--spacing-4) 0;
+          color: $dark-100;
+          font-weight: 500;
+          line-height: 1.5;
+        }
+
+        .email-copy-section {
+          display: flex;
+          gap: var(--spacing-3);
+          flex-wrap: wrap;
+
+          .agency-email-field {
+            flex: 1;
+          }
+        }
+
+        .sub-steps {
+          margin: 0;
+          padding-left: var(--spacing-6);
+          list-style-type: disc;
+
+          li {
+            margin-bottom: var(--spacing-2);
+            color: $dark-80;
+            line-height: 1.6;
+
+            strong {
+              font-weight: 600;
+              color: $dark-100;
+            }
+          }
+        }
+      }
+
+      .step-image {
+        margin-top: var(--spacing-4);
+      }
+    }
+  }
+}

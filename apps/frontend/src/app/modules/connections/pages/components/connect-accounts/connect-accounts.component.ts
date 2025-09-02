@@ -96,10 +96,7 @@ export class ConnectAccountsComponent implements OnInit {
       this.googleConnectionStatus.set('connected');
     }
 
-    // Emit initial status after a small delay to ensure parent is ready
-    setTimeout(() => {
-      this.connectionStatusChanged.emit(this.hasAtLeastOneConnection());
-    }, 100);
+    setTimeout(() => this.connectionStatusChanged.emit(this.hasAtLeastOneConnection()), 100);
   }
 
   private initializeAuthService(): void {

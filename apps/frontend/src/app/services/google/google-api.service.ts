@@ -55,9 +55,13 @@ export class GoogleApiService {
     entityId: string
   }): Promise<IResponse<IGetEntityUsersResponse>> {
     const url = `${environment.API_URL}/${ENDPOINTS.google.root}/${ENDPOINTS.google.accessManagement.root}/users/${dto.service}/${dto.entityId}`;
-    const { accessToken } = dto;
+    const { accessToken, agencyId } = dto;
+    const params: any = { accessToken };
+    if (agencyId) {
+      params.agencyId = agencyId;
+    }
     return firstValueFrom(
-      this.httpClient.get<IResponse<IGetEntityUsersResponse>>(url, { params: { accessToken } })
+      this.httpClient.get<IResponse<IGetEntityUsersResponse>>(url, { params })
     );
   }
 

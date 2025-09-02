@@ -29,6 +29,10 @@ import {
   GoogleAdsDomainModalComponent,
   IGoogleAdsDomainModalData
 } from '../modals/google-ads-domain-modal/google-ads-domain-modal.component';
+import {
+  GoogleSearchConsoleModalComponent,
+  IGoogleSearchConsoleModalData
+} from '../modals/google-search-console-modal/google-search-console-modal.component';
 import { RequestDetailsComponent } from '../request-details/request-details.component';
 
 interface ServicePanel {
@@ -77,9 +81,9 @@ export class ConfirmAccessComponent {
   private isInitializingPanels = false;
   readonly servicesEffect = effect(() => {
     // Read the signals to track changes
-    const connectionData = this.googleStoreService.connectionData();
-    const googleServices = this.enabledGoogleServicesNames();
-    const facebookServices = this.enabledFacebookServicesNames();
+    this.googleStoreService.connectionData();
+    this.enabledGoogleServicesNames();
+    this.enabledFacebookServicesNames();
 
     if (!this.isInitializingPanels) {
       this.isInitializingPanels = true;
@@ -456,6 +460,40 @@ export class ConfirmAccessComponent {
         if (!result) return;
       }
 
+      if (panel.key === 'googleSearchConsole') {
+        const dialogRef = this.dialogService.open<GoogleSearchConsoleModalComponent, IGoogleSearchConsoleModalData>(
+          GoogleSearchConsoleModalComponent,
+          {
+            domain: panel.selectedAccount,
+            agencyEmail: agencyEmail,
+            accessType: accessType,
+            agencyId: this.connectionSettings()?._id
+          }
+        );
+
+        const result = await firstValueFrom(dialogRef.afterClosed());
+
+        if (result) {
+          if (panel.existingUsers) {
+            const currentUsers = panel.existingUsers.get(panel.selectedAccount) || [];
+            if (!currentUsers.some(email => email.toLowerCase() === agencyEmail.toLowerCase())) {
+              panel.existingUsers.set(panel.selectedAccount, [...currentUsers, agencyEmail]);
+            }
+          }
+
+          const cacheKey = `${panel.key}_${panel.selectedAccount}`;
+          const updatedCache = new Map(this.entityUsersCache());
+          updatedCache.set(cacheKey, {
+            users: [agencyEmail],
+            timestamp: Date.now()
+          });
+          this.entityUsersCache.set(updatedCache);
+
+          panel.selectedAccount = '';
+        }
+        return;
+      }
+
       const dto = {
         service: service,
         entityId: panel.selectedAccount,
@@ -476,7 +514,6 @@ export class ConfirmAccessComponent {
             `${accessTypeText} access granted successfully for ${panel.name}`
           );
 
-          // Update the existing users list to include the agency email
           if (panel.existingUsers) {
             const currentUsers = panel.existingUsers.get(panel.selectedAccount) || [];
             if (!currentUsers.some(email => email.toLowerCase() === agencyEmail.toLowerCase())) {
@@ -484,7 +521,6 @@ export class ConfirmAccessComponent {
             }
           }
 
-          // Update the cache
           const cacheKey = `${panel.key}_${panel.selectedAccount}`;
           const updatedCache = new Map(this.entityUsersCache());
           const cachedEntry = updatedCache.get(cacheKey);
@@ -552,7 +588,8 @@ export class ConfirmAccessComponent {
     try {
       await this.googleStoreService.loadEntityUsers({
         service: service,
-        entityId: accountValue
+        entityId: accountValue,
+        agencyId: this.connectionSettings()?._id
       });
 
       const entityUsers = this.googleStoreService.entityUsers();

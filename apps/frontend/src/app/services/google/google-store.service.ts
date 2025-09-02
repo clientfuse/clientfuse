@@ -274,6 +274,27 @@ export class GoogleStoreService {
     }));
   }
 
+  addOrUpdateGrantedAccess(grantedAccess: IGrantAccessResponse): void {
+    this.state.update(state => {
+      const existingIndex = state.grantedAccesses.findIndex(
+        access => access.service === grantedAccess.service && access.entityId === grantedAccess.entityId
+      );
+
+      let updatedAccesses: IGrantAccessResponse[];
+      if (existingIndex !== -1) {
+        updatedAccesses = [...state.grantedAccesses];
+        updatedAccesses[existingIndex] = grantedAccess;
+      } else {
+        updatedAccesses = [...state.grantedAccesses, grantedAccess];
+      }
+
+      return {
+        ...state,
+        grantedAccesses: updatedAccesses
+      };
+    });
+  }
+
   private setLoading(isLoading: boolean): void {
     this.state.update(state => ({
       ...state,

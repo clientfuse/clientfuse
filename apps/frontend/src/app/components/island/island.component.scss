@@ -36,11 +36,11 @@
   }
 
   &--warning {
-    background: rgba(#ff9800, 0.05);
-    border-color: rgba(#ff9800, 0.2);
+    background: rgba($orange-100, 0.05);
+    border-color: rgba($orange-100, 0.2);
 
     &.island--border-accent {
-      border-left: 4px solid #ff9800;
+      border-left: 4px solid $orange-100;
     }
   }
 
