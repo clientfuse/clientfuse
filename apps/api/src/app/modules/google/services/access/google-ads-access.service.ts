@@ -1,11 +1,12 @@
 import {
   ApiEnv,
   GOOGLE_ADWORDS_SCOPE,
-  GoogleAdsPermission,
+  GoogleAdsAccessRole,
   IBaseAccessRequest,
   IBaseAccessResponse,
   IBaseUserInfo,
   IGoogleBaseAccessService,
+  IGetEntityUsersParams,
   ServerErrorCode
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
@@ -21,16 +22,16 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
     client_secret: this.configService.get<string>(ApiEnv.GOOGLE_CLIENT_SECRET),
     developer_token: this.configService.get<string>(ApiEnv.GOOGLE_ADS_DEVELOPER_TOKEN)
   });
-  private refreshToken: string;
+  private accessToken: string;
 
   constructor(private readonly configService: ConfigService) {
   }
 
   setCredentials(tokens: { access_token?: string; refresh_token?: string }): void {
-    if (isEmpty(tokens) || isNil(tokens) || !tokens.refresh_token) {
-      throw new Error('Refresh token is required for Google Ads access management');
+    if (isEmpty(tokens) || isNil(tokens) || !tokens.access_token) {
+      throw new Error('Access token is required for Google Ads access management');
     }
-    this.refreshToken = tokens.refresh_token;
+    this.accessToken = tokens.access_token;
   }
 
   async grantManagementAccess(customerId: string, agencyEmail: string): Promise<IBaseAccessResponse> {
@@ -58,13 +59,13 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
     try {
       this.logger.log(`Granting Google Ads access to account ${request.entityId} for ${request.agencyEmail}`);
 
-      if (!this.refreshToken) {
+      if (!this.accessToken) {
         throw new Error('Credentials must be set before granting access');
       }
 
       const customer = this.googleAdsClient.Customer({
         customer_id: request.entityId,
-        refresh_token: this.refreshToken
+        refresh_token: this.accessToken
       });
 
       const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyEmail);
@@ -121,13 +122,13 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
 
   async checkExistingUserAccess(entityId: string, email: string): Promise<IBaseUserInfo | null> {
     try {
-      if (!this.refreshToken) {
+      if (!this.accessToken) {
         return null;
       }
 
       const customer = this.googleAdsClient.Customer({
         customer_id: entityId,
-        refresh_token: this.refreshToken
+        refresh_token: this.accessToken
       });
 
       const normalizedEmail = email.toLowerCase().trim();
@@ -161,15 +162,16 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
     }
   }
 
-  async getEntityUsers(entityId: string): Promise<IBaseUserInfo[]> {
+  async getEntityUsers(params: IGetEntityUsersParams): Promise<IBaseUserInfo[]> {
+    const { entityId } = params;
     try {
-      if (!this.refreshToken) {
+      if (!this.accessToken) {
         return [];
       }
 
       const customer = this.googleAdsClient.Customer({
         customer_id: entityId,
-        refresh_token: this.refreshToken
+        refresh_token: this.accessToken
       });
 
       const results = await customer.query(`
@@ -195,13 +197,13 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
 
   async revokeUserAccess(entityId: string, linkId: string): Promise<IBaseAccessResponse> {
     try {
-      if (!this.refreshToken) {
+      if (!this.accessToken) {
         throw new Error('Credentials must be set before revoking access');
       }
 
       const customer = this.googleAdsClient.Customer({
         customer_id: entityId,
-        refresh_token: this.refreshToken
+        refresh_token: this.accessToken
       });
 
       await customer.customerUserAccesses.remove([linkId]);
@@ -236,14 +238,6 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
     return requiredScopes.every(scope =>
       grantedScopes.some(granted => granted.includes(scope))
     );
-  }
-
-  getDefaultAgencyPermissions(): GoogleAdsPermission[] {
-    return ['STANDARD'];
-  }
-
-  getAllAvailablePermissions(): GoogleAdsPermission[] {
-    return ['ADMIN', 'STANDARD', 'READ_ONLY', 'EMAIL_ONLY'];
   }
 
   getRequiredScopes(): string[] {

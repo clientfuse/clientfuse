@@ -1,10 +1,10 @@
 import {
   ApiEnv,
   GOOGLE_MY_BUSINESS_MANAGE_SCOPE,
-  GoogleMyBusinessPermission,
   IBaseAccessRequest,
   IBaseAccessResponse,
   IBaseUserInfo,
+  IGetEntityUsersParams,
   IGoogleBaseAccessService,
   ServerErrorCode
 } from '@clientfuse/models';
@@ -142,7 +142,8 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
     }
   }
 
-  async getEntityUsers(entityId: string): Promise<IBaseUserInfo[]> {
+  async getEntityUsers(params: IGetEntityUsersParams): Promise<IBaseUserInfo[]> {
+    const { entityId } = params;
     try {
       const myBusinessAccountManagement = google.mybusinessaccountmanagement({
         version: 'v1',
@@ -203,14 +204,6 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
     return requiredScopes.every(scope =>
       grantedScopes.some(granted => granted.includes(scope))
     );
-  }
-
-  getDefaultAgencyPermissions(): GoogleMyBusinessPermission[] {
-    return ['MANAGER'];
-  }
-
-  getAllAvailablePermissions(): GoogleMyBusinessPermission[] {
-    return ['OWNER', 'MANAGER', 'SITE_MANAGER'];
   }
 
   getRequiredScopes(): string[] {

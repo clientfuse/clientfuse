@@ -31,6 +31,11 @@ export interface IBaseUserInfo {
   selfLink?: string;
 }
 
+export interface IGetEntityUsersParams {
+  entityId: string;
+  agencyId?: string;
+}
+
 export interface IGoogleBaseAccessService {
   setCredentials(tokens: { access_token?: string; refresh_token?: string }): void;
 
@@ -42,26 +47,53 @@ export interface IGoogleBaseAccessService {
 
   checkExistingUserAccess(entityId: string, email: string): Promise<IBaseUserInfo | null>;
 
-  getEntityUsers(entityId: string): Promise<IBaseUserInfo[]>;
+  getEntityUsers(params: IGetEntityUsersParams): Promise<IBaseUserInfo[]>;
 
   revokeUserAccess(entityId: string, linkId: string): Promise<IBaseAccessResponse>;
 
   validateRequiredScopes(grantedScopes: string[]): boolean;
 
-  getDefaultAgencyPermissions(): string[];
-
-  getAllAvailablePermissions(): string[];
-
   getRequiredScopes(): string[];
 }
 
-// *** Service-specific permission types ***
-export type GoogleAnalyticsPermission = 'COLLABORATE' | 'EDIT' | 'MANAGE_USERS' | 'READ_AND_ANALYZE';
-export type GoogleAdsPermission = 'ADMIN' | 'STANDARD' | 'READ_ONLY' | 'EMAIL_ONLY';
-export type GoogleTagManagerPermission = 'read' | 'edit' | 'delete' | 'publish';
-export type GoogleSearchConsolePermission = 'FULL' | 'RESTRICTED';
-export type GoogleMerchantCenterPermission = 'ADMIN' | 'STANDARD';
-export type GoogleMyBusinessPermission = 'OWNER' | 'MANAGER' | 'SITE_MANAGER';
+// *** Service-specific permission enums ***
+export enum GoogleAnalyticsPermission {
+  COLLABORATE = 'COLLABORATE',
+  EDIT = 'EDIT',
+  MANAGE_USERS = 'MANAGE_USERS',
+  READ_AND_ANALYZE = 'READ_AND_ANALYZE'
+}
+
+export enum GoogleAdsAccessRole {
+  ADMIN = 'ADMIN',
+  STANDARD = 'STANDARD',
+  READ_ONLY = 'READ_ONLY',
+  EMAIL_ONLY = 'EMAIL_ONLY'
+}
+
+export enum GoogleTagManagerAccountPermission {
+  ADMIN = 'admin',
+  USER = 'user'
+}
+
+export enum GoogleSearchConsolePermissionLevel {
+  SITE_OWNER = 'siteOwner',
+  SITE_FULL_USER = 'siteFullUser',
+  SITE_RESTRICTED_USER = 'siteRestrictedUser',
+  SITE_UNVERIFIED_USER = 'siteUnverifiedUser'
+}
+
+export enum GoogleMerchantCenterPermission {
+  ADMIN = 'ADMIN',
+  STANDARD = 'STANDARD'
+}
+
+export enum GoogleMyBusinessRole {
+  PRIMARY_OWNER = 'PRIMARY_OWNER',
+  OWNER = 'OWNER',
+  MANAGER = 'MANAGER',
+  SITE_MANAGER = 'SITE_MANAGER'
+}
 
 export type GoogleServiceType = 'analytics' | 'ads' | 'tagManager' | 'searchConsole' | 'merchantCenter' | 'myBusiness';
 
@@ -113,6 +145,7 @@ export interface IGoogleConnectionDto {
 
 export interface IGetEntityUsersQueryDto {
   accessToken: string;
+  agencyId?: string;
 }
 
 export interface IGrantManagementAccessDto {

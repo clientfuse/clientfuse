@@ -1,11 +1,11 @@
 import {
   ApiEnv,
   GOOGLE_MERCHANT_CENTER_SCOPE,
-  GoogleMerchantCenterPermission,
   IBaseAccessRequest,
   IBaseAccessResponse,
   IBaseUserInfo,
   IGoogleBaseAccessService,
+  IGetEntityUsersParams,
   ServerErrorCode
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
@@ -139,7 +139,8 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
     }
   }
 
-  async getEntityUsers(entityId: string): Promise<IBaseUserInfo[]> {
+  async getEntityUsers(params: IGetEntityUsersParams): Promise<IBaseUserInfo[]> {
+    const { entityId } = params;
     try {
       const merchantapi = google.merchantapi({ version: 'accounts_v1beta', auth: this.oauth2Client });
 
@@ -194,14 +195,6 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
     return requiredScopes.every(scope =>
       grantedScopes.some(granted => granted.includes(scope))
     );
-  }
-
-  getDefaultAgencyPermissions(): string[] {
-    return ['STANDARD'];
-  }
-
-  getAllAvailablePermissions(): GoogleMerchantCenterPermission[] {
-    return ['ADMIN', 'STANDARD'];
   }
 
   getRequiredScopes(): string[] {

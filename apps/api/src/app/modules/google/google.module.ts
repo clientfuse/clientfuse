@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { UsersModule } from '../users/users.module';
+import { AgenciesModule } from '../agencies/agencies.module';
 import { GoogleAccessController } from './google-access.controller';
 import { GoogleController } from './google.controller';
 import { GoogleAdsAccessService } from './services/access/google-ads-access.service';
@@ -22,7 +23,7 @@ import { GoogleSchedulerService } from './services/google-scheduler.service';
     GoogleSearchConsoleAccessService,
     GoogleTagManagerAccessService
   ],
-  imports: [UsersModule],
+  imports: [UsersModule, AgenciesModule],
   controllers: [GoogleController, GoogleAccessController]
 })
 export class GoogleModule {

@@ -6,6 +6,7 @@ import {
   IBaseAccessResponse,
   IBaseUserInfo,
   IGoogleBaseAccessService,
+  IGetEntityUsersParams,
   ServerErrorCode
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
@@ -117,7 +118,8 @@ export class GoogleAnalyticsAccessService implements IGoogleBaseAccessService {
     }
   }
 
-  async getEntityUsers(entityId: string): Promise<IBaseUserInfo[]> {
+  async getEntityUsers(params: IGetEntityUsersParams): Promise<IBaseUserInfo[]> {
+    const { entityId } = params;
     try {
       const analytics = google.analytics({ version: 'v3', auth: this.oauth2Client });
 
@@ -173,14 +175,6 @@ export class GoogleAnalyticsAccessService implements IGoogleBaseAccessService {
     return requiredScopes.every(scope =>
       grantedScopes.some(granted => granted.includes(scope))
     );
-  }
-
-  getDefaultAgencyPermissions(): GoogleAnalyticsPermission[] {
-    return ['READ_AND_ANALYZE', 'COLLABORATE'];
-  }
-
-  getAllAvailablePermissions(): GoogleAnalyticsPermission[] {
-    return ['READ_AND_ANALYZE', 'COLLABORATE', 'EDIT', 'MANAGE_USERS'];
   }
 
   getRequiredScopes(): string[] {

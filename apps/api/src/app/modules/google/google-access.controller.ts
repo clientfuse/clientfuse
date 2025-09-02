@@ -112,7 +112,7 @@ export class GoogleAccessController {
       access_token: query.accessToken
     });
 
-    const users = await service.getEntityUsers(entityId);
+    const users = await service.getEntityUsers({ entityId, agencyId: query.agencyId });
 
     return {
       service: serviceName,

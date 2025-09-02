@@ -1,5 +1,11 @@
+import {
+  GoogleAnalyticsPermission,
+  GoogleMyBusinessRole,
+  GoogleSearchConsolePermissionLevel,
+  GoogleTagManagerAccountPermission
+} from '@clientfuse/models';
 import { Logger } from '@nestjs/common';
-import { GoogleAdsApi } from 'google-ads-api';
+import { enums, GoogleAdsApi } from 'google-ads-api';
 import { Credentials } from 'google-auth-library/build/src/auth/credentials';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import { google } from 'googleapis';
@@ -142,13 +148,13 @@ export class GoogleAccounts {
 
       const credentials = this.getCredentials();
 
-      if (!credentials.refresh_token) {
-        Logger.warn('No refresh token available for Google Ads');
+      if (!credentials.access_token) {
+        Logger.warn('No access token available for Google Ads API');
         return [];
       }
 
       const customerResourceNames = (await googleAdsClient.listAccessibleCustomers(
-        credentials.refresh_token
+        credentials.access_token
       ))?.resource_names;
 
       if (isNil(customerResourceNames) || isEmpty(customerResourceNames)) {
@@ -164,7 +170,7 @@ export class GoogleAccounts {
 
           const customer = googleAdsClient.Customer({
             customer_id: customerId,
-            refresh_token: credentials.refresh_token
+            refresh_token: credentials.access_token
           });
 
           const [customerDetails] = await customer.query(`
@@ -182,8 +188,7 @@ export class GoogleAccounts {
           `);
 
           // Only include accounts where user has ADMIN access role
-          // Access roles: ADMIN, STANDARD, READ_ONLY, EMAIL_ONLY
-          if (customerDetails && customerDetails.customer_user_access?.access_role === 'ADMIN') {
+          if (customerDetails && customerDetails.customer_user_access?.access_role === enums.AccessRole.ADMIN) {
             accounts.push({
               id: customerDetails.customer.id,
               name: customerDetails.customer.descriptive_name || `Account ${customerDetails.customer.id}`,
@@ -225,7 +230,7 @@ export class GoogleAccounts {
       // Filter to only return accounts where user has MANAGE_USERS permission (owner/admin)
       const ownedAccounts = response.data.items.filter(account => {
         const permissions = account.permissions?.effective || [];
-        return permissions.includes('MANAGE_USERS');
+        return permissions.includes(GoogleAnalyticsPermission.MANAGE_USERS);
       });
 
       return ownedAccounts;
@@ -246,9 +251,8 @@ export class GoogleAccounts {
       }
 
       // Filter to only return sites where user is an owner
-      // Search Console permissions: 'siteOwner', 'siteFullUser', 'siteRestrictedUser', 'siteUnverifiedUser'
       const ownedSites = response.data.siteEntry.filter(site => {
-        return site.permissionLevel === 'siteOwner';
+        return site.permissionLevel === GoogleSearchConsolePermissionLevel.SITE_OWNER;
       });
 
       return ownedSites;
@@ -286,7 +290,7 @@ export class GoogleAccounts {
               perm => perm.emailAddress?.toLowerCase() === userEmail.toLowerCase()
             );
 
-            if (userPermission?.accountAccess?.permission === 'admin') {
+            if (userPermission?.accountAccess?.permission === GoogleTagManagerAccountPermission.ADMIN) {
               ownedAccounts.push(account);
             }
           }
@@ -355,7 +359,7 @@ export class GoogleAccounts {
               admin => admin.admin?.toLowerCase() === userEmail.toLowerCase()
             );
 
-            if (currentUserAdmin?.role === 'PRIMARY_OWNER' || currentUserAdmin?.role === 'OWNER') {
+            if (currentUserAdmin?.role === GoogleMyBusinessRole.PRIMARY_OWNER || currentUserAdmin?.role === GoogleMyBusinessRole.OWNER) {
               ownedAccounts.push(account);
             }
           }
