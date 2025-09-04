@@ -1,0 +1,118 @@
+@import "variables";
+@import "mixins";
+
+:host {
+  display: inline-block;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-1);
+  min-height: rem(24px);
+  min-width: rem(24px);
+  max-height: rem(48px);
+  max-width: fit-content;
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: 9999px;
+  border: 1px solid $dark-40;
+  background: $cloud;
+  transition: all 0.2s $standard-easing;
+  font-size: rem(12px);
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &--neutral {
+    background: $cloud;
+    border-color: $dark-40;
+    color: $dark-100;
+  }
+
+  &--success {
+    background: rgba($green-100, 0.1);
+    border-color: rgba($green-100, 0.3);
+    color: $green-100;
+  }
+
+  &--error {
+    background: rgba($red-100, 0.1);
+    border-color: rgba($red-100, 0.3);
+    color: $red-100;
+  }
+
+  &--warning {
+    background: rgba($orange-100, 0.1);
+    border-color: rgba($orange-100, 0.3);
+    color: $orange-100;
+  }
+
+  &--info {
+    background: rgba($blue-100, 0.1);
+    border-color: rgba($blue-100, 0.3);
+    color: $blue-100;
+  }
+
+  &--density-compact {
+    padding: var(--spacing-1);
+    font-size: rem(11px);
+
+    .badge__icon {
+      font-size: rem(14px);
+      width: rem(14px);
+      height: rem(14px);
+    }
+
+    &.badge--has-text {
+      padding: var(--spacing-1) var(--spacing-2);
+    }
+  }
+
+  &--density-default {
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: rem(12px);
+
+    .badge__icon {
+      font-size: rem(16px);
+      width: rem(16px);
+      height: rem(16px);
+    }
+
+    &.badge--has-text {
+      padding: var(--spacing-2) var(--spacing-3);
+    }
+  }
+
+  &--density-comfortable {
+    padding: var(--spacing-3) var(--spacing-4);
+    font-size: rem(14px);
+    min-height: rem(32px);
+    min-width: rem(32px);
+
+    .badge__icon {
+      font-size: rem(18px);
+      width: rem(18px);
+      height: rem(18px);
+    }
+
+    &.badge--has-text {
+      padding: var(--spacing-3) var(--spacing-4);
+    }
+  }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: rem(16px);
+    width: rem(16px);
+    height: rem(16px);
+  }
+
+  &__text {
+    font-family: inherit;
+    font-weight: 500;
+  }
+}

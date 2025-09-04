@@ -58,14 +58,14 @@
   border-top: 1px solid $dark-40;
 
   .connection-warning {
-    color: $red-100;
+    color: $orange-80;
     font-size: var(--fs-sm);
     margin-right: auto;
   }
 
   button {
     min-width: 80px;
-    
+
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;

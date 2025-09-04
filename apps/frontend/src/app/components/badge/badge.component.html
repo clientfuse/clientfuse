@@ -1,0 +1,17 @@
+<div class="badge"
+     [class.badge--success]="variant() === 'success'"
+     [class.badge--error]="variant() === 'error'"
+     [class.badge--warning]="variant() === 'warning'"
+     [class.badge--info]="variant() === 'info'"
+     [class.badge--neutral]="variant() === 'neutral'"
+     [class.badge--density-compact]="density() === 'compact'"
+     [class.badge--density-default]="density() === 'default'"
+     [class.badge--density-comfortable]="density() === 'comfortable'"
+     [class.badge--has-text]="text()">
+  @if (icon()) {
+    <mat-icon class="badge__icon">{{ icon() }}</mat-icon>
+  }
+  @if (text()) {
+    <span class="badge__text">{{ text() }}</span>
+  }
+</div>

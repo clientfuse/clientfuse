@@ -1,4 +1,10 @@
 <div class="confirm-access-container">
+  <div class="step-header">
+    <mat-icon class="step-icon">check_circle</mat-icon>
+    <h2 class="title-heading-3">Confirm Access</h2>
+    <p class="body step-description">Review the permissions you're about to grant</p>
+  </div>
+
   <!-- Google Section -->
   @if (hasGoogleServices()) {
     <app-island [variant]="'neutral'">
@@ -48,7 +54,7 @@
                             <span class="account-name">{{ getAccountDisplayName(account, panel) }}</span>
                             <span class="account-details">{{ getAccountDetails(account, panel) }}</span>
                             @if (isDisabled) {
-                              <span class="already-connected-text">{{ getAlreadyConnectedText(panel, accountValue) }}</span>
+                              <span class="already-connected-text">{{ getAlreadyConnectedText() }}</span>
                             }
                             @if (isLoading) {
                               <span class="loading-text">Checking access...</span>
@@ -128,7 +134,7 @@
                             <span class="account-name">{{ getAccountDisplayName(account, panel) }}</span>
                             <span class="account-details">{{ getAccountDetails(account, panel) }}</span>
                             @if (isDisabled) {
-                              <span class="already-connected-text">{{ getAlreadyConnectedText(panel, accountValue) }}</span>
+                              <span class="already-connected-text">{{ getAlreadyConnectedText() }}</span>
                             }
                             @if (isLoading) {
                               <span class="loading-text">Checking access...</span>

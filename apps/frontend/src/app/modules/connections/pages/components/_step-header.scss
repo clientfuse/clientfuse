@@ -1,0 +1,46 @@
+@import "variables";
+@import "mixins";
+
+// Shared styles for step headers across all connection components
+.step-header {
+  text-align: center;
+  padding-bottom: var(--spacing-6);
+
+  .step-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: $blue-80;
+    margin-bottom: var(--spacing-3);
+    display: inline-block;
+    
+    // Success variant for outcome component
+    &.success-icon {
+      color: $green-80;
+    }
+  }
+
+  .title-heading-3,
+  .page-title {
+    margin: 0 0 var(--spacing-2);
+    font-size: var(--fs-24);
+    font-weight: var(--fw-medium);
+    color: $dark-100;
+  }
+  
+  // Larger title for outcome page
+  .page-title {
+    font-size: var(--fs-32);
+    font-weight: var(--fw-bold);
+    
+    @include phonesAndLower {
+      font-size: var(--fs-24);
+    }
+  }
+
+  .step-description {
+    margin: 0;
+    font-size: var(--fs-16);
+    color: $dark-60;
+  }
+}

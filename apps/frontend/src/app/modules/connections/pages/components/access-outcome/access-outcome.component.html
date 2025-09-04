@@ -1,29 +1,97 @@
-<div class="success-message">
-  <mat-icon class="check-icon">check_circle</mat-icon>
-  <h3 class="card-title-large">Connection Complete!</h3>
-  <p class="body">
-    result
-  </p>
-</div>
+<div class="access-outcome-container">
+  <div class="step-header">
+    <mat-icon class="step-icon success-icon">rocket_launch</mat-icon>
+    <h2 class="title-heading-2">Access Successfully Granted!</h2>
+    <p class="body-smaller-text">
+      You've successfully granted access to {{ totalGrantedAccesses() }}
+      {{ totalGrantedAccesses() === 1 ? 'account' : 'accounts' }} across multiple platforms
+    </p>
+  </div>
 
-<div class="connected-assets">
-  <h4 class="body-strong">Connected Assets:</h4>
-  <!--   @for (asset of businessAccount.requestedAccess; track asset) { -->
-  <!--     <div class="connected-asset"> -->
-  <!--       <mat-icon color="primary">check</mat-icon> -->
-  <!--       <span class="body-smaller-text">{{ asset }}</span> -->
-  <!--     </div> -->
-  <!--   } -->
-</div>
+  @for (section of platformSections(); track section.platform) {
+    <div class="platform-section">
+      <app-island [variant]="'neutral'">
+        <div class="platform-header">
+          <div class="platform-info">
+            <img [src]="section.platformIcon" [alt]="section.platformName" class="platform-icon" />
+            <h2 class="subtitle-medium">{{ section.platformName }}</h2>
+            <app-badge class="platform-badge"
+                       [variant]="'info'"
+                       text="{{ section.services.length }} {{ section.services.length === 1 ? 'service' : 'services' }}" />
+          </div>
+        </div>
 
-<div class="final-actions">
-  <button mat-raised-button
-          color="primary"
-          class="finish-btn button-large">
-    FINISH
-  </button>
-  <button mat-button
-          class="reset-btn button-medium">
-    Start Over
-  </button>
+        <div class="services-grid">
+          @for (serviceGroup of section.services; track serviceGroup.service) {
+            <div class="service-card">
+              <div class="service-header">
+                @if (serviceGroup.iconPath) {
+                  <img [src]="serviceGroup.iconPath" [alt]="serviceGroup.serviceName" class="service-icon" />
+                }
+                <h3 class="card-title-medium">{{ serviceGroup.serviceName }}</h3>
+                <app-badge [density]="'compact'" text="{{serviceGroup.accesses.length}}" />
+              </div>
+
+              <div class="access-list">
+                @for (access of serviceGroup.accesses; track access.entityId) {
+                  <app-island [density]="'compact'">
+                    <div class="access-item">
+                      <div class="access-header">
+                        <app-badge [icon]="getAccessTypeIcon(access.accessType)"
+                                   [variant]="access.accessType === 'manage' ? 'success' : 'info'"
+                                   [density]="'compact'" />
+                        <div class="access-content">
+                          @if (access.message) {
+                            <p class="body-smaller-strong access-name">{{ access.message }}</p>
+                          }
+                          <span class="body-very-small access-id">{{ access.entityId }}</span>
+                        </div>
+                        <app-badge [text]="getAccessTypeLabel(access.accessType)"
+                                   [variant]="access.accessType === 'manage' ? 'success' : 'neutral'"
+                                   [density]="'compact'"
+                                   class="access-badge" />
+                      </div>
+                      @if (access.agencyEmail || access.linkId) {
+                        <div class="access-footer">
+                          @if (access.agencyEmail) {
+                            <div class="access-meta-item">
+                              <mat-icon class="meta-icon">mail_outline</mat-icon>
+                              <span class="body-very-small">{{ access.agencyEmail }}</span>
+                            </div>
+                          }
+                          @if (access.linkId) {
+                            <div class="access-meta-item">
+                              <mat-icon class="meta-icon">link</mat-icon>
+                              <span class="body-very-small">{{ access.linkId }}</span>
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </app-island>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </app-island>
+    </div>
+  }
+
+  @if (platformSections().length === 0) {
+    <app-island [variant]="'info'">
+      <div class="no-accesses">
+        <mat-icon class="info-icon">info</mat-icon>
+        <p class="body">No access permissions have been granted yet.</p>
+      </div>
+    </app-island>
+  }
+
+  <div class="action-buttons">
+    <button mat-stroked-button
+            (click)="addMoreConnections()">
+      <mat-icon>add_circle_outline</mat-icon>
+      Add More Connections
+    </button>
+  </div>
 </div>

@@ -1,3 +1,224 @@
+@import "variables";
+@import "mixins";
+@import "../step-header";
+
 :host {
   display: block;
+}
+
+.access-outcome-container {
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+
+  @include phonesAndLower {
+    padding: var(--spacing-4) var(--spacing-3);
+    gap: var(--spacing-4);
+  }
+}
+
+.platform-section {
+  margin-bottom: var(--spacing-4);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.platform-header {
+  padding-bottom: var(--spacing-4);
+  border-bottom: 1px solid $dark-20;
+  margin-bottom: var(--spacing-6);
+}
+
+.platform-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.platform-icon {
+  width: var(--spacing-8);
+  height: var(--spacing-8);
+  object-fit: contain;
+}
+
+.platform-badge {
+  margin-left: auto;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: var(--spacing-4);
+
+  @include phonesAndLower {
+    grid-template-columns: 1fr;
+  }
+}
+
+.service-card {
+  padding: var(--spacing-4);
+  background-color: #ffffff;
+  border: 1px solid $dark-20;
+  border-radius: var(--spacing-2);
+}
+
+.service-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding-bottom: var(--spacing-3);
+  border-bottom: 1px solid $dark-20;
+  margin-bottom: var(--spacing-3);
+}
+
+.service-icon {
+  width: var(--spacing-6);
+  height: var(--spacing-6);
+  object-fit: contain;
+}
+
+.card-title-medium {
+  flex: 1;
+  margin: 0;
+  color: $dark-100;
+}
+
+.access-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.access-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.access-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.access-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  min-width: 0;
+}
+
+.access-name {
+  margin: 0;
+  color: $dark-100;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.access-id {
+  color: $dark-60;
+  font-family: 'Courier New', monospace;
+  word-break: break-all;
+}
+
+.access-badge {
+  flex-shrink: 0;
+}
+
+.access-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+  padding-top: var(--spacing-2);
+  border-top: 1px solid $dark-20;
+  margin-top: var(--spacing-2);
+}
+
+.access-meta-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  color: $dark-60;
+}
+
+.meta-icon {
+  font-size: rem(16px);
+  width: rem(16px);
+  height: rem(16px);
+  color: $dark-40;
+}
+
+.no-accesses {
+  padding: var(--spacing-8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-3);
+  text-align: center;
+}
+
+.info-icon {
+  font-size: 48px;
+  color: $blue-80;
+}
+
+.body {
+  margin: 0;
+  color: $dark-60;
+}
+
+.next-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.step-item {
+  display: flex;
+  gap: var(--spacing-3);
+  align-items: flex-start;
+}
+
+.step-icon {
+  font-size: 24px;
+  color: $blue-80;
+  flex-shrink: 0;
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-title {
+  margin: 0 0 var(--spacing-1);
+  font-size: var(--fs-16);
+  font-weight: var(--fw-medium);
+  color: $dark-100;
+}
+
+.body-smaller-text {
+  margin: 0;
+  color: $dark-60;
+  line-height: 1.5;
+}
+
+.action-buttons {
+  display: flex;
+  gap: var(--spacing-3);
+  justify-content: center;
+  padding-top: var(--spacing-6);
+  margin-top: var(--spacing-6);
+  border-top: 1px solid $dark-20;
+
+  @include phonesAndLower {
+    flex-direction: column;
+    padding-top: var(--spacing-4);
+    margin-top: var(--spacing-4);
+  }
 }
