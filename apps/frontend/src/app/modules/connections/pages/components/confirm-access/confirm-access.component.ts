@@ -3,6 +3,7 @@ import { Component, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
+import { MatIconModule } from '@angular/material/icon';
 import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
 import {
   FacebookAdAccount,
@@ -63,7 +64,8 @@ interface ServicePanel {
     MatButton,
     RequestDetailsComponent,
     IslandComponent,
-    InstructionStepComponent
+    InstructionStepComponent,
+    MatIconModule
   ],
   templateUrl: './confirm-access.component.html',
   styleUrl: './confirm-access.component.scss'
@@ -617,7 +619,7 @@ export class ConfirmAccessComponent {
     return existingUsers.some(email => email.toLowerCase() === agencyEmail);
   }
 
-  getAlreadyConnectedText(panel: ServicePanel, accountValue: string): string {
+  getAlreadyConnectedText(): string {
     const agencyEmail = this.connectionSettings()?.email || '';
     return `The agency ${agencyEmail} already has access to this account`;
   }

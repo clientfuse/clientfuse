@@ -28,12 +28,6 @@
 
             @case ('connect') {
               <div class="step-content">
-                <div class="step-header">
-                  <mat-icon class="step-icon">{{ step.icon }}</mat-icon>
-                  <h2 class="title-heading-3">{{ step.title }}</h2>
-                  <p class="body step-description">{{ step.description }}</p>
-                </div>
-
                 <app-connect-accounts [connectionSettings]="connectionSettings()"
                                       [enabledGoogleServicesNames]="enabledGoogleServicesNames()"
                                       [enabledFacebookServicesNames]="enabledFacebookServicesNames()"
@@ -46,48 +40,41 @@
                       Please connect at least one platform to continue
                     </span>
                   }
-                  <button (click)="nextStep()" 
-                          mat-button 
+                  <button (click)="nextStep()"
+                          mat-flat-button
                           [disabled]="!hasValidConnections()"
                           [attr.title]="!hasValidConnections() ? 'Please connect at least one platform before proceeding' : null">
-                    Next
+                    {{ nextButtonText() }}
                   </button>
                 </div>
               </div>
             }
             @case ('confirm') {
               <div class="step-content">
-                <div class="step-header">
-                  <mat-icon class="step-icon confirmed">{{ step.icon }}</mat-icon>
-                  <h2 class="title-heading-3">{{ step.title }}</h2>
-                  <p class="body step-description">Review the permissions you're about to grant</p>
-                </div>
-
-                <app-confirm-access 
-                  [connectionSettings]="connectionSettings()"
-                  [accessType]="accessType()"
-                  [enabledGoogleServicesNames]="enabledGoogleServicesNames()"
-                  [enabledFacebookServicesNames]="enabledFacebookServicesNames()" />
+                <app-confirm-access [connectionSettings]="connectionSettings()"
+                                    [accessType]="accessType()"
+                                    [enabledGoogleServicesNames]="enabledGoogleServicesNames()"
+                                    [enabledFacebookServicesNames]="enabledFacebookServicesNames()" />
 
                 <div class="step-actions">
-                  <button mat-button (click)="previousStep()" class="button-medium">Back</button>
-                  <button mat-button (click)="nextStep()" class="button-medium">Next</button>
+                  @if (!canProceedToStep2()) {
+                    <span class="connection-warning">
+                      Please grant at least one successful access to continue
+                    </span>
+                  }
+                  <button mat-button
+                          (click)="nextStep()"
+                          [disabled]="!canProceedToStep2()"
+                          [attr.title]="!canProceedToStep2() ? 'Please grant at least one successful access before proceeding' : null"
+                          class="button-medium">
+                    {{ nextButtonText() }}
+                  </button>
                 </div>
               </div>
             }
             @case ('connected') {
               <div class="step-content success">
-                <div class="step-header">
-                  <mat-icon class="step-icon success">{{ step.icon }}</mat-icon>
-                  <h2 class="title-heading-3">{{ step.title }}</h2>
-                  <p class="body step-description">Successfully connected to all requested accounts</p>
-                </div>
-
-                <app-access-outcome />
-
-                <div class="step-actions">
-                  <button mat-button (click)="previousStep()" class="button-medium">Back</button>
-                </div>
+                <app-access-outcome (resetConnection)="onResetConnection()" />
               </div>
             }
           }

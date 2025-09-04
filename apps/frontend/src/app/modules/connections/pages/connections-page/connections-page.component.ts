@@ -8,9 +8,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { ActivatedRoute } from '@angular/router';
-import { getAccessLinkBaseKey, IAgencyResponse, TAccessType, TGoogleAccessLinkKeys, TFacebookAccessLinkKeys } from '@clientfuse/models';
+import { getAccessLinkBaseKey, IAgencyResponse, TAccessType, TFacebookAccessLinkKeys, TGoogleAccessLinkKeys } from '@clientfuse/models';
 import { ListFormatter } from '@clientfuse/utils';
 import { ConnectionStoreService } from '../../../../services/connect/connection-store.service';
+import { GoogleStoreService } from '../../../../services/google/google-store.service';
 import { AccessOutcomeComponent } from '../components/access-outcome/access-outcome.component';
 import { ConfirmAccessComponent } from '../components/confirm-access/confirm-access.component';
 import { ConnectAccountsComponent } from '../components/connect-accounts/connect-accounts.component';
@@ -47,6 +48,7 @@ export class ConnectionsPageComponent implements OnInit {
 
   private readonly connectionService = inject(ConnectionStoreService);
   private readonly route = inject(ActivatedRoute);
+  private readonly googleStoreService = inject(GoogleStoreService);
 
   currentStepIndex = signal(0);
   isLinear = signal(true);
@@ -75,6 +77,21 @@ export class ConnectionsPageComponent implements OnInit {
       const service = facebookServices[serviceKey as TFacebookAccessLinkKeys];
       return service[key] && service.entityId && service.entityId.trim() !== '';
     }) as TFacebookAccessLinkKeys[];
+  });
+
+  readonly nextButtonText = computed<string>(() => {
+    const currentIndex = this.currentStepIndex();
+    if (currentIndex === 0) {
+      return 'Go to Confirm Access';
+    } else if (currentIndex === 1) {
+      return 'Finish';
+    }
+    return 'Next';
+  });
+
+  readonly canProceedToStep2 = computed<boolean>(() => {
+    const grantedAccesses = this.googleStoreService.grantedAccesses();
+    return grantedAccesses.some(access => access.success);
   });
 
   connectionSteps = signal<ConnectionStep[]>([
@@ -111,14 +128,19 @@ export class ConnectionsPageComponent implements OnInit {
 
   nextStep(): void {
     const currentIndex = this.currentStepIndex();
-    
+
     // Check if moving from step 0 to step 1
     if (currentIndex === 0 && !this.hasValidConnections()) {
-      // Prevent navigation if no platforms are connected
       console.warn('At least one platform must be connected before proceeding');
       return;
     }
-    
+
+    // Check if moving from step 1 to step 2
+    if (currentIndex === 1 && !this.canProceedToStep2()) {
+      console.warn('At least one successful access must be granted before proceeding to step 2');
+      return;
+    }
+
     if (currentIndex < this.connectionSteps().length - 1) {
       const nextIndex = currentIndex + 1;
 
@@ -134,20 +156,6 @@ export class ConnectionsPageComponent implements OnInit {
     }
   }
 
-  previousStep(): void {
-    const currentIndex = this.currentStepIndex();
-    if (currentIndex > 0) {
-      const prevIndex = currentIndex - 1;
-
-      this.currentStepIndex.set(prevIndex);
-
-      setTimeout(() => {
-        if (this.stepper) {
-          this.stepper.previous();
-        }
-      }, 100);
-    }
-  }
 
   private markStepCompleted(stepIndex: number): void {
     const steps = this.connectionSteps();
@@ -168,5 +176,19 @@ export class ConnectionsPageComponent implements OnInit {
 
   onConnectionStatusChanged(hasConnections: boolean): void {
     this.hasValidConnections.set(hasConnections);
+  }
+
+  onResetConnection(): void {
+    this.googleStoreService.clearAll();
+    this.currentStepIndex.set(0);
+    this.hasValidConnections.set(false);
+
+    const steps = this.connectionSteps();
+    const updatedSteps = steps.map(step => ({ ...step, completed: false }));
+    this.connectionSteps.set(updatedSteps);
+
+    if (this.stepper) {
+      this.stepper.selectedIndex = 0;
+    }
   }
 }
