@@ -8,8 +8,7 @@ import {
   IGoogleConnectionDto,
   IGoogleConnectionResponse,
   IGrantAccessResponse,
-  IGrantManagementAccessDto,
-  IGrantViewAccessDto,
+  IGrantAgencyAccessDto,
   IResponse,
   IRevokeAccessResponse,
   IRevokeAgencyAccessDto
@@ -32,7 +31,7 @@ export class GoogleApiService {
     );
   }
 
-  async grantManagementAccess(dto: IGrantManagementAccessDto): Promise<IResponse<IGrantAccessResponse>> {
+  async grantManagementAccess(dto: IGrantAgencyAccessDto): Promise<IResponse<IGrantAccessResponse>> {
     return firstValueFrom(
       this.httpClient.post<IResponse<IGrantAccessResponse>>(
         `${environment.API_URL}/${ENDPOINTS.google.root}/${ENDPOINTS.google.accessManagement.root}/${ENDPOINTS.google.accessManagement.grantManagementAccess}`,
@@ -41,7 +40,7 @@ export class GoogleApiService {
     );
   }
 
-  async grantViewAccess(dto: IGrantViewAccessDto): Promise<IResponse<IGrantAccessResponse>> {
+  async grantViewAccess(dto: IGrantAgencyAccessDto): Promise<IResponse<IGrantAccessResponse>> {
     return firstValueFrom(
       this.httpClient.post<IResponse<IGrantAccessResponse>>(
         `${environment.API_URL}/${ENDPOINTS.google.root}/${ENDPOINTS.google.accessManagement.root}/${ENDPOINTS.google.accessManagement.grantViewAccess}`,

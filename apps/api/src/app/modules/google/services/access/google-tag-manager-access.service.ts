@@ -5,7 +5,7 @@ import {
   IBaseAccessResponse,
   IBaseUserInfo,
   IGoogleBaseAccessService,
-  IGetEntityUsersParams,
+  IBaseGetEntityUsersParams,
   ServerErrorCode
 } from '@clientfuse/models';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
@@ -152,7 +152,7 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
     }
   }
 
-  async getEntityUsers(params: IGetEntityUsersParams): Promise<IBaseUserInfo[]> {
+  async getEntityUsers(params: IBaseGetEntityUsersParams): Promise<IBaseUserInfo[]> {
     const { entityId } = params;
     try {
       const tagManager = google.tagmanager({ version: 'v2', auth: this.oauth2Client });

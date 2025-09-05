@@ -1,12 +1,11 @@
 import {
   ApiEnv,
   GOOGLE_ADWORDS_SCOPE,
-  GoogleAdsAccessRole,
   IBaseAccessRequest,
   IBaseAccessResponse,
+  IBaseGetEntityUsersParams,
   IBaseUserInfo,
   IGoogleBaseAccessService,
-  IGetEntityUsersParams,
   ServerErrorCode
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
@@ -162,7 +161,7 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
     }
   }
 
-  async getEntityUsers(params: IGetEntityUsersParams): Promise<IBaseUserInfo[]> {
+  async getEntityUsers(params: IBaseGetEntityUsersParams): Promise<IBaseUserInfo[]> {
     const { entityId } = params;
     try {
       if (!this.accessToken) {

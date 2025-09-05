@@ -5,7 +5,7 @@ import {
   IBaseAccessResponse,
   IBaseUserInfo,
   IGoogleBaseAccessService,
-  IGetEntityUsersParams,
+  IBaseGetEntityUsersParams,
   ServerErrorCode
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
@@ -139,7 +139,7 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
     }
   }
 
-  async getEntityUsers(params: IGetEntityUsersParams): Promise<IBaseUserInfo[]> {
+  async getEntityUsers(params: IBaseGetEntityUsersParams): Promise<IBaseUserInfo[]> {
     const { entityId } = params;
     try {
       const merchantapi = google.merchantapi({ version: 'accounts_v1beta', auth: this.oauth2Client });

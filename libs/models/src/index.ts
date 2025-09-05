@@ -7,4 +7,5 @@ export * from './lib/storage.model';
 export * from './lib/user.model';
 export * from './lib/integrations/google.model';
 export * from './lib/integrations/facebook.model';
+export * from './lib/integrations/integrations.model';
 export * from './lib/agency.model';

@@ -6,35 +6,7 @@ import {
   searchconsole_v1,
   tagmanager_v2
 } from 'googleapis';
-import { TAccessType } from '../agency.model';
-
-
-export interface IBaseAccessRequest {
-  entityId: string; // account/property/site ID etc.
-  agencyEmail: string;
-  permissions: string[];
-}
-
-export interface IBaseAccessResponse {
-  success: boolean;
-  linkId?: string;
-  entityId?: string;
-  message?: string;
-  error?: string;
-}
-
-export interface IBaseUserInfo {
-  linkId: string;
-  email: string;
-  permissions: string[];
-  kind: string;
-  selfLink?: string;
-}
-
-export interface IGetEntityUsersParams {
-  entityId: string;
-  agencyId?: string;
-}
+import { IBaseAccessRequest, IBaseAccessResponse, IBaseGetEntityUsersParams, IBaseUserInfo } from './integrations.model';
 
 export interface IGoogleBaseAccessService {
   setCredentials(tokens: { access_token?: string; refresh_token?: string }): void;
@@ -47,7 +19,7 @@ export interface IGoogleBaseAccessService {
 
   checkExistingUserAccess(entityId: string, email: string): Promise<IBaseUserInfo | null>;
 
-  getEntityUsers(params: IGetEntityUsersParams): Promise<IBaseUserInfo[]>;
+  getEntityUsers(params: IBaseGetEntityUsersParams): Promise<IBaseUserInfo[]>;
 
   revokeUserAccess(entityId: string, linkId: string): Promise<IBaseAccessResponse>;
 
@@ -143,32 +115,6 @@ export interface IGoogleConnectionDto {
   accessToken: string;
 }
 
-export interface IGetEntityUsersQueryDto {
-  accessToken: string;
-  agencyId?: string;
-}
-
-export interface IGrantManagementAccessDto {
-  accessToken: string;
-  service: GoogleServiceType;
-  entityId: string;
-  agencyEmail: string;
-}
-
-export interface IGrantViewAccessDto {
-  accessToken: string;
-  service: GoogleServiceType;
-  entityId: string;
-  agencyEmail: string;
-}
-
-export interface IRevokeAgencyAccessDto {
-  accessToken: string;
-  service: GoogleServiceType;
-  entityId: string;
-  linkId: string;
-}
-
 // Response Types
 export interface IGoogleConnectionResponse {
   user: {
@@ -198,27 +144,4 @@ export interface IGoogleAccountsData {
   googleMyBusinessAccounts: mybusinessaccountmanagement_v1.Schema$Account[];
   googleMyBusinessLocations: mybusinessbusinessinformation_v1.Schema$Location[];
   googleGrantedScopes: string[];
-}
-
-export interface IGrantAccessResponse {
-  success: boolean;
-  service: GoogleServiceType;
-  accessType: TAccessType;
-  entityId: string;
-  agencyEmail: string;
-  linkId?: string;
-  message?: string;
-}
-
-export interface IGetEntityUsersResponse {
-  service: GoogleServiceType;
-  entityId: string;
-  users: IBaseUserInfo[];
-  totalUsers: number;
-}
-
-export interface IRevokeAccessResponse {
-  success: boolean;
-  service: GoogleServiceType;
-  message?: string;
 }

@@ -6,8 +6,7 @@ import {
   IGoogleConnectionDto,
   IGoogleConnectionResponse,
   IGrantAccessResponse,
-  IGrantManagementAccessDto,
-  IGrantViewAccessDto,
+  IGrantAgencyAccessDto,
   IRevokeAccessResponse,
   IRevokeAgencyAccessDto
 } from '@clientfuse/models';
@@ -67,7 +66,7 @@ export class GoogleStoreService {
     }
   }
 
-  async grantManagementAccess(dto: Omit<IGrantManagementAccessDto, 'accessToken'>): Promise<IGrantAccessResponse | null> {
+  async grantManagementAccess(dto: Omit<IGrantAgencyAccessDto, 'accessToken'>): Promise<IGrantAccessResponse | null> {
     this.setLoading(true);
     this.clearError();
 
@@ -83,7 +82,7 @@ export class GoogleStoreService {
       const fullDto = {
         ...dto,
         accessToken
-      } as IGrantManagementAccessDto;
+      } as IGrantAgencyAccessDto;
 
       const response = await this.googleApiService.grantManagementAccess(fullDto);
       if (response.payload) {
@@ -104,7 +103,7 @@ export class GoogleStoreService {
     }
   }
 
-  async grantViewAccess(dto: Omit<IGrantViewAccessDto, 'accessToken'>): Promise<IGrantAccessResponse | null> {
+  async grantViewAccess(dto: Omit<IGrantAgencyAccessDto, 'accessToken'>): Promise<IGrantAccessResponse | null> {
     this.setLoading(true);
     this.clearError();
 
@@ -120,7 +119,7 @@ export class GoogleStoreService {
       const fullDto = {
         ...dto,
         accessToken
-      } as IGrantViewAccessDto;
+      } as IGrantAgencyAccessDto;
 
       const response = await this.googleApiService.grantViewAccess(fullDto);
       if (response.payload) {

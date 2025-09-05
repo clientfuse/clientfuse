@@ -1,4 +1,14 @@
-import { FacebookAdAccount, FacebookBusinessAccount, FacebookCatalog, FacebookCredentials, FacebookPage } from '@clientfuse/models';
+import {
+  FacebookAdAccount,
+  FacebookAdAccountRole,
+  FacebookBusinessAccount,
+  FacebookBusinessRole,
+  FacebookCatalog,
+  FacebookCatalogRole,
+  FacebookCredentials,
+  FacebookPage,
+  FacebookPageTask
+} from '@clientfuse/models';
 import { Logger } from '@nestjs/common';
 import { isNil } from 'lodash';
 import { facebookHttpClient } from '../../../core/utils/http';
@@ -6,6 +16,7 @@ import { facebookHttpClient } from '../../../core/utils/http';
 export class FacebookAccounts {
   private readonly logger = new Logger(FacebookAccounts.name);
   private readonly accessToken: string;
+  private userEmail: string | null = null;
 
   constructor(accessToken: string) {
     this.accessToken = accessToken;
@@ -15,6 +26,26 @@ export class FacebookAccounts {
     return {
       access_token: this.accessToken
     };
+  }
+
+  async getUserInfo(): Promise<{ email: string; id: string }> {
+    try {
+      const { data } = await facebookHttpClient.get('/me', {
+        params: {
+          access_token: this.accessToken,
+          fields: 'id,email'
+        }
+      });
+
+      if (data?.email) {
+        this.userEmail = data.email;
+      }
+
+      return data;
+    } catch (error: any) {
+      this.logger.error('Error fetching user info:', error?.response?.data || error);
+      throw error;
+    }
   }
 
   async getGrantedScopes(): Promise<string[]> {
@@ -57,7 +88,12 @@ export class FacebookAccounts {
         return [];
       }
 
-      return data.data.map((account: any) => ({
+      const adminAccounts = data.data.filter((account: any) => {
+        const permissions = account.userpermissions?.data || [];
+        return permissions.some((perm: any) => perm.role === FacebookAdAccountRole.ADMIN);
+      });
+
+      return adminAccounts.map((account: any) => ({
         id: account.id,
         name: account.name || `Ad Account ${account.account_id}`,
         account_id: account.account_id,
@@ -103,16 +139,40 @@ export class FacebookAccounts {
         return [];
       }
 
-      return data.data.map((business: any) => ({
-        id: business.id,
-        name: business.name,
-        verification_status: business.verification_status,
-        created_time: business.created_time,
-        updated_time: business.updated_time,
-        business_type: business.business_type,
-        primary_page: business.primary_page
-      }));
+      const adminBusinesses = [];
 
+      for (const business of data.data) {
+        try {
+          const { data: usersData } = await facebookHttpClient.get(
+            `/${business.id}/business_users`,
+            { params: { access_token: this.accessToken, fields: 'email,role' } }
+          );
+
+          if (usersData?.data) {
+            const isAdmin = usersData.data.some((user: any) => {
+              const emailMatches = this.userEmail && user.email?.toLowerCase() === this.userEmail.toLowerCase();
+              const hasAdminRole = user.role === FacebookBusinessRole.ADMIN;
+              return emailMatches && hasAdminRole;
+            });
+
+            if (isAdmin) {
+              adminBusinesses.push({
+                id: business.id,
+                name: business.name,
+                verification_status: business.verification_status,
+                created_time: business.created_time,
+                updated_time: business.updated_time,
+                business_type: business.business_type,
+                primary_page: business.primary_page
+              });
+            }
+          }
+        } catch (userError: any) {
+          this.logger.warn(`Could not fetch users for business ${business.id}:`, userError?.response?.data || userError);
+        }
+      }
+
+      return adminBusinesses;
     } catch (error: any) {
       this.logger.error('Error fetching Facebook Business Accounts:', error?.response?.data || error);
       return [];
@@ -143,7 +203,12 @@ export class FacebookAccounts {
         return [];
       }
 
-      return data.data.map((page: any) => ({
+      const adminPages = data.data.filter((page) => {
+        const tasks = page.tasks || [];
+        return tasks.includes(FacebookPageTask.MANAGE);
+      });
+
+      return adminPages.map((page) => ({
         id: page.id,
         name: page.name,
         category: page.category,
@@ -155,7 +220,7 @@ export class FacebookAccounts {
         fan_count: page.fan_count
       }));
 
-    } catch (error: any) {
+    } catch (error) {
       this.logger.error('Error fetching Facebook Pages:', error?.response?.data || error);
       return [];
     }
@@ -165,33 +230,62 @@ export class FacebookAccounts {
     try {
       this.logger.log('Fetching Facebook Catalogs');
 
-      const { data: businessesData } = await facebookHttpClient.get('/me/businesses', {
-        params: {
-          access_token: this.accessToken,
-          fields: 'id,name'
-        }
-      });
+      // First get only admin business accounts
+      const adminBusinesses = await this.getBusinessAccounts();
 
-      if (isNil(businessesData?.data)) {
+      if (adminBusinesses.length === 0) {
         return [];
       }
 
       const catalogs: FacebookCatalog[] = [];
 
-      for (const business of businessesData.data) {
+      for (const business of adminBusinesses) {
         try {
           const { data: catalogsData } = await facebookHttpClient.get(
             `/${business.id}/owned_product_catalogs`,
             {
               params: {
                 access_token: this.accessToken,
-                fields: 'id,name,product_count,created_time,updated_time'
+                fields: 'id,name,product_count,created_time,updated_time,business_use_case_usage'
               }
             }
           );
 
           if (catalogsData?.data) {
             for (const catalog of catalogsData.data) {
+              let role: FacebookCatalogRole | undefined;
+
+              try {
+                const { data: permData } = await facebookHttpClient.get(
+                  `/${catalog.id}/assigned_users`,
+                  {
+                    params: {
+                      access_token: this.accessToken,
+                      fields: 'id,name,email,role',
+                      business: business.id
+                    }
+                  }
+                );
+
+                if (permData?.data && this.userEmail) {
+                  const userPerm = permData.data.find((user: any) =>
+                    user.email?.toLowerCase() === this.userEmail?.toLowerCase()
+                  );
+
+                  if (userPerm?.role === FacebookCatalogRole.ADMIN) {
+                    role = userPerm.role;
+                  } else {
+                    continue;
+                  }
+                }
+              } catch (permError: any) {
+                this.logger.warn(
+                  `Could not fetch permissions for catalog ${catalog.id}:`,
+                  permError?.response?.data || permError
+                );
+                role = FacebookCatalogRole.ADMIN;
+              }
+
               catalogs.push({
                 id: catalog.id,
                 name: catalog.name,
@@ -211,7 +305,6 @@ export class FacebookAccounts {
       }
 
       return catalogs;
-
     } catch (error: any) {
       this.logger.error('Error fetching Facebook Catalogs:', error?.response?.data || error);
       return [];
@@ -241,7 +334,12 @@ export class FacebookAccounts {
         return [];
       }
 
-      return data.data.map((account: any) => ({
+      const adminAccounts = data.data.filter((account: any) => {
+        const permissions = account.userpermissions?.data || [];
+        return permissions.some((perm: any) => perm.role === FacebookAdAccountRole.ADMIN);
+      });
+
+      return adminAccounts.map((account: any) => ({
         id: account.id,
         name: account.name || `Ad Account ${account.account_id}`,
         account_id: account.account_id,
@@ -251,7 +349,6 @@ export class FacebookAccounts {
         account_status: account.account_status,
         created_time: account.created_time
       }));
-
     } catch (error: any) {
       this.logger.error(
         `Error fetching Ad Accounts for business ${businessId}:`,
@@ -274,7 +371,8 @@ export class FacebookAccounts {
             'category',
             'category_list',
             'verification_status',
-            'fan_count'
+            'fan_count',
+            'tasks'
           ].join(',')
         }
       });
@@ -283,13 +381,18 @@ export class FacebookAccounts {
         return [];
       }
 
-      return data.data.map((page: any) => ({
+      const adminPages = data.data.filter((page: any) => {
+        const tasks = page.tasks || [];
+        return tasks.includes(FacebookPageTask.MANAGE);
+      });
+
+      return adminPages.map((page: any) => ({
         id: page.id,
         name: page.name,
         category: page.category,
         category_list: page.category_list || [],
         perms: [],
-        tasks: [],
+        tasks: page.tasks || [],
         verification_status: page.verification_status,
         fan_count: page.fan_count
       }));
@@ -307,6 +410,8 @@ export class FacebookAccounts {
     try {
       this.logger.log('Fetching all Facebook user accounts data');
 
+      await this.getUserInfo();
+
       const [
         adAccounts,
         businessAccounts,
@@ -322,7 +427,7 @@ export class FacebookAccounts {
       const tokens = this.getCredentials();
       const grantedScopes = await this.getGrantedScopes();
 
-      this.logger.log('Successfully fetched Facebook user accounts data');
+      this.logger.log('Successfully fetched Facebook user accounts data (admin-only)');
 
       return {
         data: {

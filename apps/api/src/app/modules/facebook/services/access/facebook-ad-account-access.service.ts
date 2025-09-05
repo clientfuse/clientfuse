@@ -1,13 +1,12 @@
 import {
-  FACEBOOK_AD_ACCOUNT_ROLES, FACEBOOK_ADS_MANAGEMENT_SCOPE,
+  FACEBOOK_AD_ACCOUNT_ROLES,
+  FACEBOOK_ADS_MANAGEMENT_SCOPE,
   FACEBOOK_ERROR_CODES,
-  FACEBOOK_SCOPES,
   FacebookAdAccountPermission,
-  IFacebookAccessRequest,
-  IFacebookAccessResponse,
+  TFacebookAccessRequest,
+  TFacebookAccessResponse,
   IFacebookBaseAccessService,
-  IFacebookCustomAccessOptions,
-  IFacebookUserInfo
+  TFacebookUserInfo
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { FacebookAdsApi } from 'facebook-nodejs-business-sdk';
@@ -29,55 +28,29 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
     this.facebookApi = FacebookAdsApi.init(this.accessToken);
   }
 
-  async grantManagementAccess(adAccountId: string, agencyEmail: string): Promise<IFacebookAccessResponse> {
+  async grantManagementAccess(adAccountId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
     this.logger.log(`Granting Facebook Ad Account management access to ${agencyEmail} for account ${adAccountId}`);
 
     return this.grantAgencyAccess({
       entityId: adAccountId,
       agencyEmail: agencyEmail,
-      permissions: ['ADMIN'],
-      roleType: 'ADMIN'
+      permissions: [FacebookAdAccountPermission.ADMIN],
+      roleType: FacebookAdAccountPermission.ADMIN
     });
   }
 
-  async grantReadOnlyAccess(adAccountId: string, agencyEmail: string): Promise<IFacebookAccessResponse> {
-    this.logger.log(`Granting Facebook Ad Account read-only access to ${agencyEmail} for account ${adAccountId}`);
+  async grantViewAccess(adAccountId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
+    this.logger.log(`Granting Facebook Ad Account view access to ${agencyEmail} for account ${adAccountId}`);
 
     return this.grantAgencyAccess({
       entityId: adAccountId,
       agencyEmail: agencyEmail,
-      permissions: ['REPORTS_ONLY'],
-      roleType: 'REPORTS_ONLY'
+      permissions: [FacebookAdAccountPermission.REPORTS_ONLY],
+      roleType: FacebookAdAccountPermission.REPORTS_ONLY
     });
   }
 
-  async grantCustomAccess(options: IFacebookCustomAccessOptions): Promise<IFacebookAccessResponse> {
-    try {
-      this.logger.log(`Granting Facebook Ad Account custom access to ${options.agencyEmail} for account ${options.entityId}`);
-
-      const result = await this.grantAgencyAccess({
-        entityId: options.entityId,
-        agencyEmail: options.agencyEmail,
-        permissions: options.permissions,
-        roleType: options.roleType
-      });
-
-      if (options.customMessage && result.success) {
-        result.message = `${result.message} - ${options.customMessage}`;
-      }
-
-      return result;
-
-    } catch (error) {
-      this.logger.error(`Failed to grant Facebook Ad Account custom access: ${error.message}`, error);
-      return {
-        success: false,
-        error: `Failed to grant custom access: ${error.message}`
-      };
-    }
-  }
-
-  async grantAgencyAccess(request: IFacebookAccessRequest): Promise<IFacebookAccessResponse> {
+  async grantAgencyAccess(request: TFacebookAccessRequest): Promise<TFacebookAccessResponse> {
     try {
       this.logger.log(`Attempting to grant Facebook Ad Account access to ${request.agencyEmail} for account ${request.entityId}`);
 
@@ -99,7 +72,7 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
       const cleanAccountId = request.entityId.replace('act_', '');
       const accountId = `act_${cleanAccountId}`;
 
-      const role = this.mapPermissionToRole(request.permissions[0] || 'GENERAL_USER');
+      const role = this.mapPermissionToRole(request.permissions[0] || FacebookAdAccountPermission.GENERAL_USER);
 
       const response = await this.facebookApi.call<any>(
         'POST',
@@ -160,7 +133,7 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
     }
   }
 
-  async checkExistingUserAccess(entityId: string, email: string): Promise<IFacebookUserInfo | null> {
+  async checkExistingUserAccess(entityId: string, email: string): Promise<TFacebookUserInfo | null> {
     try {
       if (!this.accessToken) {
         return null;
@@ -194,7 +167,7 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
       return {
         linkId: existingUser.id || `${accountId}_${existingUser.email}`,
         email: existingUser.email || email,
-        permissions: existingUser.permissions || [existingUser.role || 'GENERAL_USER'],
+        permissions: existingUser.permissions || [existingUser.role || FacebookAdAccountPermission.GENERAL_USER],
         kind: 'facebook#adAccountUser',
         status: 'ACTIVE',
         roleType: existingUser.role
@@ -206,7 +179,7 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
     }
   }
 
-  async getEntityUsers(entityId: string): Promise<IFacebookUserInfo[]> {
+  async getEntityUsers(entityId: string): Promise<TFacebookUserInfo[]> {
     try {
       if (!this.accessToken) {
         return [];
@@ -230,7 +203,7 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
       return response.data.map((user: any) => ({
         linkId: user.id || `${accountId}_${user.email}`,
         email: user.email || '',
-        permissions: user.permissions || [user.role || 'GENERAL_USER'],
+        permissions: user.permissions || [user.role || FacebookAdAccountPermission.GENERAL_USER],
         kind: 'facebook#adAccountUser',
         status: 'ACTIVE',
         roleType: user.role
@@ -242,7 +215,7 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
     }
   }
 
-  async revokeUserAccess(entityId: string, linkId: string): Promise<IFacebookAccessResponse> {
+  async revokeUserAccess(entityId: string, linkId: string): Promise<TFacebookAccessResponse> {
     try {
       if (!this.accessToken) {
         throw new Error('Access token must be set before revoking access');
@@ -292,14 +265,6 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
     );
   }
 
-  getDefaultAgencyPermissions(): FacebookAdAccountPermission[] {
-    return ['GENERAL_USER'];
-  }
-
-  getAllAvailablePermissions(): string[] {
-    return Object.values(FACEBOOK_AD_ACCOUNT_ROLES);
-  }
-
   getRequiredScopes(): string[] {
     return [FACEBOOK_ADS_MANAGEMENT_SCOPE];
   }
@@ -327,12 +292,9 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
 
   private mapPermissionToRole(permission: string): string {
     const roleMap: Record<string, string> = {
-      'ADMIN': FACEBOOK_AD_ACCOUNT_ROLES.ADMIN,
-      'GENERAL_USER': FACEBOOK_AD_ACCOUNT_ROLES.GENERAL_USER,
-      'REPORTS_ONLY': FACEBOOK_AD_ACCOUNT_ROLES.REPORTS_ONLY,
-      'MANAGER': FACEBOOK_AD_ACCOUNT_ROLES.ADMIN,
-      'READ_ONLY': FACEBOOK_AD_ACCOUNT_ROLES.REPORTS_ONLY,
-      'EDIT': FACEBOOK_AD_ACCOUNT_ROLES.GENERAL_USER
+      [FacebookAdAccountPermission.ADMIN]: FACEBOOK_AD_ACCOUNT_ROLES.ADMIN,
+      [FacebookAdAccountPermission.GENERAL_USER]: FACEBOOK_AD_ACCOUNT_ROLES.GENERAL_USER,
+      [FacebookAdAccountPermission.REPORTS_ONLY]: FACEBOOK_AD_ACCOUNT_ROLES.REPORTS_ONLY
     };
 
     return roleMap[permission] || FACEBOOK_AD_ACCOUNT_ROLES.GENERAL_USER;

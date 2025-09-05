@@ -4,7 +4,7 @@ import {
   IBaseAccessRequest,
   IBaseAccessResponse,
   IBaseUserInfo,
-  IGetEntityUsersParams,
+  IBaseGetEntityUsersParams,
   IGoogleBaseAccessService
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
@@ -71,7 +71,7 @@ export class GoogleSearchConsoleAccessService implements IGoogleBaseAccessServic
     return null;
   }
 
-  async getEntityUsers(params: IGetEntityUsersParams): Promise<IBaseUserInfo[]> {
+  async getEntityUsers(params: IBaseGetEntityUsersParams): Promise<IBaseUserInfo[]> {
     const { entityId, agencyId } = params;
 
     try {

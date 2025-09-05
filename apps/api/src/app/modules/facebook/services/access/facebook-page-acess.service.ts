@@ -3,11 +3,11 @@ import {
   FACEBOOK_ERROR_CODES,
   FACEBOOK_PAGE_ROLES,
   FACEBOOK_PAGES_SHOW_LIST_SCOPE,
-  IFacebookAccessRequest,
-  IFacebookAccessResponse,
+  FacebookPagePermission,
+  TFacebookAccessRequest,
+  TFacebookAccessResponse,
   IFacebookBaseAccessService,
-  IFacebookCustomAccessOptions,
-  IFacebookUserInfo
+  TFacebookUserInfo
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { FacebookAdsApi } from 'facebook-nodejs-business-sdk';
@@ -28,55 +28,29 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
     this.facebookApi = FacebookAdsApi.init(this.accessToken);
   }
 
-  async grantManagementAccess(pageId: string, agencyEmail: string): Promise<IFacebookAccessResponse> {
+  async grantManagementAccess(pageId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
     this.logger.log(`Granting Facebook Page management access to ${agencyEmail} for page ${pageId}`);
 
     return this.grantAgencyAccess({
       entityId: pageId,
       agencyEmail: agencyEmail,
-      permissions: ['ADMIN'],
-      roleType: 'ADMIN'
+      permissions: [FacebookPagePermission.ADMIN],
+      roleType: FacebookPagePermission.ADMIN
     });
   }
 
-  async grantReadOnlyAccess(pageId: string, agencyEmail: string): Promise<IFacebookAccessResponse> {
-    this.logger.log(`Granting Facebook Page read-only access to ${agencyEmail} for page ${pageId}`);
+  async grantViewAccess(pageId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
+    this.logger.log(`Granting Facebook Page view access to ${agencyEmail} for page ${pageId}`);
 
     return this.grantAgencyAccess({
       entityId: pageId,
       agencyEmail: agencyEmail,
-      permissions: ['ANALYST'],
-      roleType: 'ANALYST'
+      permissions: [FacebookPagePermission.ANALYST],
+      roleType: FacebookPagePermission.ANALYST
     });
   }
 
-  async grantCustomAccess(options: IFacebookCustomAccessOptions): Promise<IFacebookAccessResponse> {
-    try {
-      this.logger.log(`Granting Facebook Page custom access to ${options.agencyEmail} for page ${options.entityId}`);
-
-      const result = await this.grantAgencyAccess({
-        entityId: options.entityId,
-        agencyEmail: options.agencyEmail,
-        permissions: options.permissions,
-        roleType: options.roleType
-      });
-
-      if (options.customMessage && result.success) {
-        result.message = `${result.message} - ${options.customMessage}`;
-      }
-
-      return result;
-
-    } catch (error) {
-      this.logger.error(`Failed to grant Facebook Page custom access: ${error.message}`, error);
-      return {
-        success: false,
-        error: `Failed to grant custom access: ${error.message}`
-      };
-    }
-  }
-
-  async grantAgencyAccess(request: IFacebookAccessRequest): Promise<IFacebookAccessResponse> {
+  async grantAgencyAccess(request: TFacebookAccessRequest): Promise<TFacebookAccessResponse> {
     try {
       this.logger.log(`Attempting to grant Facebook Page access to ${request.agencyEmail} for page ${request.entityId}`);
 
@@ -95,7 +69,7 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
         };
       }
 
-      const role = this.mapPermissionToRole(request.permissions[0] || 'EDITOR');
+      const role = this.mapPermissionToRole(request.permissions[0] || FacebookPagePermission.EDITOR);
 
       try {
         const response = await this.facebookApi.call<any>(
@@ -160,7 +134,7 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
     }
   }
 
-  async checkExistingUserAccess(entityId: string, email: string): Promise<IFacebookUserInfo | null> {
+  async checkExistingUserAccess(entityId: string, email: string): Promise<TFacebookUserInfo | null> {
     try {
       if (!this.accessToken) {
         return null;
@@ -193,7 +167,7 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
       return {
         linkId: existingUser.user?.id || `${entityId}_${email}`,
         email: existingUser.user?.email || email,
-        permissions: [existingUser.role || 'EDITOR'],
+        permissions: [existingUser.role || FacebookPagePermission.EDITOR],
         kind: 'facebook#pageUser',
         status: 'ACTIVE',
         roleType: existingUser.role
@@ -205,7 +179,7 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
     }
   }
 
-  async getEntityUsers(entityId: string): Promise<IFacebookUserInfo[]> {
+  async getEntityUsers(entityId: string): Promise<TFacebookUserInfo[]> {
     try {
       if (!this.accessToken) {
         return [];
@@ -226,7 +200,7 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
       return response.data.map((roleData: any) => ({
         linkId: roleData.user?.id || `${entityId}_${roleData.user?.email}`,
         email: roleData.user?.email || '',
-        permissions: [roleData.role || 'EDITOR'],
+        permissions: [roleData.role || FacebookPagePermission.EDITOR],
         kind: 'facebook#pageUser',
         status: 'ACTIVE',
         roleType: roleData.role
@@ -238,7 +212,7 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
     }
   }
 
-  async revokeUserAccess(entityId: string, linkId: string): Promise<IFacebookAccessResponse> {
+  async revokeUserAccess(entityId: string, linkId: string): Promise<TFacebookAccessResponse> {
     try {
       if (!this.accessToken) {
         throw new Error('Access token must be set before revoking access');
@@ -287,14 +261,6 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
     );
   }
 
-  getDefaultAgencyPermissions(): string[] {
-    return ['EDITOR'];
-  }
-
-  getAllAvailablePermissions(): string[] {
-    return Object.values(FACEBOOK_PAGE_ROLES);
-  }
-
   getRequiredScopes(): string[] {
     return [FACEBOOK_PAGES_SHOW_LIST_SCOPE, FACEBOOK_CATALOG_MANAGEMENT_SCOPE];
   }
@@ -319,14 +285,11 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
 
   private mapPermissionToRole(permission: string): string {
     const roleMap: Record<string, string> = {
-      'ADMIN': FACEBOOK_PAGE_ROLES.ADMIN,
-      'EDITOR': FACEBOOK_PAGE_ROLES.EDITOR,
-      'MODERATOR': FACEBOOK_PAGE_ROLES.MODERATOR,
-      'ADVERTISER': FACEBOOK_PAGE_ROLES.ADVERTISER,
-      'ANALYST': FACEBOOK_PAGE_ROLES.ANALYST,
-      'MANAGER': FACEBOOK_PAGE_ROLES.ADMIN,
-      'READ_ONLY': FACEBOOK_PAGE_ROLES.ANALYST,
-      'CONTENT_CREATOR': FACEBOOK_PAGE_ROLES.EDITOR
+      [FacebookPagePermission.ADMIN]: FACEBOOK_PAGE_ROLES.ADMIN,
+      [FacebookPagePermission.EDITOR]: FACEBOOK_PAGE_ROLES.EDITOR,
+      [FacebookPagePermission.MODERATOR]: FACEBOOK_PAGE_ROLES.MODERATOR,
+      [FacebookPagePermission.ADVERTISER]: FACEBOOK_PAGE_ROLES.ADVERTISER,
+      [FacebookPagePermission.ANALYST]: FACEBOOK_PAGE_ROLES.ANALYST
     };
 
     return roleMap[permission] || FACEBOOK_PAGE_ROLES.EDITOR;

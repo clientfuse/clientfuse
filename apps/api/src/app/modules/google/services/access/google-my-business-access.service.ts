@@ -4,7 +4,7 @@ import {
   IBaseAccessRequest,
   IBaseAccessResponse,
   IBaseUserInfo,
-  IGetEntityUsersParams,
+  IBaseGetEntityUsersParams,
   IGoogleBaseAccessService,
   ServerErrorCode
 } from '@clientfuse/models';
@@ -142,7 +142,7 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
     }
   }
 
-  async getEntityUsers(params: IGetEntityUsersParams): Promise<IBaseUserInfo[]> {
+  async getEntityUsers(params: IBaseGetEntityUsersParams): Promise<IBaseUserInfo[]> {
     const { entityId } = params;
     try {
       const myBusinessAccountManagement = google.mybusinessaccountmanagement({

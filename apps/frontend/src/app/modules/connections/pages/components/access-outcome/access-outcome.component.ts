@@ -105,10 +105,10 @@ export class AccessOutcomeComponent {
     const serviceMap = new Map<GoogleServiceType, IGrantAccessResponse[]>();
 
     accesses.forEach(access => {
-      if (!serviceMap.has(access.service)) {
-        serviceMap.set(access.service, []);
+      if (!serviceMap.has(access.service as GoogleServiceType)) {
+        serviceMap.set(access.service as GoogleServiceType, []);
       }
-      serviceMap.get(access.service)!.push(access);
+      serviceMap.get(access.service as GoogleServiceType)!.push(access);
     });
 
     return Array.from(serviceMap.entries()).map(([service, serviceAccesses]) => ({

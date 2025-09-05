@@ -1,14 +1,11 @@
 import {
   FACEBOOK_BUSINESS_MANAGEMENT_SCOPE,
-  FACEBOOK_BUSINESS_ROLES,
   FACEBOOK_ERROR_CODES,
-  FACEBOOK_SCOPES,
   FacebookBusinessPermission,
-  IFacebookAccessRequest,
-  IFacebookAccessResponse,
+  TFacebookAccessRequest,
+  TFacebookAccessResponse,
   IFacebookBaseAccessService,
-  IFacebookCustomAccessOptions,
-  IFacebookUserInfo
+  TFacebookUserInfo
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { FacebookAdsApi } from 'facebook-nodejs-business-sdk';
@@ -29,55 +26,29 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
     this.facebookApi = FacebookAdsApi.init(this.accessToken);
   }
 
-  async grantManagementAccess(businessId: string, agencyEmail: string): Promise<IFacebookAccessResponse> {
+  async grantManagementAccess(businessId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
     this.logger.log(`Granting Facebook Business management access to ${agencyEmail} for business ${businessId}`);
 
     return this.grantAgencyAccess({
       entityId: businessId,
       agencyEmail: agencyEmail,
-      permissions: ['ADMIN'],
-      roleType: 'ADMIN'
+      permissions: [FacebookBusinessPermission.ADMIN],
+      roleType: FacebookBusinessPermission.ADMIN
     });
   }
 
-  async grantReadOnlyAccess(businessId: string, agencyEmail: string): Promise<IFacebookAccessResponse> {
-    this.logger.log(`Granting Facebook Business read-only access to ${agencyEmail} for business ${businessId}`);
+  async grantViewAccess(businessId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
+    this.logger.log(`Granting Facebook Business view access to ${agencyEmail} for business ${businessId}`);
 
     return this.grantAgencyAccess({
       entityId: businessId,
       agencyEmail: agencyEmail,
-      permissions: ['EMPLOYEE'],
-      roleType: 'EMPLOYEE'
+      permissions: [FacebookBusinessPermission.EMPLOYEE],
+      roleType: FacebookBusinessPermission.EMPLOYEE
     });
   }
 
-  async grantCustomAccess(options: IFacebookCustomAccessOptions): Promise<IFacebookAccessResponse> {
-    try {
-      this.logger.log(`Granting Facebook Business custom access to ${options.agencyEmail} for business ${options.entityId}`);
-
-      const result = await this.grantAgencyAccess({
-        entityId: options.entityId,
-        agencyEmail: options.agencyEmail,
-        permissions: options.permissions,
-        roleType: options.roleType
-      });
-
-      if (options.customMessage && result.success) {
-        result.message = `${result.message} - ${options.customMessage}`;
-      }
-
-      return result;
-
-    } catch (error) {
-      this.logger.error(`Failed to grant Facebook Business custom access: ${error.message}`, error);
-      return {
-        success: false,
-        error: `Failed to grant custom access: ${error.message}`
-      };
-    }
-  }
-
-  async grantAgencyAccess(request: IFacebookAccessRequest): Promise<IFacebookAccessResponse> {
+  async grantAgencyAccess(request: TFacebookAccessRequest): Promise<TFacebookAccessResponse> {
     try {
       this.logger.log(`Attempting to grant Facebook Business access to ${request.agencyEmail} for business ${request.entityId}`);
 
@@ -131,7 +102,7 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
     }
   }
 
-  async checkExistingUserAccess(entityId: string, email: string): Promise<IFacebookUserInfo | null> {
+  async checkExistingUserAccess(entityId: string, email: string): Promise<TFacebookUserInfo | null> {
     try {
       if (!this.accessToken) {
         return null;
@@ -163,7 +134,7 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
       return {
         linkId: existingUser.id,
         email: existingUser.email || existingUser.pending_email || email,
-        permissions: [existingUser.role || 'EMPLOYEE'],
+        permissions: [existingUser.role || FacebookBusinessPermission.EMPLOYEE],
         kind: 'facebook#businessUser',
         status: existingUser.pending_email ? 'PENDING' : 'ACTIVE',
         roleType: existingUser.role
@@ -175,7 +146,7 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
     }
   }
 
-  async getEntityUsers(entityId: string): Promise<IFacebookUserInfo[]> {
+  async getEntityUsers(entityId: string): Promise<TFacebookUserInfo[]> {
     try {
       if (!this.accessToken) {
         return [];
@@ -197,7 +168,7 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
       return response.data.map((user: any) => ({
         linkId: user.id,
         email: user.email || user.pending_email || '',
-        permissions: [user.role || 'EMPLOYEE'],
+        permissions: [user.role || FacebookBusinessPermission.EMPLOYEE],
         kind: 'facebook#businessUser',
         status: user.pending_email ? 'PENDING' : 'ACTIVE',
         roleType: user.role
@@ -209,7 +180,7 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
     }
   }
 
-  async revokeUserAccess(entityId: string, linkId: string): Promise<IFacebookAccessResponse> {
+  async revokeUserAccess(entityId: string, linkId: string): Promise<TFacebookAccessResponse> {
     try {
       if (!this.accessToken) {
         throw new Error('Access token must be set before revoking access');
@@ -253,14 +224,6 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
     return requiredScopes.every(scope =>
       grantedScopes.some(granted => granted.includes(scope))
     );
-  }
-
-  getDefaultAgencyPermissions(): FacebookBusinessPermission[] {
-    return ['EMPLOYEE'];
-  }
-
-  getAllAvailablePermissions(): string[] {
-    return Object.values(FACEBOOK_BUSINESS_ROLES);
   }
 
   getRequiredScopes(): string[] {

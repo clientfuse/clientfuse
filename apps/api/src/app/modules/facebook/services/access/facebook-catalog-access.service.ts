@@ -2,12 +2,11 @@ import {
   FACEBOOK_CATALOG_MANAGEMENT_SCOPE,
   FACEBOOK_CATALOG_ROLES,
   FACEBOOK_ERROR_CODES,
-  FACEBOOK_SCOPES,
-  IFacebookAccessRequest,
-  IFacebookAccessResponse,
+  FacebookCatalogPermission,
+  TFacebookAccessRequest,
+  TFacebookAccessResponse,
   IFacebookBaseAccessService,
-  IFacebookCustomAccessOptions,
-  IFacebookUserInfo
+  TFacebookUserInfo
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { FacebookAdsApi } from 'facebook-nodejs-business-sdk';
@@ -28,55 +27,29 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
     this.facebookApi = FacebookAdsApi.init(this.accessToken);
   }
 
-  async grantManagementAccess(catalogId: string, agencyEmail: string): Promise<IFacebookAccessResponse> {
+  async grantManagementAccess(catalogId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
     this.logger.log(`Granting Facebook Catalog management access to ${agencyEmail} for catalog ${catalogId}`);
 
     return this.grantAgencyAccess({
       entityId: catalogId,
       agencyEmail: agencyEmail,
-      permissions: ['ADMIN'],
-      roleType: 'ADMIN'
+      permissions: [FacebookCatalogPermission.ADMIN],
+      roleType: FacebookCatalogPermission.ADMIN
     });
   }
 
-  async grantReadOnlyAccess(catalogId: string, agencyEmail: string): Promise<IFacebookAccessResponse> {
-    this.logger.log(`Granting Facebook Catalog read-only access to ${agencyEmail} for catalog ${catalogId}`);
+  async grantViewAccess(catalogId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
+    this.logger.log(`Granting Facebook Catalog view access to ${agencyEmail} for catalog ${catalogId}`);
 
     return this.grantAgencyAccess({
       entityId: catalogId,
       agencyEmail: agencyEmail,
-      permissions: ['ADVERTISER'],
-      roleType: 'ADVERTISER'
+      permissions: [FacebookCatalogPermission.ADVERTISER],
+      roleType: FacebookCatalogPermission.ADVERTISER
     });
   }
 
-  async grantCustomAccess(options: IFacebookCustomAccessOptions): Promise<IFacebookAccessResponse> {
-    try {
-      this.logger.log(`Granting Facebook Catalog custom access to ${options.agencyEmail} for catalog ${options.entityId}`);
-
-      const result = await this.grantAgencyAccess({
-        entityId: options.entityId,
-        agencyEmail: options.agencyEmail,
-        permissions: options.permissions,
-        roleType: options.roleType
-      });
-
-      if (options.customMessage && result.success) {
-        result.message = `${result.message} - ${options.customMessage}`;
-      }
-
-      return result;
-
-    } catch (error) {
-      this.logger.error(`Failed to grant Facebook Catalog custom access: ${error.message}`, error);
-      return {
-        success: false,
-        error: `Failed to grant custom access: ${error.message}`
-      };
-    }
-  }
-
-  async grantAgencyAccess(request: IFacebookAccessRequest): Promise<IFacebookAccessResponse> {
+  async grantAgencyAccess(request: TFacebookAccessRequest): Promise<TFacebookAccessResponse> {
     try {
       this.logger.log(`Attempting to grant Facebook Catalog access to ${request.agencyEmail} for catalog ${request.entityId}`);
 
@@ -95,7 +68,7 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
         };
       }
 
-      const role = this.mapPermissionToRole(request.permissions[0] || 'ADVERTISER');
+      const role = this.mapPermissionToRole(request.permissions[0] || FacebookCatalogPermission.ADVERTISER);
 
       try {
         const response = await this.facebookApi.call<any>(
@@ -160,7 +133,7 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
     }
   }
 
-  async checkExistingUserAccess(entityId: string, email: string): Promise<IFacebookUserInfo | null> {
+  async checkExistingUserAccess(entityId: string, email: string): Promise<TFacebookUserInfo | null> {
     try {
       if (!this.accessToken) {
         return null;
@@ -191,7 +164,7 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
       return {
         linkId: existingUser.id || `${entityId}_${existingUser.email}`,
         email: existingUser.email || email,
-        permissions: [existingUser.role || 'ADVERTISER'],
+        permissions: [existingUser.role || FacebookCatalogPermission.ADVERTISER],
         kind: 'facebook#catalogCollaborator',
         status: existingUser.status || 'ACTIVE',
         roleType: existingUser.role
@@ -203,7 +176,7 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
     }
   }
 
-  async getEntityUsers(entityId: string): Promise<IFacebookUserInfo[]> {
+  async getEntityUsers(entityId: string): Promise<TFacebookUserInfo[]> {
     try {
       if (!this.accessToken) {
         return [];
@@ -224,7 +197,7 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
       return response.data.map((collaborator: any) => ({
         linkId: collaborator.id || `${entityId}_${collaborator.email}`,
         email: collaborator.email || '',
-        permissions: [collaborator.role || 'ADVERTISER'],
+        permissions: [collaborator.role || FacebookCatalogPermission.ADVERTISER],
         kind: 'facebook#catalogCollaborator',
         status: collaborator.status || 'ACTIVE',
         roleType: collaborator.role
@@ -236,7 +209,7 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
     }
   }
 
-  async revokeUserAccess(entityId: string, linkId: string): Promise<IFacebookAccessResponse> {
+  async revokeUserAccess(entityId: string, linkId: string): Promise<TFacebookAccessResponse> {
     try {
       if (!this.accessToken) {
         throw new Error('Access token must be set before revoking access');
@@ -285,14 +258,6 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
     );
   }
 
-  getDefaultAgencyPermissions(): string[] {
-    return ['ADVERTISER'];
-  }
-
-  getAllAvailablePermissions(): string[] {
-    return Object.values(FACEBOOK_CATALOG_ROLES);
-  }
-
   getRequiredScopes(): string[] {
     return [FACEBOOK_CATALOG_MANAGEMENT_SCOPE];
   }
@@ -317,11 +282,8 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
 
   private mapPermissionToRole(permission: string): string {
     const roleMap: Record<string, string> = {
-      'ADMIN': FACEBOOK_CATALOG_ROLES.ADMIN,
-      'ADVERTISER': FACEBOOK_CATALOG_ROLES.ADVERTISER,
-      'MANAGER': FACEBOOK_CATALOG_ROLES.ADMIN,
-      'READ_ONLY': FACEBOOK_CATALOG_ROLES.ADVERTISER,
-      'EDIT': FACEBOOK_CATALOG_ROLES.ADMIN
+      [FacebookCatalogPermission.ADMIN]: FACEBOOK_CATALOG_ROLES.ADMIN,
+      [FacebookCatalogPermission.ADVERTISER]: FACEBOOK_CATALOG_ROLES.ADVERTISER
     };
 
     return roleMap[permission] || FACEBOOK_CATALOG_ROLES.ADVERTISER;

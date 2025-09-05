@@ -1,82 +1,86 @@
-export interface IFacebookCustomAccessOptions {
-  entityId: string;
-  agencyEmail: string;
-  permissions: string[];
-  notifyUser?: boolean;
-  customMessage?: string;
-  expirationDate?: Date;
+import { IBaseAccessRequest, IBaseAccessResponse, IBaseUserInfo } from './integrations.model';
 
-  // Service-specific options
-  businessId?: string;
-  roleType?: string; // 'ADMIN' | 'EMPLOYEE' | 'ADVERTISER'
-  pageId?: string; // Page specific access
-  adAccountId?: string; // Ad Account specific access
-  catalogId?: string; // Catalog specific access
-}
-
-export interface IFacebookAccessRequest {
-  entityId: string; // business/page/ad account ID
-  agencyEmail: string;
-  permissions: string[];
+export type TFacebookAccessRequest = IBaseAccessRequest & {
   roleType?: string;
 }
 
-export interface IFacebookAccessResponse {
-  success: boolean;
-  linkId?: string;
-  entityId?: string;
-  message?: string;
-  error?: string;
+export type TFacebookAccessResponse = IBaseAccessResponse & {
   requiresManualApproval?: boolean; // Facebook specific
   businessManagerUrl?: string; // Direct link for manual actions
 }
 
-export interface IFacebookUserInfo {
-  linkId: string;
-  email: string;
-  permissions: string[];
-  kind: string;
+export type TFacebookUserInfo = IBaseUserInfo & {
   status?: string; // 'PENDING' | 'ACTIVE' | 'DECLINED'
   roleType?: string;
-  selfLink?: string;
 }
 
 export interface IFacebookBaseAccessService {
   setCredentials(tokens: { access_token: string }): void;
 
-  grantManagementAccess(entityId: string, agencyEmail: string): Promise<IFacebookAccessResponse>;
+  grantManagementAccess(entityId: string, agencyEmail: string): Promise<TFacebookAccessResponse>;
 
-  grantReadOnlyAccess(entityId: string, agencyEmail: string): Promise<IFacebookAccessResponse>;
+  grantViewAccess(entityId: string, agencyEmail: string): Promise<TFacebookAccessResponse>;
 
-  grantAgencyAccess(request: IFacebookAccessRequest): Promise<IFacebookAccessResponse>;
+  grantAgencyAccess(request: TFacebookAccessRequest): Promise<TFacebookAccessResponse>;
 
-  grantCustomAccess(options: IFacebookCustomAccessOptions): Promise<IFacebookAccessResponse>;
+  checkExistingUserAccess(entityId: string, email: string): Promise<TFacebookUserInfo | null>;
 
-  checkExistingUserAccess(entityId: string, email: string): Promise<IFacebookUserInfo | null>;
+  getEntityUsers(entityId: string): Promise<TFacebookUserInfo[]>;
 
-  getEntityUsers(entityId: string): Promise<IFacebookUserInfo[]>;
-
-  revokeUserAccess(entityId: string, linkId: string): Promise<IFacebookAccessResponse>;
+  revokeUserAccess(entityId: string, linkId: string): Promise<TFacebookAccessResponse>;
 
   validateRequiredScopes(grantedScopes: string[]): boolean;
-
-  getDefaultAgencyPermissions(): string[];
-
-  getAllAvailablePermissions(): string[];
 
   getRequiredScopes(): string[];
 }
 
+export enum FacebookPageTask {
+  ADVERTISE = 'ADVERTISE',
+  ANALYZE = 'ANALYZE',
+  CREATE_CONTENT = 'CREATE_CONTENT',
+  MESSAGING = 'MESSAGING',
+  MODERATE = 'MODERATE',
+  MANAGE = 'MANAGE'
+}
 
-export type FacebookAccountStatus = 'ACTIVE' | 'DISABLED' | 'UNSETTLED';
+export enum FacebookBusinessRole {
+  ADMIN = 'ADMIN',
+  EMPLOYEE = 'EMPLOYEE',
+  PARTNER = 'PARTNER'
+}
 
-export type FacebookAdAccountTask = 'DRAFT' | 'ANALYZE' | 'ADVERTISE' | 'MANAGE';
-export type FacebookPageTask = 'ADVERTISE' | 'ANALYZE' | 'CREATE_CONTENT' | 'MESSAGING' | 'MODERATE' | 'MANAGE';
+export enum FacebookBusinessVerificationStatus {
+  VERIFIED = 'VERIFIED',
+  NOT_VERIFIED = 'NOT_VERIFIED',
+  PENDING = 'PENDING'
+}
 
-export type FacebookBusinessRole = 'ADMIN' | 'EMPLOYEE' | 'PARTNER';
-export type TwoFactorStatus = 'enabled' | 'disabled';
+export enum FacebookAdAccountRole {
+  ADMIN = 1001,
+  ADVERTISER = 1002,
+  ANALYST = 1003
+}
 
-export type FacebookService = 'ads' | 'pages' | 'instagram' | 'catalogs' | 'pixels';
+export enum FacebookPageRole {
+  ADMIN = 'ADMIN',
+  EDITOR = 'EDITOR',
+  MODERATOR = 'MODERATOR',
+  ADVERTISER = 'ADVERTISER',
+  ANALYST = 'ANALYST'
+}
+
+export enum FacebookCatalogRole {
+  ADMIN = 'ADMIN',
+  ADVERTISER = 'ADVERTISER'
+}
+
+export enum FacebookService {
+  ADS = 'ads',
+  PAGES = 'pages',
+  INSTAGRAM = 'instagram',
+  CATALOGS = 'catalogs',
+  PIXELS = 'pixels'
+}
 
 export const FACEBOOK_ADS_MANAGEMENT_SCOPE = 'ads_management';
 export const FACEBOOK_BUSINESS_MANAGEMENT_SCOPE = 'business_management';
@@ -101,7 +105,7 @@ export const FACEBOOK_SCOPES = [
 export interface FacebookBusinessAccount {
   id: string;
   name: string;
-  verification_status: string;
+  verification_status: FacebookBusinessVerificationStatus | string;
   created_time: string;
   updated_time: string;
   business_type?: string;
@@ -127,7 +131,7 @@ export interface FacebookPage {
   category_list: { id: string; name: string }[];
   access_token?: string;
   perms?: string[];
-  tasks?: string[];
+  tasks?: FacebookPageTask[] | string[];
   verification_status?: string;
   fan_count?: number;
 }
@@ -141,12 +145,37 @@ export interface FacebookCatalog {
   updated_time: string;
 }
 
-export type FacebookBusinessPermission = 'ADMIN' | 'EMPLOYEE' | 'ADVERTISER';
-export type FacebookPagePermission = 'ADMIN' | 'EDITOR' | 'MODERATOR' | 'ADVERTISER' | 'ANALYST';
-export type FacebookAdAccountPermission = 'ADMIN' | 'GENERAL_USER' | 'REPORTS_ONLY';
-export type FacebookCatalogPermission = 'ADMIN' | 'ADVERTISER';
+export enum FacebookBusinessPermission {
+  ADMIN = 'ADMIN',
+  EMPLOYEE = 'EMPLOYEE',
+  ADVERTISER = 'ADVERTISER'
+}
 
-export type FacebookServiceType = 'business' | 'adAccount' | 'page' | 'catalog';
+export enum FacebookPagePermission {
+  ADMIN = 'ADMIN',
+  EDITOR = 'EDITOR',
+  MODERATOR = 'MODERATOR',
+  ADVERTISER = 'ADVERTISER',
+  ANALYST = 'ANALYST'
+}
+
+export enum FacebookAdAccountPermission {
+  ADMIN = 'ADMIN',
+  GENERAL_USER = 'GENERAL_USER',
+  REPORTS_ONLY = 'REPORTS_ONLY'
+}
+
+export enum FacebookCatalogPermission {
+  ADMIN = 'ADMIN',
+  ADVERTISER = 'ADVERTISER'
+}
+
+export enum FacebookServiceType {
+  BUSINESS = 'business',
+  AD_ACCOUNT = 'adAccount',
+  PAGE = 'page',
+  CATALOG = 'catalog'
+}
 
 export const FACEBOOK_BUSINESS_ROLES = {
   ADMIN: 'ADMIN',
