@@ -1,0 +1,403 @@
+{
+  "info": {
+    "_postman_id": "facebook-access-api-collection",
+    "name": "Facebook Access Management API",
+    "description": "Collection for testing Facebook Access Management endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Facebook Connect",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"accessToken\": \"YOUR_FACEBOOK_ACCESS_TOKEN\"\n}"
+        },
+        "url": {
+          "raw": "{{API_URL}}/api/facebook/connect",
+          "host": ["{{API_URL}}"],
+          "path": ["api", "facebook", "connect"]
+        },
+        "description": "Get Facebook user accounts data (Ad Accounts, Business Accounts, Pages, Catalogs)"
+      }
+    },
+    {
+      "name": "Grant Management Access",
+      "item": [
+        {
+          "name": "Grant Business Management Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_FACEBOOK_ACCESS_TOKEN\",\n  \"service\": \"business\",\n  \"entityId\": \"FACEBOOK_BUSINESS_ID\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/facebook/access-management/grant-management-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "facebook", "access-management", "grant-management-access"]
+            }
+          }
+        },
+        {
+          "name": "Grant Ad Account Management Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_FACEBOOK_ACCESS_TOKEN\",\n  \"service\": \"adAccount\",\n  \"entityId\": \"act_123456789\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/facebook/access-management/grant-management-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "facebook", "access-management", "grant-management-access"]
+            }
+          }
+        },
+        {
+          "name": "Grant Page Management Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_FACEBOOK_ACCESS_TOKEN\",\n  \"service\": \"page\",\n  \"entityId\": \"PAGE_ID\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/facebook/access-management/grant-management-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "facebook", "access-management", "grant-management-access"]
+            }
+          }
+        },
+        {
+          "name": "Grant Catalog Management Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_FACEBOOK_ACCESS_TOKEN\",\n  \"service\": \"catalog\",\n  \"entityId\": \"CATALOG_ID\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/facebook/access-management/grant-management-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "facebook", "access-management", "grant-management-access"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Grant View Access",
+      "item": [
+        {
+          "name": "Grant Business View Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_FACEBOOK_ACCESS_TOKEN\",\n  \"service\": \"business\",\n  \"entityId\": \"FACEBOOK_BUSINESS_ID\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/facebook/access-management/grant-view-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "facebook", "access-management", "grant-view-access"]
+            }
+          }
+        },
+        {
+          "name": "Grant Ad Account View Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_FACEBOOK_ACCESS_TOKEN\",\n  \"service\": \"adAccount\",\n  \"entityId\": \"act_123456789\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/facebook/access-management/grant-view-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "facebook", "access-management", "grant-view-access"]
+            }
+          }
+        },
+        {
+          "name": "Grant Page View Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_FACEBOOK_ACCESS_TOKEN\",\n  \"service\": \"page\",\n  \"entityId\": \"PAGE_ID\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/facebook/access-management/grant-view-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "facebook", "access-management", "grant-view-access"]
+            }
+          }
+        },
+        {
+          "name": "Grant Catalog View Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_FACEBOOK_ACCESS_TOKEN\",\n  \"service\": \"catalog\",\n  \"entityId\": \"CATALOG_ID\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/facebook/access-management/grant-view-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "facebook", "access-management", "grant-view-access"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Entity Users",
+      "item": [
+        {
+          "name": "Get Business Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_URL}}/api/facebook/access-management/users/business/FACEBOOK_BUSINESS_ID?accessToken=YOUR_FACEBOOK_ACCESS_TOKEN",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "facebook", "access-management", "users", "business", "FACEBOOK_BUSINESS_ID"],
+              "query": [
+                {
+                  "key": "accessToken",
+                  "value": "YOUR_FACEBOOK_ACCESS_TOKEN"
+                },
+                {
+                  "key": "agencyId",
+                  "value": "AGENCY_ID",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Ad Account Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_URL}}/api/facebook/access-management/users/adAccount/act_123456789?accessToken=YOUR_FACEBOOK_ACCESS_TOKEN",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "facebook", "access-management", "users", "adAccount", "act_123456789"],
+              "query": [
+                {
+                  "key": "accessToken",
+                  "value": "YOUR_FACEBOOK_ACCESS_TOKEN"
+                },
+                {
+                  "key": "agencyId",
+                  "value": "AGENCY_ID",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Page Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_URL}}/api/facebook/access-management/users/page/PAGE_ID?accessToken=YOUR_FACEBOOK_ACCESS_TOKEN",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "facebook", "access-management", "users", "page", "PAGE_ID"],
+              "query": [
+                {
+                  "key": "accessToken",
+                  "value": "YOUR_FACEBOOK_ACCESS_TOKEN"
+                },
+                {
+                  "key": "agencyId",
+                  "value": "AGENCY_ID",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Catalog Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_URL}}/api/facebook/access-management/users/catalog/CATALOG_ID?accessToken=YOUR_FACEBOOK_ACCESS_TOKEN",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "facebook", "access-management", "users", "catalog", "CATALOG_ID"],
+              "query": [
+                {
+                  "key": "accessToken",
+                  "value": "YOUR_FACEBOOK_ACCESS_TOKEN"
+                },
+                {
+                  "key": "agencyId",
+                  "value": "AGENCY_ID",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Revoke Access",
+      "item": [
+        {
+          "name": "Revoke Business Access",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_FACEBOOK_ACCESS_TOKEN\",\n  \"service\": \"business\",\n  \"entityId\": \"FACEBOOK_BUSINESS_ID\",\n  \"linkId\": \"USER_LINK_ID\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/facebook/access-management/revoke/business/FACEBOOK_BUSINESS_ID/USER_LINK_ID",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "facebook", "access-management", "revoke", "business", "FACEBOOK_BUSINESS_ID", "USER_LINK_ID"]
+            }
+          }
+        },
+        {
+          "name": "Revoke Ad Account Access",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_FACEBOOK_ACCESS_TOKEN\",\n  \"service\": \"adAccount\",\n  \"entityId\": \"act_123456789\",\n  \"linkId\": \"USER_LINK_ID\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/facebook/access-management/revoke/adAccount/act_123456789/USER_LINK_ID",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "facebook", "access-management", "revoke", "adAccount", "act_123456789", "USER_LINK_ID"]
+            }
+          }
+        },
+        {
+          "name": "Revoke Page Access",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_FACEBOOK_ACCESS_TOKEN\",\n  \"service\": \"page\",\n  \"entityId\": \"PAGE_ID\",\n  \"linkId\": \"USER_LINK_ID\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/facebook/access-management/revoke/page/PAGE_ID/USER_LINK_ID",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "facebook", "access-management", "revoke", "page", "PAGE_ID", "USER_LINK_ID"]
+            }
+          }
+        },
+        {
+          "name": "Revoke Catalog Access",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_FACEBOOK_ACCESS_TOKEN\",\n  \"service\": \"catalog\",\n  \"entityId\": \"CATALOG_ID\",\n  \"linkId\": \"USER_LINK_ID\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/facebook/access-management/revoke/catalog/CATALOG_ID/USER_LINK_ID",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "facebook", "access-management", "revoke", "catalog", "CATALOG_ID", "USER_LINK_ID"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "API_URL",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ]
+}

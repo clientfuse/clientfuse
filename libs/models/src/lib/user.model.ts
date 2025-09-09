@@ -18,7 +18,8 @@ import {
   FacebookAdAccount,
   FacebookBusinessAccount,
   FacebookCatalog,
-  FacebookPage
+  FacebookPage,
+  FacebookPixel
 } from './integrations/facebook.model';
 import {
   GOOGLE_ADWORDS_SCOPE,
@@ -69,6 +70,7 @@ export type IFacebookInfo = {
   businessAccounts: FacebookBusinessAccount[];
   pages: FacebookPage[];
   catalogs: FacebookCatalog[];
+  pixels: FacebookPixel[];
 };
 
 export interface IRegistrationCredentials {

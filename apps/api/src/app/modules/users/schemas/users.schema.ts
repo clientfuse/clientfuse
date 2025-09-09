@@ -66,7 +66,8 @@ export class User implements IRegistrationCredentials {
       adsAccounts: { type: [Object], default: [] },
       businessAccounts: { type: [Object], default: [] },
       pages: { type: [Object], default: [] },
-      catalogs: { type: [Object], default: [] }
+      catalogs: { type: [Object], default: [] },
+      pixels: { type: [Object], default: [] }
     },
     default: {}
   })

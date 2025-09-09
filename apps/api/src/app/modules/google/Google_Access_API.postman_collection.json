@@ -1,0 +1,575 @@
+{
+  "info": {
+    "_postman_id": "google-access-api-collection",
+    "name": "Google Access Management API",
+    "description": "Collection for testing Google Access Management endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Google Connect",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idToken\": \"YOUR_GOOGLE_ID_TOKEN\",\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\"\n}"
+        },
+        "url": {
+          "raw": "{{API_URL}}/api/google/connect",
+          "host": ["{{API_URL}}"],
+          "path": ["api", "google", "connect"]
+        },
+        "description": "Get Google user accounts data (Analytics, Ads, Tag Manager, Search Console, Merchant Center, My Business)"
+      }
+    },
+    {
+      "name": "Grant Management Access",
+      "item": [
+        {
+          "name": "Grant Analytics Management Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\",\n  \"service\": \"analytics\",\n  \"entityId\": \"ANALYTICS_ACCOUNT_ID\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/grant-management-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "grant-management-access"]
+            }
+          }
+        },
+        {
+          "name": "Grant Ads Management Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\",\n  \"service\": \"ads\",\n  \"entityId\": \"123-456-7890\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/grant-management-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "grant-management-access"]
+            }
+          }
+        },
+        {
+          "name": "Grant Tag Manager Management Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\",\n  \"service\": \"tagManager\",\n  \"entityId\": \"GTM_ACCOUNT_ID\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/grant-management-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "grant-management-access"]
+            }
+          }
+        },
+        {
+          "name": "Grant Search Console Management Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\",\n  \"service\": \"searchConsole\",\n  \"entityId\": \"https://example.com\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/grant-management-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "grant-management-access"]
+            }
+          }
+        },
+        {
+          "name": "Grant Merchant Center Management Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\",\n  \"service\": \"merchantCenter\",\n  \"entityId\": \"MERCHANT_ID\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/grant-management-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "grant-management-access"]
+            }
+          }
+        },
+        {
+          "name": "Grant My Business Management Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\",\n  \"service\": \"myBusiness\",\n  \"entityId\": \"LOCATION_ID\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/grant-management-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "grant-management-access"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Grant View Access",
+      "item": [
+        {
+          "name": "Grant Analytics View Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\",\n  \"service\": \"analytics\",\n  \"entityId\": \"ANALYTICS_ACCOUNT_ID\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/grant-view-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "grant-view-access"]
+            }
+          }
+        },
+        {
+          "name": "Grant Ads View Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\",\n  \"service\": \"ads\",\n  \"entityId\": \"123-456-7890\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/grant-view-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "grant-view-access"]
+            }
+          }
+        },
+        {
+          "name": "Grant Tag Manager View Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\",\n  \"service\": \"tagManager\",\n  \"entityId\": \"GTM_ACCOUNT_ID\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/grant-view-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "grant-view-access"]
+            }
+          }
+        },
+        {
+          "name": "Grant Search Console View Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\",\n  \"service\": \"searchConsole\",\n  \"entityId\": \"https://example.com\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/grant-view-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "grant-view-access"]
+            }
+          }
+        },
+        {
+          "name": "Grant Merchant Center View Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\",\n  \"service\": \"merchantCenter\",\n  \"entityId\": \"MERCHANT_ID\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/grant-view-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "grant-view-access"]
+            }
+          }
+        },
+        {
+          "name": "Grant My Business View Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\",\n  \"service\": \"myBusiness\",\n  \"entityId\": \"LOCATION_ID\",\n  \"agencyEmail\": \"agency@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/grant-view-access",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "grant-view-access"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Entity Users",
+      "item": [
+        {
+          "name": "Get Analytics Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/users/analytics/ANALYTICS_ACCOUNT_ID?accessToken=YOUR_GOOGLE_ACCESS_TOKEN",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "users", "analytics", "ANALYTICS_ACCOUNT_ID"],
+              "query": [
+                {
+                  "key": "accessToken",
+                  "value": "YOUR_GOOGLE_ACCESS_TOKEN"
+                },
+                {
+                  "key": "agencyId",
+                  "value": "AGENCY_ID",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Ads Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/users/ads/123-456-7890?accessToken=YOUR_GOOGLE_ACCESS_TOKEN",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "users", "ads", "123-456-7890"],
+              "query": [
+                {
+                  "key": "accessToken",
+                  "value": "YOUR_GOOGLE_ACCESS_TOKEN"
+                },
+                {
+                  "key": "agencyId",
+                  "value": "AGENCY_ID",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Tag Manager Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/users/tagManager/GTM_ACCOUNT_ID?accessToken=YOUR_GOOGLE_ACCESS_TOKEN",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "users", "tagManager", "GTM_ACCOUNT_ID"],
+              "query": [
+                {
+                  "key": "accessToken",
+                  "value": "YOUR_GOOGLE_ACCESS_TOKEN"
+                },
+                {
+                  "key": "agencyId",
+                  "value": "AGENCY_ID",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Search Console Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/users/searchConsole/https://example.com?accessToken=YOUR_GOOGLE_ACCESS_TOKEN",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "users", "searchConsole", "https://example.com"],
+              "query": [
+                {
+                  "key": "accessToken",
+                  "value": "YOUR_GOOGLE_ACCESS_TOKEN"
+                },
+                {
+                  "key": "agencyId",
+                  "value": "AGENCY_ID",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Merchant Center Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/users/merchantCenter/MERCHANT_ID?accessToken=YOUR_GOOGLE_ACCESS_TOKEN",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "users", "merchantCenter", "MERCHANT_ID"],
+              "query": [
+                {
+                  "key": "accessToken",
+                  "value": "YOUR_GOOGLE_ACCESS_TOKEN"
+                },
+                {
+                  "key": "agencyId",
+                  "value": "AGENCY_ID",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get My Business Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/users/myBusiness/LOCATION_ID?accessToken=YOUR_GOOGLE_ACCESS_TOKEN",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "users", "myBusiness", "LOCATION_ID"],
+              "query": [
+                {
+                  "key": "accessToken",
+                  "value": "YOUR_GOOGLE_ACCESS_TOKEN"
+                },
+                {
+                  "key": "agencyId",
+                  "value": "AGENCY_ID",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Revoke Access",
+      "item": [
+        {
+          "name": "Revoke Analytics Access",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\",\n  \"service\": \"analytics\",\n  \"entityId\": \"ANALYTICS_ACCOUNT_ID\",\n  \"linkId\": \"USER_LINK_ID\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/revoke/analytics/ANALYTICS_ACCOUNT_ID/USER_LINK_ID",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "revoke", "analytics", "ANALYTICS_ACCOUNT_ID", "USER_LINK_ID"]
+            }
+          }
+        },
+        {
+          "name": "Revoke Ads Access",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\",\n  \"service\": \"ads\",\n  \"entityId\": \"123-456-7890\",\n  \"linkId\": \"USER_LINK_ID\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/revoke/ads/123-456-7890/USER_LINK_ID",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "revoke", "ads", "123-456-7890", "USER_LINK_ID"]
+            }
+          }
+        },
+        {
+          "name": "Revoke Tag Manager Access",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\",\n  \"service\": \"tagManager\",\n  \"entityId\": \"GTM_ACCOUNT_ID\",\n  \"linkId\": \"USER_LINK_ID\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/revoke/tagManager/GTM_ACCOUNT_ID/USER_LINK_ID",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "revoke", "tagManager", "GTM_ACCOUNT_ID", "USER_LINK_ID"]
+            }
+          }
+        },
+        {
+          "name": "Revoke Search Console Access",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\",\n  \"service\": \"searchConsole\",\n  \"entityId\": \"https://example.com\",\n  \"linkId\": \"USER_LINK_ID\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/revoke/searchConsole/https://example.com/USER_LINK_ID",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "revoke", "searchConsole", "https://example.com", "USER_LINK_ID"]
+            }
+          }
+        },
+        {
+          "name": "Revoke Merchant Center Access",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\",\n  \"service\": \"merchantCenter\",\n  \"entityId\": \"MERCHANT_ID\",\n  \"linkId\": \"USER_LINK_ID\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/revoke/merchantCenter/MERCHANT_ID/USER_LINK_ID",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "revoke", "merchantCenter", "MERCHANT_ID", "USER_LINK_ID"]
+            }
+          }
+        },
+        {
+          "name": "Revoke My Business Access",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"YOUR_GOOGLE_ACCESS_TOKEN\",\n  \"service\": \"myBusiness\",\n  \"entityId\": \"LOCATION_ID\",\n  \"linkId\": \"USER_LINK_ID\"\n}"
+            },
+            "url": {
+              "raw": "{{API_URL}}/api/google/access-management/revoke/myBusiness/LOCATION_ID/USER_LINK_ID",
+              "host": ["{{API_URL}}"],
+              "path": ["api", "google", "access-management", "revoke", "myBusiness", "LOCATION_ID", "USER_LINK_ID"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "API_URL",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ]
+}

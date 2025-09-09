@@ -25,6 +25,17 @@ export const ENDPOINTS = {
       revokeAgencyAccess: 'revoke/:service/:entityId/:linkId'
     }
   },
+  facebook: {
+    root: 'facebook',
+    connect: 'connect',
+    accessManagement: {
+      root: 'access-management',
+      grantManagementAccess: 'grant-management-access',
+      grantViewAccess: 'grant-view-access',
+      getEntityUsers: 'users/:service/:entityId',
+      revokeAgencyAccess: 'revoke/:service/:entityId/:linkId'
+    }
+  },
   users: {
     root: 'users',
     profile: 'profile',

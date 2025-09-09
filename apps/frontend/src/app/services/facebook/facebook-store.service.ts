@@ -1,0 +1,314 @@
+import { computed, inject, Injectable, signal } from '@angular/core';
+import {
+  FacebookServiceType,
+  IFacebookConnectionDto,
+  IFacebookConnectionResponse,
+  IGetEntityUsersQueryDto,
+  IGetEntityUsersResponse,
+  IGrantAccessResponse,
+  IGrantAgencyAccessDto,
+  IRevokeAccessResponse,
+  IRevokeAgencyAccessDto
+} from '@clientfuse/models';
+import { FacebookApiService } from './facebook-api.service';
+
+export interface FacebookStoreState {
+  connectionData: IFacebookConnectionResponse | null;
+  entityUsers: IGetEntityUsersResponse | null;
+  accessToken: string | null;
+  grantedAccesses: IGrantAccessResponse[];
+  isLoading: boolean;
+  error: string | null;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class FacebookStoreService {
+  private facebookApiService = inject(FacebookApiService);
+
+  private state = signal<FacebookStoreState>({
+    connectionData: null,
+    entityUsers: null,
+    accessToken: null,
+    grantedAccesses: [],
+    isLoading: false,
+    error: null
+  });
+
+  readonly connectionData = computed(() => this.state().connectionData);
+  readonly entityUsers = computed(() => this.state().entityUsers);
+  readonly accessToken = computed(() => this.state().accessToken);
+  readonly grantedAccesses = computed(() => this.state().grantedAccesses);
+  readonly isLoading = computed(() => this.state().isLoading);
+  readonly error = computed(() => this.state().error);
+
+  async connectFacebook(dto: IFacebookConnectionDto): Promise<void> {
+    this.setLoading(true);
+    this.clearError();
+
+    try {
+      const response = await this.facebookApiService.connectFacebook(dto);
+      if (response.payload) {
+        this.state.update(state => ({
+          ...state,
+          connectionData: response.payload,
+          accessToken: dto.accessToken
+        }));
+      } else {
+        this.setError('Failed to connect Facebook account');
+      }
+    } catch (error) {
+      this.setError('An error occurred while connecting Facebook account');
+      throw error;
+    } finally {
+      this.setLoading(false);
+    }
+  }
+
+  async grantManagementAccess(dto: Omit<IGrantAgencyAccessDto, 'accessToken'>): Promise<IGrantAccessResponse | null> {
+    this.setLoading(true);
+    this.clearError();
+
+    const accessToken = this.state().accessToken;
+
+    if (!accessToken) {
+      this.setError('User must be authenticated with Facebook');
+      this.setLoading(false);
+      return null;
+    }
+
+    try {
+      const fullDto = {
+        ...dto,
+        accessToken
+      } as IGrantAgencyAccessDto;
+
+      const response = await this.facebookApiService.grantManagementAccess(fullDto);
+      if (response.payload) {
+        this.state.update(state => ({
+          ...state,
+          grantedAccesses: [...state.grantedAccesses, response.payload]
+        }));
+        return response.payload;
+      } else {
+        this.setError('Failed to grant management access');
+        return null;
+      }
+    } catch (error) {
+      this.setError('An error occurred while granting management access');
+      throw error;
+    } finally {
+      this.setLoading(false);
+    }
+  }
+
+  async grantViewAccess(dto: Omit<IGrantAgencyAccessDto, 'accessToken'>): Promise<IGrantAccessResponse | null> {
+    this.setLoading(true);
+    this.clearError();
+
+    const accessToken = this.state().accessToken;
+
+    if (!accessToken) {
+      this.setError('User must be authenticated with Facebook');
+      this.setLoading(false);
+      return null;
+    }
+
+    try {
+      const fullDto = {
+        ...dto,
+        accessToken
+      } as IGrantAgencyAccessDto;
+
+      const response = await this.facebookApiService.grantViewAccess(fullDto);
+      if (response.payload) {
+        this.state.update(state => ({
+          ...state,
+          grantedAccesses: [...state.grantedAccesses, response.payload]
+        }));
+        return response.payload;
+      } else {
+        this.setError('Failed to grant view access');
+        return null;
+      }
+    } catch (error) {
+      this.setError('An error occurred while granting view access');
+      throw error;
+    } finally {
+      this.setLoading(false);
+    }
+  }
+
+
+  async loadEntityUsers(dto: Omit<IGetEntityUsersQueryDto, 'accessToken'> & {
+    service: FacebookServiceType;
+    entityId: string;
+  }): Promise<void> {
+    this.setLoading(true);
+    this.clearError();
+
+    const accessToken = this.state().accessToken;
+
+    if (!accessToken) {
+      this.setError('User must be authenticated with Facebook');
+      this.setLoading(false);
+      return;
+    }
+
+    try {
+      const fullDto = {
+        ...dto,
+        accessToken
+      } as IGetEntityUsersQueryDto & { service: FacebookServiceType; entityId: string };
+
+      const response = await this.facebookApiService.getEntityUsers(fullDto);
+      if (response.payload) {
+        this.state.update(state => ({
+          ...state,
+          entityUsers: response.payload
+        }));
+      } else {
+        this.setError('Failed to load entity users');
+      }
+    } catch (error) {
+      this.setError('An error occurred while loading entity users');
+      throw error;
+    } finally {
+      this.setLoading(false);
+    }
+  }
+
+  async revokeAgencyAccess(dto: Omit<IRevokeAgencyAccessDto, 'accessToken'>): Promise<IRevokeAccessResponse | null> {
+    this.setLoading(true);
+    this.clearError();
+
+    const accessToken = this.state().accessToken;
+
+    if (!accessToken) {
+      this.setError('User must be authenticated with Facebook');
+      this.setLoading(false);
+      return null;
+    }
+
+    try {
+      const fullDto = {
+        ...dto,
+        accessToken
+      } as IRevokeAgencyAccessDto;
+
+      const response = await this.facebookApiService.revokeAgencyAccess(fullDto);
+      if (response.payload) {
+        if (this.state().entityUsers) {
+          await this.refreshEntityUsers();
+        }
+        return response.payload;
+      } else {
+        this.setError('Failed to revoke agency access');
+        return null;
+      }
+    } catch (error) {
+      this.setError('An error occurred while revoking agency access');
+      throw error;
+    } finally {
+      this.setLoading(false);
+    }
+  }
+
+  private async refreshEntityUsers(): Promise<void> {
+    const currentEntityUsers = this.state().entityUsers;
+    if (currentEntityUsers && currentEntityUsers.entityId && currentEntityUsers.service) {
+      await this.loadEntityUsers({
+        service: currentEntityUsers.service as FacebookServiceType,
+        entityId: currentEntityUsers.entityId
+      });
+    }
+  }
+
+  clearConnectionData(): void {
+    this.state.update(state => ({
+      ...state,
+      connectionData: null
+    }));
+  }
+
+  clearEntityUsers(): void {
+    this.state.update(state => ({
+      ...state,
+      entityUsers: null
+    }));
+  }
+
+  clearAll(): void {
+    this.state.set({
+      connectionData: null,
+      entityUsers: null,
+      accessToken: null,
+      grantedAccesses: [],
+      isLoading: false,
+      error: null
+    });
+  }
+
+  getGrantedAccessByEntity(service: string, entityId: string): IGrantAccessResponse | undefined {
+    return this.state().grantedAccesses.find(
+      access => access.service === service && access.entityId === entityId
+    );
+  }
+
+  getSessionSummary(): { totalGranted: number; services: string[] } {
+    const accesses = this.state().grantedAccesses;
+    const uniqueServices = [...new Set(accesses.map(a => a.service))];
+
+    return {
+      totalGranted: accesses.length,
+      services: uniqueServices
+    };
+  }
+
+  clearGrantedAccesses(): void {
+    this.state.update(state => ({
+      ...state,
+      grantedAccesses: []
+    }));
+  }
+
+  addOrUpdateGrantedAccess(grantedAccess: IGrantAccessResponse): void {
+    this.state.update(state => {
+      const existingIndex = state.grantedAccesses.findIndex(
+        access => access.service === grantedAccess.service && access.entityId === grantedAccess.entityId
+      );
+
+      let updatedAccesses: IGrantAccessResponse[];
+      if (existingIndex !== -1) {
+        updatedAccesses = [...state.grantedAccesses];
+        updatedAccesses[existingIndex] = grantedAccess;
+      } else {
+        updatedAccesses = [...state.grantedAccesses, grantedAccess];
+      }
+
+      return {
+        ...state,
+        grantedAccesses: updatedAccesses
+      };
+    });
+  }
+
+  private setLoading(isLoading: boolean): void {
+    this.state.update(state => ({
+      ...state,
+      isLoading
+    }));
+  }
+
+  private setError(error: string | null): void {
+    this.state.update(state => ({
+      ...state,
+      error
+    }));
+  }
+
+  private clearError(): void {
+    this.setError(null);
+  }
+}

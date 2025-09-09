@@ -40,7 +40,8 @@ export class FacebookListenerService {
         adsAccounts: data.facebookAdAccounts || [],
         businessAccounts: data.facebookBusinessAccounts || [],
         pages: data.facebookPages || [],
-        catalogs: data.facebookCatalogs || []
+        catalogs: data.facebookCatalogs || [],
+        pixels: data.facebookPixels || []
       };
 
       await this.userService.updateUser(
@@ -54,6 +55,7 @@ export class FacebookListenerService {
         - Business Accounts: ${facebookInfo.businessAccounts.length}
         - Pages: ${facebookInfo.pages.length}
         - Catalogs: ${facebookInfo.catalogs.length}
+        - Pixels: ${facebookInfo.pixels.length}
         - Granted Scopes: ${facebookInfo.grantedScopes.length}
       `);
 

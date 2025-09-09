@@ -4,6 +4,7 @@ import { isNil } from 'lodash';
 import { DateTime } from 'luxon';
 import { finalize, Observable, of } from 'rxjs';
 import { AgencyStoreService } from './agency/agency-store.service';
+import { AuthStoreService } from './auth/auth-store.service';
 import { LocalStorageService } from './local-storage.service';
 import { NavigationService } from './navigation.service';
 import { ProfileStoreService } from './profile/profile-store.service';
@@ -14,11 +15,9 @@ import { ProfileStoreService } from './profile/profile-store.service';
 export class AppInitializerService {
 
   private readonly agencyStoreService = inject(AgencyStoreService);
+  private readonly authStoreService = inject(AuthStoreService);
   private readonly navigationService = inject(NavigationService);
   private readonly profileStoreService = inject(ProfileStoreService);
-
-  constructor() {
-  }
 
   start(): Promise<void> {
     return new Promise<void>(async (resolve, reject) => {
@@ -26,20 +25,31 @@ export class AppInitializerService {
         const hasToken = LocalStorageService.getItem(LocalStorageKey.ACCESS_TOKEN) !== null;
         const profile$: Observable<IResponse<IUserResponse> | null> = hasToken ? this.profileStoreService.getProfile$() : of(null);
         this.navigationService.observeUrl().subscribe();
+
+        this.authStoreService.loginSuccess$.subscribe((userId) => this.initialize(userId));
+
         profile$
           .pipe(finalize(() => resolve()))
           .subscribe((res) => {
             console.log(`Application initialized at ${DateTime.now().toISOTime()}`);
             if (isNil(res)) return;
-
-            Promise.all([
-              this.agencyStoreService.getUserAgency(res.payload._id)
-            ]);
+            this.initialize(res.payload._id);
           });
       } catch (error) {
         console.error('Error during application initializing:', error);
         reject(error);
       }
     });
+  }
+
+  private async initialize(userId: string): Promise<void> {
+    try {
+      await Promise.all([
+        this.agencyStoreService.getUserAgency(userId)
+      ]);
+      console.log(`Post-login initialization completed for user ${userId}`);
+    } catch (error) {
+      console.error('Error during post-login initialization:', error);
+    }
   }
 }

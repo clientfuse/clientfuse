@@ -68,57 +68,124 @@
 
     @if (facebookServicesText()) {
       <app-island [variant]="'neutral'">
-        <div class="provider-header">
-          <img src="./assets/icons/meta.svg" alt="Meta" class="provider-icon-large" />
-          <h3 class="subtitle-medium">Meta</h3>
-        </div>
+        <div class="connection-island-content">
+          <div class="provider-header">
+            <img src="./assets/icons/meta.svg" alt="Meta" class="provider-icon-large" />
+            <h3 class="subtitle-medium">Meta</h3>
+          </div>
 
-        @if (metaConnectionStatus() === 'disconnected') {
-          <div class="connection-content">
-            <p>Let's start by connecting Facebook</p>
+          @if (metaConnectionStatus() === 'disconnected') {
+            <div class="connection-content">
+              <p>Let's start by connecting Facebook</p>
 
-            <button type="button"
-                    class="facebook-connect-btn"
-                    (click)="connectFacebook()"
-                    [disabled]="metaConnectionStatus() === 'pending'">
-              <img src="./assets/icons/facebook.svg" alt="Facebook" class="facebook-icon" />
-              Connect Facebook
-            </button>
-
-            <p class="connection-alternative body-smaller-text">
-              Or
-              <button class="link link-blue click-target-helper"
-                      (click)="skipFacebook()"
-                      [disabled]="metaConnectionStatus() === 'pending'">continue without granting Facebook access
+              <button type="button"
+                      class="facebook-connect-btn"
+                      (click)="connectFacebook()"
+                      [disabled]="metaConnectionStatus() === 'pending'">
+                <img src="./assets/icons/facebook.svg" alt="Facebook" class="facebook-icon" />
+                Connect Facebook
               </button>
-            </p>
-          </div>
-        } @else if (metaConnectionStatus() === 'pending') {
-          <div class="connection-status pending">
-            <mat-icon class="status-icon">hourglass_empty</mat-icon>
-            <span class="status-text">Connecting to Facebook...</span>
-          </div>
-        } @else if (metaConnectionStatus() === 'connected') {
-          <div class="connection-status connected">
-            <mat-icon class="status-icon">check_circle</mat-icon>
-            <span class="status-text">Connected to Facebook</span>
-            <button type="button" class="link link-blue body-smaller-text click-target-helper" (click)="editConnection('meta')">(edit)
-            </button>
-          </div>
-        } @else if (metaConnectionStatus() === 'skipped') {
-          <div class="connection-status skipped">
-            <mat-icon class="status-icon">close</mat-icon>
-            <span class="status-text">Skipped Facebook</span>
-            <button type="button" class="link link-blue click-target-helper body-smaller-text" (click)="editConnection('meta')">(edit)
-            </button>
-          </div>
-        }
+
+              <p class="connection-alternative body-smaller-text">
+                Or
+                <button class="link link-blue click-target-helper"
+                        (click)="skipFacebook()"
+                        [disabled]="metaConnectionStatus() === 'pending'">continue without granting Facebook access
+                </button>
+              </p>
+            </div>
+          } @else if (metaConnectionStatus() === 'pending') {
+            <div class="connection-status pending">
+              <mat-icon class="status-icon">hourglass_empty</mat-icon>
+              <span class="status-text">Connecting to Facebook...</span>
+            </div>
+          } @else if (metaConnectionStatus() === 'connected') {
+            <div class="connection-status connected">
+              <mat-icon class="status-icon">check_circle</mat-icon>
+              <span class="status-text">Connected to Facebook</span>
+              <button type="button" class="link link-blue body-smaller-text click-target-helper" (click)="editConnection('meta')">(edit)
+              </button>
+            </div>
+
+            @if (isLoadingFacebookData()) {
+              <app-island [variant]="'info'" [borderAccent]="true">
+                <p>Loading Facebook accounts data...</p>
+              </app-island>
+            }
+
+            @if (facebookError()) {
+              <app-island [variant]="'error'" [borderAccent]="true">
+                <p class="error-text">{{ facebookError() }}</p>
+              </app-island>
+            }
+
+            @if (facebookConnectionData()) {
+              <app-island [variant]="'info'">
+                <div class="user-info">
+                  @if (facebookConnectionData()?.user?.email) {
+                    <p class="body-smaller-text"><strong>Email:</strong> {{ facebookConnectionData()?.user?.email }}</p>
+                  }
+                  <p class="body-smaller-text"><strong>ID:</strong> {{ facebookConnectionData()?.user?.id }}</p>
+                </div>
+              </app-island>
+            }
+
+            @if (facebookConnectionData()?.accounts) {
+              <app-island [variant]="'neutral'">
+                <p class="subtitle-smaller">Available Accounts:</p>
+                <div class="accounts-list">
+                  @if (facebookConnectionData()?.accounts?.facebookBusinessAccounts?.length) {
+                    <div class="account-section">
+                      <p class="body-smaller-text"><strong>
+                        Business Accounts:</strong> {{ facebookConnectionData()?.accounts?.facebookBusinessAccounts?.length }} account(s)
+                      </p>
+                    </div>
+                  }
+                  @if (facebookConnectionData()?.accounts?.facebookAdAccounts?.length) {
+                    <div class="account-section">
+                      <p class="body-smaller-text"><strong>
+                        Ad Accounts:</strong> {{ facebookConnectionData()?.accounts?.facebookAdAccounts?.length }} account(s)
+                      </p>
+                    </div>
+                  }
+                  @if (facebookConnectionData()?.accounts?.facebookPages?.length) {
+                    <div class="account-section">
+                      <p class="body-smaller-text"><strong>
+                        Pages:</strong> {{ facebookConnectionData()?.accounts?.facebookPages?.length }} page(s)</p>
+                    </div>
+                  }
+                  @if (facebookConnectionData()?.accounts?.facebookCatalogs?.length) {
+                    <div class="account-section">
+                      <p class="body-smaller-text">
+                        <strong>Catalogs:</strong> {{ facebookConnectionData()?.accounts?.facebookCatalogs?.length }} catalog(s)
+                      </p>
+                    </div>
+                  }
+                  @if (facebookConnectionData()?.accounts?.facebookPixels?.length) {
+                    <div class="account-section">
+                      <p class="body-smaller-text">
+                        <strong>Pixels:</strong> {{ facebookConnectionData()?.accounts?.facebookPixels?.length }} pixel(s)
+                      </p>
+                    </div>
+                  }
+                </div>
+              </app-island>
+            }
+          } @else if (metaConnectionStatus() === 'skipped') {
+            <div class="connection-status skipped">
+              <mat-icon class="status-icon">close</mat-icon>
+              <span class="status-text">Skipped Facebook</span>
+              <button type="button" class="link link-blue click-target-helper body-smaller-text" (click)="editConnection('meta')">(edit)
+              </button>
+            </div>
+          }
+        </div>
       </app-island>
     }
 
     @if (googleServicesText()) {
       <app-island [variant]="'neutral'">
-        <div class="google-connection-island-content">
+        <div class="connection-island-content">
           <div class="provider-header">
             <img src="./assets/icons/google.svg" alt="Google" class="provider-icon-large" />
             <h3 class="subtitle-medium">Google</h3>
@@ -143,7 +210,7 @@
                    class="link link-blue click-target-helper">
                   Google API Services User Data Policy</a>, including the Limited Use requirements.
               </p>
-              
+
               <p class="connection-alternative body-smaller-text">
                 Or
                 <button class="link link-blue click-target-helper"

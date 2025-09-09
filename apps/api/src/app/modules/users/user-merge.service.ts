@@ -189,6 +189,11 @@ export class UserMergeService {
     }
 
     merged.grantedScopes = this.mergeStringArrays(merged.grantedScopes, secondary.grantedScopes);
+    merged.adsAccounts = this.mergeArrays(merged.adsAccounts, secondary.adsAccounts);
+    merged.businessAccounts = this.mergeArrays(merged.businessAccounts, secondary.businessAccounts);
+    merged.pages = this.mergeArrays(merged.pages, secondary.pages);
+    merged.catalogs = this.mergeArrays(merged.catalogs, secondary.catalogs);
+    merged.pixels = this.mergeArrays(merged.pixels, secondary.pixels);
 
     return merged;
   }

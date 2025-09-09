@@ -1,7 +1,7 @@
 import { computed, inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { LocalStorageKey } from '@clientfuse/models';
-import { firstValueFrom, tap } from 'rxjs';
+import { firstValueFrom, Subject, tap } from 'rxjs';
 import { LocalStorageService } from '../local-storage.service';
 import { ProfileStoreService } from '../profile/profile-store.service';
 import { RoutesService } from '../routes.service';
@@ -17,6 +17,9 @@ export class AuthStoreService {
   private router = inject(Router);
   private routesService = inject(RoutesService);
   private snackbarService = inject(SnackbarService);
+
+  private loginSuccess$$ = new Subject<string>();
+  loginSuccess$ = this.loginSuccess$$.asObservable();
 
   isLoggedIn = computed(() => !!this.profileStoreService.profile()?._id);
   isLoggedOut = computed(() => !this.isLoggedIn());
@@ -34,8 +37,9 @@ export class AuthStoreService {
 
     return this.profileStoreService.getProfile$()
       .pipe(
-        tap(() => {
+        tap((res) => {
           console.log('Logged in successfully');
+          this.loginSuccess$$.next(res.payload._id);
           void this.router.navigateByUrl(this.routesService.dashboard());
           this.snackbarService.success('Logged in successfully');
         })

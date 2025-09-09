@@ -34,7 +34,7 @@ export interface IFacebookBaseAccessService {
   getRequiredScopes(): string[];
 }
 
-export enum FacebookPageTask {
+export enum FacebookTask {
   ADVERTISE = 'ADVERTISE',
   ANALYZE = 'ANALYZE',
   CREATE_CONTENT = 'CREATE_CONTENT',
@@ -131,7 +131,7 @@ export interface FacebookPage {
   category_list: { id: string; name: string }[];
   access_token?: string;
   perms?: string[];
-  tasks?: FacebookPageTask[] | string[];
+  tasks?: FacebookTask[] | string[];
   verification_status?: string;
   fan_count?: number;
 }
@@ -143,6 +143,18 @@ export interface FacebookCatalog {
   product_count: number;
   created_time: string;
   updated_time: string;
+}
+
+export interface FacebookPixel {
+  id: string;
+  name: string;
+  created_time: string;
+  last_fired_time?: string;
+  code?: string;
+  owner_business_id?: string;
+  owner_business_name?: string;
+  owner_ad_account_id?: string;
+  owner_ad_account_name?: string;
 }
 
 export enum FacebookBusinessPermission {
@@ -213,4 +225,29 @@ export const FACEBOOK_ERROR_CODES = {
 
 export interface FacebookCredentials {
   access_token: string;
+}
+
+// DTO Interfaces
+export interface IFacebookConnectionDto {
+  accessToken: string;
+}
+
+// Response Types
+export interface IFacebookConnectionResponse {
+  user: {
+    id: string;
+    email: string;
+  };
+  hasValidTokens: boolean;
+  requiresReauth: boolean;
+  accounts: IFacebookAccountsData | null;
+}
+
+export interface IFacebookAccountsData {
+  facebookAdAccounts: FacebookAdAccount[];
+  facebookBusinessAccounts: FacebookBusinessAccount[];
+  facebookPages: FacebookPage[];
+  facebookCatalogs: FacebookCatalog[];
+  facebookPixels: FacebookPixel[];
+  grantedScopes: string[];
 }

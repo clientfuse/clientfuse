@@ -1,4 +1,4 @@
-import { FacebookAdAccount, FacebookBusinessAccount, FacebookCatalog, FacebookPage, IFacebookInfo } from '@clientfuse/models';
+import { FacebookAdAccount, FacebookBusinessAccount, FacebookCatalog, FacebookPage, FacebookPixel, IFacebookInfo } from '@clientfuse/models';
 import { IsArray, IsDefined, IsString } from 'class-validator';
 
 export class FacebookInfoDto implements IFacebookInfo {
@@ -30,5 +30,9 @@ export class FacebookInfoDto implements IFacebookInfo {
   @IsArray()
   @IsDefined()
   catalogs: FacebookCatalog[];
+
+  @IsArray()
+  @IsDefined()
+  pixels: FacebookPixel[];
 }
 

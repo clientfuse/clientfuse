@@ -110,7 +110,8 @@ export class AuthService {
         catalogs: [],
         adsAccounts: [],
         businessAccounts: [],
-        pages: []
+        pages: [],
+        pixels: []
       },
       isLoggedInWithGoogle: true,
       isLoggedInWithFacebook: false,
@@ -184,7 +185,8 @@ export class AuthService {
         catalogs: [],
         adsAccounts: [],
         businessAccounts: [],
-        pages: []
+        pages: [],
+        pixels: []
       },
       isLoggedInWithGoogle: false,
       isLoggedInWithFacebook: true,
