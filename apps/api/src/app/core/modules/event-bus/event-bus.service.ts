@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EmittedEvent, EventType } from './event-bus.model';
-import { generateCorrelationId } from './event-but.utils';
+import { generateCorrelationId } from './event-bus.utils';
 
 @Injectable()
 export class EventBusService {
