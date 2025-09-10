@@ -20,7 +20,7 @@ export class ConnectionLinkController {
     return this.connectionLinkService.findConnectionLinks(filter);
   }
 
-  @Get('default/:agencyId')
+  @Get(ENDPOINTS.connectionLinks.defaultByAgency)
   async findDefault(@Param('agencyId') agencyId: string): Promise<TConnectionLinkResponse> {
     const connectionLink = await this.connectionLinkService.findDefaultConnectionLink(agencyId);
     if (!connectionLink) {
@@ -29,7 +29,7 @@ export class ConnectionLinkController {
     return connectionLink;
   }
 
-  @Get(':id')
+  @Get(ENDPOINTS.connectionLinks.getOne)
   async findOne(@Param('id') id: string): Promise<TConnectionLinkResponse> {
     const connectionLink = await this.connectionLinkService.findConnectionLink({ _id: id });
     if (!connectionLink) {
@@ -38,7 +38,7 @@ export class ConnectionLinkController {
     return connectionLink;
   }
 
-  @Put(':id')
+  @Put(ENDPOINTS.connectionLinks.editOne)
   async update(
     @Param('id') id: string,
     @Body() updateConnectionLinkDto: UpdateConnectionLinkDto
@@ -46,12 +46,12 @@ export class ConnectionLinkController {
     return this.connectionLinkService.updateConnectionLink(id, updateConnectionLinkDto);
   }
 
-  @Put(':id/set-default')
+  @Put(ENDPOINTS.connectionLinks.setDefault)
   async setAsDefault(@Param('id') id: string): Promise<TConnectionLinkResponse> {
     return this.connectionLinkService.setAsDefault(id);
   }
 
-  @Delete(':id')
+  @Delete(ENDPOINTS.connectionLinks.deleteOne)
   async remove(@Param('id') id: string): Promise<void> {
     return this.connectionLinkService.deleteConnectionLink(id);
   }

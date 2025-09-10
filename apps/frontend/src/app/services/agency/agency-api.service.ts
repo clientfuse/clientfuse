@@ -9,24 +9,48 @@ import { environment } from '../../../environments/environment';
 })
 export class AgencyApiService {
   private httpClient = inject(HttpClient);
+  private readonly baseUrl = `${environment.API_URL}/${ENDPOINTS.agencies.root}`;
 
   createAgency(createAgencyDto: IAgencyBase) {
-    return firstValueFrom(this.httpClient.post<IResponse<IAgencyResponse>>(`${environment.API_URL}/${ENDPOINTS.agencies.root}`, createAgencyDto));
+    return firstValueFrom(
+      this.httpClient.post<IResponse<IAgencyResponse>>(
+        this.baseUrl,
+        createAgencyDto
+      )
+    );
   }
 
   findAgencies(query: Partial<IAgencyBase> = {}) {
-    return firstValueFrom(this.httpClient.get<IResponse<IAgencyResponse[]>>(`${environment.API_URL}/${ENDPOINTS.agencies.root}`, { params: query as any }));
+    return firstValueFrom(
+      this.httpClient.get<IResponse<IAgencyResponse[]>>(
+        this.baseUrl,
+        { params: query as any }
+      )
+    );
   }
 
   findAgency(id: string) {
-    return firstValueFrom(this.httpClient.get<IResponse<IAgencyResponse>>(`${environment.API_URL}/${ENDPOINTS.agencies.root}/${id}`));
+    return firstValueFrom(
+      this.httpClient.get<IResponse<IAgencyResponse>>(
+        `${this.baseUrl}/${ENDPOINTS.agencies.getOne.replace(':id', id)}`
+      )
+    );
   }
 
   updateAgency(id: string, updateAgencyDto: Partial<IAgencyBase>) {
-    return firstValueFrom(this.httpClient.put<IResponse<IAgencyResponse>>(`${environment.API_URL}/${ENDPOINTS.agencies.root}/${id}`, updateAgencyDto));
+    return firstValueFrom(
+      this.httpClient.put<IResponse<IAgencyResponse>>(
+        `${this.baseUrl}/${ENDPOINTS.agencies.editOne.replace(':id', id)}`,
+        updateAgencyDto
+      )
+    );
   }
 
   removeAgency(id: string) {
-    return firstValueFrom(this.httpClient.delete<IResponse<null>>(`${environment.API_URL}/${ENDPOINTS.agencies.root}/${id}`));
+    return firstValueFrom(
+      this.httpClient.delete<IResponse<null>>(
+        `${this.baseUrl}/${ENDPOINTS.agencies.deleteOne.replace(':id', id)}`
+      )
+    );
   }
 }

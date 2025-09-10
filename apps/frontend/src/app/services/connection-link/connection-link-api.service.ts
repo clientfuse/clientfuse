@@ -32,7 +32,7 @@ export class ConnectionLinkApiService {
   findConnectionLink(id: string) {
     return firstValueFrom(
       this.httpClient.get<IResponse<TConnectionLinkResponse>>(
-        `${this.baseUrl}/${id}`
+        `${this.baseUrl}/${ENDPOINTS.connectionLinks.getOne.replace(':id', id)}`
       )
     );
   }
@@ -40,7 +40,7 @@ export class ConnectionLinkApiService {
   findDefaultConnectionLink(agencyId: string) {
     return firstValueFrom(
       this.httpClient.get<IResponse<TConnectionLinkResponse>>(
-        `${this.baseUrl}/default/${agencyId}`
+        `${this.baseUrl}/${ENDPOINTS.connectionLinks.defaultByAgency.replace(':agencyId', agencyId)}`
       )
     );
   }
@@ -48,7 +48,7 @@ export class ConnectionLinkApiService {
   updateConnectionLink(id: string, updateConnectionLinkDto: Partial<TConnectionLinkBase>) {
     return firstValueFrom(
       this.httpClient.put<IResponse<TConnectionLinkResponse>>(
-        `${this.baseUrl}/${id}`,
+        `${this.baseUrl}/${ENDPOINTS.connectionLinks.editOne.replace(':id', id)}`,
         updateConnectionLinkDto
       )
     );
@@ -57,7 +57,7 @@ export class ConnectionLinkApiService {
   setAsDefault(id: string) {
     return firstValueFrom(
       this.httpClient.put<IResponse<TConnectionLinkResponse>>(
-        `${this.baseUrl}/${id}/set-default`,
+        `${this.baseUrl}/${ENDPOINTS.connectionLinks.setDefault.replace(':id', id)}`,
         {}
       )
     );
@@ -66,7 +66,7 @@ export class ConnectionLinkApiService {
   deleteConnectionLink(id: string) {
     return firstValueFrom(
       this.httpClient.delete<IResponse<null>>(
-        `${this.baseUrl}/${id}`
+        `${this.baseUrl}/${ENDPOINTS.connectionLinks.deleteOne.replace(':id', id)}`
       )
     );
   }
