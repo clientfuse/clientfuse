@@ -1,6 +1,11 @@
 export const ENDPOINTS = {
   connectionLinks: {
-    root: 'connection-links'
+    root: 'connection-links',
+    getOne: ':id',
+    editOne: ':id',
+    deleteOne: ':id',
+    defaultByAgency: 'default/:agencyId',
+    setDefault: ':id/set-default'
   },
   auth: {
     root: 'auth',

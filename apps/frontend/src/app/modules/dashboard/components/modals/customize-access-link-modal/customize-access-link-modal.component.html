@@ -30,6 +30,22 @@
               </mat-panel-title>
             </mat-expansion-panel-header>
 
+            @if (section.platform === 'facebook' && businessAccounts().length > 0) {
+              <div class="selector">
+                <mat-form-field appearance="outline">
+                  <mat-label>Business Portfolio</mat-label>
+                  <mat-select [value]="selectedBusinessPortfolioId()" (selectionChange)="onBusinessPortfolioChange($event.value)">
+                    @for (account of businessAccounts(); track account.id) {
+                      <mat-option [value]="account.id">
+                        {{ account.name }} ({{ account.id }})
+                      </mat-option>
+                    }
+                  </mat-select>
+                  <mat-hint>Controls which business portfolio the client will grant access to for the agency</mat-hint>
+                </mat-form-field>
+              </div>
+            }
+
             <div class="services-container">
               @for (service of section.services; track service.name) {
                 <div class="service-item">

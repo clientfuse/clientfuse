@@ -71,6 +71,11 @@ export class ConnectionLink implements TConnectionLinkBase {
         isViewAccessEnabled: { type: Boolean, required: true },
         isManageAccessEnabled: { type: Boolean, required: true },
         businessPortfolioId: { type: String, required: false }
+      },
+      pixels: {
+        isViewAccessEnabled: { type: Boolean, required: true },
+        isManageAccessEnabled: { type: Boolean, required: true },
+        businessPortfolioId: { type: String, required: false }
       }
     },
     required: false

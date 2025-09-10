@@ -2,7 +2,14 @@
   "name": "@connectly/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "typecheck:frontend": "nx run frontend:typecheck",
+    "typecheck:api": "nx run api:typecheck",
+    "typecheck:libs": "nx run-many --target=typecheck --projects=models,utils",
+    "typecheck:all": "nx run-many --target=typecheck --all",
+    "lint:all": "nx run-many --target=lint --all && nx run-many --target=eslint:lint --all",
+    "check:all": "npm run typecheck:all && npm run lint:all"
+  },
   "private": true,
   "devDependencies": {
     "@angular-devkit/build-angular": "~18.2.0",

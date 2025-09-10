@@ -11,7 +11,7 @@ export class CreateConnectionLinkDto implements TConnectionLinkBase {
 
   @IsBoolean()
   @IsDefined()
-  isDefault: boolean = false;
+  isDefault: boolean;
 
   @ValidateNested()
   @Type(() => GoogleAccessDto)

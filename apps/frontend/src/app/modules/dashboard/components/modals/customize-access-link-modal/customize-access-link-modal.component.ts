@@ -4,7 +4,9 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleChange, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import {
   AllAccessLinkKeys,
@@ -21,6 +23,7 @@ import {
 } from '@clientfuse/models';
 import { cloneDeep, isEqual, set } from 'lodash';
 import { ConnectionLinkStoreService } from '../../../../../services/connection-link/connection-link-store.service';
+import { ProfileStoreService } from '../../../../../services/profile/profile-store.service';
 import { GOOGLE_ICON_PATHS } from '../../../../../utils/icon.utils';
 
 interface IPlatformSection {
@@ -54,7 +57,9 @@ export interface ICustomizeAccessLinkModalData {
     MatSlideToggleModule,
     MatButtonModule,
     MatDialogModule,
-    MatIconModule
+    MatIconModule,
+    MatFormFieldModule,
+    MatSelectModule
   ],
   templateUrl: './customize-access-link-modal.component.html',
   styleUrl: './customize-access-link-modal.component.scss'
@@ -63,6 +68,7 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
   private readonly dialogRef = inject(MatDialogRef<CustomizeAccessLinkModalComponent>);
   protected readonly data: ICustomizeAccessLinkModalData = inject(MAT_DIALOG_DATA);
   private readonly connectionLinkStoreService = inject(ConnectionLinkStoreService);
+  private readonly profileStoreService = inject(ProfileStoreService);
   private readonly googleIconPaths = GOOGLE_ICON_PATHS;
 
   form = new FormGroup({});
@@ -70,6 +76,12 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
   initialConnectionLink = signal<TConnectionLinkResponse | null>(null);
   connectionLink = signal<TConnectionLinkResponse | null>(null);
   isChanged = computed<boolean>(() => !isEqual(this.initialConnectionLink(), this.connectionLink()));
+
+  selectedBusinessPortfolioId = signal<string | null>(null);
+  businessAccounts = computed(() => {
+    const profile = this.profileStoreService.profile();
+    return profile?.facebook?.businessAccounts || [];
+  });
 
   async ngOnInit() {
     const link = this.connectionLinkStoreService.connectionLinks()
@@ -80,9 +92,11 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
       const loadedLink = this.connectionLinkStoreService.currentConnectionLink();
       this.initialConnectionLink.set(cloneDeep(loadedLink));
       this.connectionLink.set(cloneDeep(loadedLink));
+      this.initializeSelectedBusinessPortfolioId(loadedLink);
     } else {
       this.initialConnectionLink.set(cloneDeep(link));
       this.connectionLink.set(cloneDeep(link));
+      this.initializeSelectedBusinessPortfolioId(link);
     }
   }
 
@@ -94,11 +108,13 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
       return sections;
     }
 
+    let isFirstSection = true;
+
     if (connectionLink.google) {
       const googleSection: IPlatformSection = {
         name: 'Google Accounts',
         platform: 'google' as TPlatformNamesKeys,
-        expanded: true,
+        expanded: isFirstSection,
         iconSrc: './assets/icons/google.svg',
         services: Object.keys(connectionLink.google)
           .map((key: string) => {
@@ -117,13 +133,14 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
           .filter((service: TServiceAccount) => service.key !== '_id' && service.email)
       };
       sections.push(googleSection);
+      isFirstSection = false;
     }
 
     if (connectionLink.facebook) {
       const metaSection: IPlatformSection = {
         name: 'Meta Assets',
         platform: 'facebook' as TPlatformNamesKeys,
-        expanded: false,
+        expanded: isFirstSection,
         iconSrc: './assets/icons/meta.svg',
         services: Object.keys(connectionLink.facebook)
           .map((key: string) => {
@@ -179,5 +196,32 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
     const fullPath = `${service.platform}.${service.key}.${fieldToChange}`;
     set(connectionLink, fullPath, value);
     this.connectionLink.set(connectionLink);
+  }
+
+  onBusinessPortfolioChange(portfolioId: string): void {
+    const connectionLink = cloneDeep(this.connectionLink());
+    if (!connectionLink?.facebook) {
+      return;
+    }
+
+    this.selectedBusinessPortfolioId.set(portfolioId);
+
+    const facebookServices: TFacebookAccessLinkKeys[] = ['ads', 'business', 'pages', 'catalogs', 'pixels'];
+
+    facebookServices.forEach(serviceKey => {
+      if (connectionLink.facebook && connectionLink.facebook[serviceKey]) {
+        connectionLink.facebook[serviceKey].businessPortfolioId = portfolioId;
+      }
+    });
+
+    this.connectionLink.set(connectionLink);
+  }
+
+  private initializeSelectedBusinessPortfolioId(link: TConnectionLinkResponse | null) {
+    if (link?.facebook?.ads?.businessPortfolioId) {
+      this.selectedBusinessPortfolioId.set(link.facebook.ads.businessPortfolioId);
+    } else if (link?.facebook?.business?.businessPortfolioId) {
+      this.selectedBusinessPortfolioId.set(link.facebook.business.businessPortfolioId);
+    }
   }
 }

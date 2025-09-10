@@ -32,4 +32,9 @@ export class FacebookAccessDto implements TFacebookAccessLink {
   @Type(() => FacebookAccessLinkWithId)
   @IsDefined()
   catalogs: FacebookAccessLinkWithId;
+
+  @ValidateNested()
+  @Type(() => FacebookAccessLinkWithId)
+  @IsDefined()
+  pixels: FacebookAccessLinkWithId;
 }

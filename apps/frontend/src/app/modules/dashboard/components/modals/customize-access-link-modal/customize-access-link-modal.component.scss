@@ -17,9 +17,11 @@
   margin-bottom: var(--spacing-4);
 }
 
-.services-container {
-  padding: 0 var(--spacing-4) var(--spacing-4) var(--spacing-4);
+.selector {
+  margin-bottom: var(--spacing-3);
+}
 
+.services-container {
   .service-item {
     display: flex;
     align-items: center;

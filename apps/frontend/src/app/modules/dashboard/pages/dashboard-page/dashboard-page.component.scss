@@ -17,21 +17,103 @@
   padding: var(--spacing-4) 0;
   max-width: 70%;
   display: grid;
-  gap: var(--spacing-4);
+  gap: var(--spacing-6);
 
   &.w-100 {
     max-width: 100%;
   }
 
   table {
-    border: 1px solid $dark-60;
-    border-collapse: collapse;
     width: 100%;
-    text-align: left;
+    background: white;
+    border-radius: var(--spacing-3);
+    overflow: hidden;
+    border: 1px solid $dark-20;
+    border-collapse: separate;
+    border-spacing: 0;
 
-    th, td {
-      padding: var(--spacing-2);
-      border: 1px solid $dark-60;
+    thead {
+      background: $blue-80;
+
+      tr {
+        th {
+          padding: var(--spacing-4) var(--spacing-5);
+          font-weight: var(--fw-semi-bold);
+          font-size: var(--fs-13);
+          text-transform: uppercase;
+          letter-spacing: 0.8px;
+          color: white;
+          border: none;
+          text-align: left;
+
+          &:first-child {
+            padding-left: var(--spacing-6);
+          }
+
+          &:last-child {
+            padding-right: var(--spacing-6);
+            text-align: right;
+          }
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        position: relative;
+
+        &:hover {
+          background-color: $cloud;
+
+          td:first-child::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: $blue-80;
+          }
+        }
+
+        td {
+          padding: var(--spacing-3) var(--spacing-4);
+          font-size: var(--fs-14);
+          color: $dark-100;
+          border: none;
+          vertical-align: middle;
+          position: relative;
+          line-height: 1.5;
+
+          ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+
+            li {
+              padding: var(--spacing-2) 0;
+              font-size: var(--fs-13);
+              line-height: 1.4;
+              color: $dark-80;
+              display: flex;
+              align-items: center;
+              gap: var(--spacing-2);
+            }
+          }
+        }
+
+        td:first-child {
+          font-weight: var(--fw-semi-bold);
+          color: $dark-100;
+          padding-left: var(--spacing-6);
+        }
+
+        td:last-child {
+          white-space: nowrap;
+          text-align: right;
+          padding-right: var(--spacing-4);
+        }
+      }
     }
   }
 }
