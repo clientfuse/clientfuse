@@ -1,17 +1,9 @@
-import {
-  TAccessLink,
-  IAgencyResponse,
-  TGoogleAccessLink,
-  TFacebookAccessLink,
-  IGoogleAccessLinkWithEmail,
-  IGoogleAccessLinkWithEmailOrId,
-  TFacebookAccessLinkWithId,
-  IAccessLinkBase
-} from '@clientfuse/models';
+import { IAgencyResponse } from '@clientfuse/models';
 import { ConflictException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { isEmpty } from 'lodash';
 import { ClientSession, Model, Types } from 'mongoose';
+import { ConnectionLinkMergeService } from '../../connection-link/services/connection-link-merge.service';
 import { Agency, AgencyDocument } from '../schemas/agencies.schema';
 
 interface IAgencyMergeResult {
@@ -24,7 +16,8 @@ export class AgencyMergeService {
   private readonly logger = new Logger(AgencyMergeService.name);
 
   constructor(
-    @InjectModel(Agency.name) private readonly agencyModel: Model<AgencyDocument>
+    @InjectModel(Agency.name) private readonly agencyModel: Model<AgencyDocument>,
+    private connectionLinkMergeService: ConnectionLinkMergeService
   ) {
   }
 
@@ -56,7 +49,12 @@ export class AgencyMergeService {
           updatedAt: doc.updatedAt
         }));
 
-        return this.performAgencyMerge(agenciesAsPlainObjects, session);
+        const mergeResult = await this.performAgencyMerge(agenciesAsPlainObjects, session);
+        const allAgencyIds = duplicateAgencies.map(a => a._id.toString());
+        const mergedAgencyIdString = mergeResult.mergedAgencyId.toString();
+        await this.connectionLinkMergeService.mergeDefaultConnectionLinks(allAgencyIds, mergedAgencyIdString);
+
+        return mergeResult;
       });
     } catch (error) {
       this.logger.error('Agency merge failed', error);
@@ -77,20 +75,17 @@ export class AgencyMergeService {
 
     this.logger.log(`Selected primary agency: ${primaryAgency._id}, merging ${agenciesToMerge.length} agencies`);
 
-    const mergedData = this.mergeAgencyData(primaryAgency, agenciesToMerge);
+    const mergedData = {
+      userId: primaryAgency.userId,
+      email: primaryAgency.email
+    };
 
     this.logger.log(`Updating agency ${primaryAgency._id} with merged data:`, JSON.stringify(mergedData, null, 2));
-
-    const cleanedDefaultAccessLink = this.cleanDefaultAccessLink(mergedData.defaultAccessLink);
 
     await this.agencyModel.updateOne(
       { _id: primaryAgency._id },
       {
-        $set: {
-          userId: mergedData.userId,
-          email: mergedData.email,
-          defaultAccessLink: cleanedDefaultAccessLink
-        }
+        $set: mergedData
       },
       { session }
     );
@@ -123,124 +118,4 @@ export class AgencyMergeService {
     });
   }
 
-  private mergeAgencyData(primary: IAgencyResponse, agencies: IAgencyResponse[]): Partial<IAgencyResponse> {
-    const merged = {
-      userId: primary.userId,
-      email: primary.email,
-      defaultAccessLink: primary.defaultAccessLink || {}
-    };
-
-    for (const agency of agencies) {
-      if (agency.defaultAccessLink) {
-        merged.defaultAccessLink = this.mergeAccessLinks(
-          merged.defaultAccessLink,
-          agency.defaultAccessLink
-        );
-      }
-    }
-
-    return merged;
-  }
-
-  private mergeAccessLinks(primary: TAccessLink, secondary: TAccessLink): TAccessLink {
-    const merged: TAccessLink = { ...primary };
-
-    Object.keys(secondary).forEach(platform => {
-      if (secondary[platform]) {
-        merged[platform] = this.mergePlatformAccessLink(
-          merged[platform] || {},
-          secondary[platform]
-        );
-      }
-    });
-
-    return merged;
-  }
-
-  private mergePlatformAccessLink(primary: TGoogleAccessLink | TFacebookAccessLink, secondary: TGoogleAccessLink | TFacebookAccessLink): TGoogleAccessLink | TFacebookAccessLink {
-    const merged = { ...primary };
-
-    Object.keys(secondary).forEach(service => {
-      if (secondary[service]) {
-        merged[service] = this.mergeAccessLinkItem(primary[service], secondary[service]);
-      }
-    });
-
-    return merged;
-  }
-
-  private mergeAccessLinkItem(
-    primary: IGoogleAccessLinkWithEmail | IGoogleAccessLinkWithEmailOrId | TFacebookAccessLinkWithId | undefined,
-    secondary: IGoogleAccessLinkWithEmail | IGoogleAccessLinkWithEmailOrId | TFacebookAccessLinkWithId | undefined
-  ): IGoogleAccessLinkWithEmail | IGoogleAccessLinkWithEmailOrId | TFacebookAccessLinkWithId | undefined {
-    if (!primary && secondary) return this.cleanAccessLinkItem(secondary);
-    if (primary && !secondary) return this.cleanAccessLinkItem(primary);
-    if (!primary && !secondary) return undefined;
-
-    const merged: any = {
-      isViewAccessEnabled: Boolean(primary.isViewAccessEnabled || secondary.isViewAccessEnabled),
-      isManageAccessEnabled: Boolean(primary.isManageAccessEnabled || secondary.isManageAccessEnabled)
-    };
-
-    if (('email' in primary && primary.email) || ('email' in secondary && secondary.email)) {
-      merged.email = ('email' in primary && primary.email) || ('email' in secondary && secondary.email);
-    }
-    if (('emailOrId' in primary && primary.emailOrId) || ('emailOrId' in secondary && secondary.emailOrId)) {
-      merged.emailOrId = ('emailOrId' in primary && primary.emailOrId) || ('emailOrId' in secondary && secondary.emailOrId);
-    }
-    if (('entityId' in primary && primary.entityId) || ('entityId' in secondary && secondary.entityId)) {
-      merged.entityId = ('entityId' in primary && primary.entityId) || ('entityId' in secondary && secondary.entityId);
-    }
-    if (('method' in primary && primary.method) || ('method' in secondary && secondary.method)) {
-      merged.method = ('method' in primary && primary.method) || ('method' in secondary && secondary.method);
-    }
-
-    return merged;
-  }
-
-  private cleanAccessLinkItem(
-    item: IGoogleAccessLinkWithEmail | IGoogleAccessLinkWithEmailOrId | TFacebookAccessLinkWithId | undefined
-  ): IGoogleAccessLinkWithEmail | IGoogleAccessLinkWithEmailOrId | TFacebookAccessLinkWithId | undefined {
-    if (!item) return undefined;
-
-    const cleaned: any = {
-      isViewAccessEnabled: Boolean(item.isViewAccessEnabled),
-      isManageAccessEnabled: Boolean(item.isManageAccessEnabled)
-    };
-
-    if ('email' in item && item.email) cleaned.email = item.email;
-    if ('emailOrId' in item && item.emailOrId) cleaned.emailOrId = item.emailOrId;
-    if ('entityId' in item && item.entityId) cleaned.entityId = item.entityId;
-    if ('method' in item && item.method) cleaned.method = item.method;
-
-    return cleaned;
-  }
-
-  private cleanDefaultAccessLink(defaultAccessLink: TAccessLink): TAccessLink {
-    if (!defaultAccessLink) return {};
-
-    const cleaned: TAccessLink = {};
-
-    if (defaultAccessLink.google) {
-      cleaned.google = this.cleanPlatformAccessLink(defaultAccessLink.google) as TGoogleAccessLink;
-    }
-
-    if (defaultAccessLink.facebook) {
-      cleaned.facebook = this.cleanPlatformAccessLink(defaultAccessLink.facebook) as TFacebookAccessLink;
-    }
-
-    return cleaned;
-  }
-
-  private cleanPlatformAccessLink(platformLink: TGoogleAccessLink | TFacebookAccessLink): TGoogleAccessLink | TFacebookAccessLink {
-    const cleaned: any = {};
-
-    Object.keys(platformLink).forEach(service => {
-      if (service !== '_id' && platformLink[service]) {
-        cleaned[service] = this.cleanAccessLinkItem(platformLink[service]);
-      }
-    });
-
-    return cleaned;
-  }
 }

@@ -2,6 +2,7 @@ import { IAgencyBase, IAgencyResponse } from '@clientfuse/models';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
+import { ConnectionLinkService } from '../../connection-link/services/connection-link.service';
 import { CreateAgencyDto } from '../dto/create-agency.dto';
 import { UpdateAgencyDto } from '../dto/update-agency.dto';
 import { Agency, AgencyDocument } from '../schemas/agencies.schema';
@@ -9,13 +10,20 @@ import { Agency, AgencyDocument } from '../schemas/agencies.schema';
 @Injectable()
 export class AgenciesService {
 
-  constructor(@InjectModel(Agency.name) private agencyModel: Model<AgencyDocument>) {
+  constructor(
+    @InjectModel(Agency.name) private agencyModel: Model<AgencyDocument>,
+    private connectionLinkService: ConnectionLinkService
+  ) {
   }
 
   async createAgency(agency: CreateAgencyDto): Promise<IAgencyResponse> {
     const newAgency: IAgencyBase = { ...agency };
     const createdAgency = await this.agencyModel.create(newAgency);
-    return createdAgency.toJSON() as unknown as IAgencyResponse;
+    const agencyResponse = createdAgency.toJSON() as unknown as IAgencyResponse;
+
+    await this.connectionLinkService.createDefaultConnectionLink(agencyResponse._id);
+
+    return agencyResponse;
   }
 
   async findAgencies(partial: FilterQuery<AgencyDocument>): Promise<IAgencyResponse[]> {

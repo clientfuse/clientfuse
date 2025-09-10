@@ -14,6 +14,7 @@ import { createRetryConfig } from './core/utils/http';
 import { AgenciesModule } from './modules/agencies/agencies.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt.guard';
+import { ConnectionLinkModule } from './modules/connection-link/connection-link.module';
 import { FacebookModule } from './modules/facebook/facebook.module';
 import { GoogleModule } from './modules/google/google.module';
 import { UsersModule } from './modules/users/users.module';
@@ -43,6 +44,7 @@ import { UsersModule } from './modules/users/users.module';
     AuthModule,
     UsersModule,
     AgenciesModule,
+    ConnectionLinkModule,
     GoogleModule,
     FacebookModule
   ],

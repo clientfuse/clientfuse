@@ -248,7 +248,7 @@ export class AuthService {
 
     const agencyMergeResult = await this.agencyMergeService.mergeAgenciesByUserId(userMergeResult.mergedUserId.toString());
 
-    if (agencyMergeResult.mergedAgencyId) {
+    if (agencyMergeResult && agencyMergeResult.mergedAgencyId) {
       await this.agenciesService.updateAgency(agencyMergeResult.mergedAgencyId.toString(), { email });
     }
 

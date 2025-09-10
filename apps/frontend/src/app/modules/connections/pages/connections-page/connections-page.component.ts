@@ -8,9 +8,17 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { ActivatedRoute } from '@angular/router';
-import { getAccessLinkBaseKey, IAgencyResponse, TAccessType, TFacebookAccessLinkKeys, TGoogleAccessLinkKeys } from '@clientfuse/models';
+import {
+  getConnectionLinkBaseKey,
+  IAgencyResponse,
+  PlatformNames,
+  TAccessType,
+  TFacebookAccessLinkKeys,
+  TGoogleAccessLinkKeys
+} from '@clientfuse/models';
 import { ListFormatter } from '@clientfuse/utils';
-import { ConnectionStoreService } from '../../../../services/connect/connection-store.service';
+import { AgencyApiService } from '../../../../services/agency/agency-api.service';
+import { ConnectionLinkStoreService } from '../../../../services/connection-link/connection-link-store.service';
 import { GoogleStoreService } from '../../../../services/google/google-store.service';
 import { AccessOutcomeComponent } from '../components/access-outcome/access-outcome.component';
 import { ConfirmAccessComponent } from '../components/confirm-access/confirm-access.component';
@@ -46,36 +54,65 @@ interface ConnectionStep {
 export class ConnectionsPageComponent implements OnInit {
   @ViewChild('stepper') stepper!: MatStepper;
 
-  private readonly connectionService = inject(ConnectionStoreService);
+  private readonly connectionLinkStoreService = inject(ConnectionLinkStoreService);
   private readonly route = inject(ActivatedRoute);
   private readonly googleStoreService = inject(GoogleStoreService);
+  private readonly agencyApiService = inject(AgencyApiService);
 
   currentStepIndex = signal(0);
   isLinear = signal(true);
-  connectionSettings = signal<IAgencyResponse | null>(null);
+  connectionLink = computed(() => this.connectionLinkStoreService.currentConnectionLink());
   hasValidConnections = signal(false);
+  agency = signal<IAgencyResponse | null>(null);
+
+  connectionSettings = computed<IAgencyResponse | null>(() => {
+    const link = this.connectionLink();
+    const agency = this.agency();
+    if (!link || !agency) return null;
+
+    return {
+      ...agency,
+      _id: link._id,
+      defaultAccessLink: {
+        google: link.google,
+        facebook: link.facebook
+      }
+    } as IAgencyResponse;
+  });
   readonly urlSegments = toSignal(this.route.url, { initialValue: [] });
   readonly accessType = computed<TAccessType>(() => {
     const segments = this.urlSegments();
     return (segments.length > 0 ? segments[segments.length - 1].path : '') as TAccessType;
   });
-  requestedPlatformsText = computed<string>(() => ListFormatter.formatItemsList(this.connectionService.requestedPlatforms(), 'No platforms requested'));
+  requestedPlatforms = computed<string[]>(() => {
+    const link = this.connectionLink();
+    if (!link) return [];
+    const platforms: string[] = [];
+    if (link.google && Object.keys(link.google).length > 0) {
+      platforms.push(PlatformNames.google);
+    }
+    if (link.facebook && Object.keys(link.facebook).length > 0) {
+      platforms.push(PlatformNames.facebook);
+    }
+    return platforms;
+  });
+  requestedPlatformsText = computed<string>(() => ListFormatter.formatItemsList(this.requestedPlatforms(), 'No platforms requested'));
   readonly enabledGoogleServicesNames = computed<TGoogleAccessLinkKeys[]>(() => {
-    const connectionSettings = this.connectionSettings();
-    const googleServices = connectionSettings?.defaultAccessLink?.google;
+    const connectionLink = this.connectionLink();
+    const googleServices = connectionLink?.google;
     if (!googleServices) return [];
-    const key = getAccessLinkBaseKey(this.accessType());
+    const key = getConnectionLinkBaseKey(this.accessType());
     return Object.keys(googleServices).filter(serviceKey => googleServices[serviceKey as TGoogleAccessLinkKeys][key]) as TGoogleAccessLinkKeys[];
   });
 
   readonly enabledFacebookServicesNames = computed<TFacebookAccessLinkKeys[]>(() => {
-    const connectionSettings = this.connectionSettings();
-    const facebookServices = connectionSettings?.defaultAccessLink?.facebook;
+    const connectionLink = this.connectionLink();
+    const facebookServices = connectionLink?.facebook;
     if (!facebookServices) return [];
-    const key = getAccessLinkBaseKey(this.accessType());
+    const key = getConnectionLinkBaseKey(this.accessType());
     return Object.keys(facebookServices).filter(serviceKey => {
       const service = facebookServices[serviceKey as TFacebookAccessLinkKeys];
-      return service[key] && service.entityId && service.entityId.trim() !== '';
+      return service[key] && service.businessPortfolioId && service.businessPortfolioId.trim() !== '';
     }) as TFacebookAccessLinkKeys[];
   });
 
@@ -122,8 +159,17 @@ export class ConnectionsPageComponent implements OnInit {
   ]);
 
   async ngOnInit(): Promise<void> {
-    const connectionId = this.route.snapshot.params['connectionId'];
-    this.connectionSettings.set(await this.connectionService.getConnectionSettings(connectionId));
+    const connectionLinkId = this.route.snapshot.params['connectionId']; // URL param is still 'connectionId'
+    const connectionLink = await this.connectionLinkStoreService.loadConnectionLink(connectionLinkId);
+
+    if (connectionLink?.agencyId) {
+      try {
+        const agencyResponse = await this.agencyApiService.findAgency(connectionLink.agencyId);
+        this.agency.set(agencyResponse.payload);
+      } catch (error) {
+        console.error('Error loading agency:', error);
+      }
+    }
   }
 
   nextStep(): void {

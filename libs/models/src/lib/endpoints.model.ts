@@ -1,4 +1,7 @@
 export const ENDPOINTS = {
+  connectionLinks: {
+    root: 'connection-links'
+  },
   auth: {
     root: 'auth',
     login: 'login',

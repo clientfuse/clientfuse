@@ -24,7 +24,7 @@
               <mat-icon>settings</mat-icon>
             </button>
 
-            <button mat-icon-button matTooltip="Copy link" 
+            <button mat-icon-button matTooltip="Copy link"
                     [cdkCopyToClipboard]="manageAccessLink()"
                     (cdkCopyToClipboardCopied)="onCopySuccess()">
               <mat-icon>content_copy</mat-icon>
@@ -77,6 +77,83 @@
             <div class="body-strong">Request specific access:</div>
             <button mat-flat-button>Create custom request</button>
           </div>
+        </div>
+      </mat-tab>
+      <mat-tab label="Connection Links Management">
+        <div class="tab-content w-100">
+          <div class="subtitle-medium">Connection Links</div>
+          <button mat-raised-button color="primary" (click)="createNewConnectionLink()">
+            <mat-icon>add</mat-icon>
+            Create New Connection Link
+          </button>
+
+          <table style="margin-top: 20px;">
+            <thead>
+            <tr>
+              <th>ID</th>
+              <th>Default</th>
+              <th>Manage Link</th>
+              <th>View Link</th>
+              <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+              @for (link of connectionLinks(); track link._id) {
+                <tr>
+                  <td>{{ link._id }}</td>
+                  <td>
+                    @if (link.isDefault) {
+                      <mat-icon color="primary">check_circle</mat-icon>
+                    } @else {
+                      <mat-icon>radio_button_unchecked</mat-icon>
+                    }
+                  </td>
+                  <td>
+                    <button mat-icon-button matTooltip="Copy manage link"
+                            [cdkCopyToClipboard]="getManageAccessLink(link._id)"
+                            (cdkCopyToClipboardCopied)="onCopySuccess()">
+                      <mat-icon>content_copy</mat-icon>
+                    </button>
+                    <button mat-icon-button matTooltip="Open manage link"
+                            (click)="openInNewTab(getManageAccessLink(link._id))">
+                      <mat-icon>open_in_new</mat-icon>
+                    </button>
+                  </td>
+                  <td>
+                    <button mat-icon-button matTooltip="Copy view link"
+                            [cdkCopyToClipboard]="getViewAccessLink(link._id)"
+                            (cdkCopyToClipboardCopied)="onCopySuccess()">
+                      <mat-icon>content_copy</mat-icon>
+                    </button>
+                    <button mat-icon-button matTooltip="Open view link"
+                            (click)="openInNewTab(getViewAccessLink(link._id))">
+                      <mat-icon>open_in_new</mat-icon>
+                    </button>
+                  </td>
+                  <td>
+                    <button mat-icon-button matTooltip="Edit manage settings"
+                            (click)="openCustomizeAccessLinkModal('manage', link._id)">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button matTooltip="Edit view settings"
+                            (click)="openCustomizeAccessLinkModal('view', link._id)">
+                      <mat-icon>visibility</mat-icon>
+                    </button>
+                    @if (!link.isDefault) {
+                      <button mat-icon-button matTooltip="Set as default"
+                              (click)="setAsDefaultConnectionLink(link._id)">
+                        <mat-icon>star_border</mat-icon>
+                      </button>
+                      <button mat-icon-button matTooltip="Delete"
+                              (click)="deleteConnectionLink(link._id)">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
       </mat-tab>
     </mat-tab-group>

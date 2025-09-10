@@ -1,4 +1,4 @@
-import { TAccessType } from '../agency.model';
+import { TAccessType } from '../connection-link.model';
 
 export interface IBaseAccessRequest {
   entityId: string; // account/property/site ID etc.

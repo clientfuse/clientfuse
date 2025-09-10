@@ -1,4 +1,4 @@
-import { IAgencyBase, TFacebookAccessLink, TGoogleAccessLink, User } from '@clientfuse/models';
+import { IAgencyBase, TFacebookAccessLink, TGoogleConnectionLink, User } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import {
@@ -7,7 +7,7 @@ import {
   IFacebookAccountsDataUpdatedEvent,
   IGoogleAccountsDataUpdatedEvent
 } from '../../../core/modules/event-bus/event-bus.model';
-import { EventBusService } from '../../../core/modules/event-bus/event-bus.service';
+import { ConnectionLinkService } from '../../connection-link/services/connection-link.service';
 import { UsersService } from '../../users/users.service';
 import { AgenciesService } from './agencies.service';
 
@@ -18,7 +18,7 @@ export class AgenciesListenerService {
   constructor(
     private readonly agenciesService: AgenciesService,
     private readonly usersService: UsersService,
-    private readonly eventBusService: EventBusService
+    private connectionLinkService: ConnectionLinkService
   ) {
   }
 
@@ -29,7 +29,7 @@ export class AgenciesListenerService {
       const foundUser = await this.usersService.findUser({ _id: event.payload.userId });
       const user = new User(foundUser);
       const email = user.email;
-      const googleDefaultAccessLink: TGoogleAccessLink = {
+      const googleDefaultAccessLink: TGoogleConnectionLink = {
         ads: {
           email,
           method: 'email',
@@ -67,24 +67,29 @@ export class AgenciesListenerService {
       if (!foundAgency) {
         const agency: IAgencyBase = {
           userId: event.payload.userId,
-          email: user.email,
-          defaultAccessLink: {
-            google: googleDefaultAccessLink
-          }
+          email: user.email
         };
-        await this.agenciesService.createAgency(agency);
-      } else {
-        if (foundAgency?.defaultAccessLink?.google) return;
+        const createdAgency = await this.agenciesService.createAgency(agency);
 
-        await this.agenciesService.updateAgency(
-          foundAgency._id,
-          {
-            defaultAccessLink: {
-              ...foundAgency.defaultAccessLink,
-              google: googleDefaultAccessLink
-            }
-          }
-        );
+        const defaultConnectionLink = await this.connectionLinkService.findDefaultConnectionLink(createdAgency._id);
+        if (defaultConnectionLink) {
+          await this.connectionLinkService.updateConnectionLink(defaultConnectionLink._id, {
+            google: googleDefaultAccessLink
+          });
+        }
+      } else {
+        const defaultConnectionLink = await this.connectionLinkService.findDefaultConnectionLink(foundAgency._id);
+        if (defaultConnectionLink) {
+          if (defaultConnectionLink.google) return;
+
+          await this.connectionLinkService.updateConnectionLink(defaultConnectionLink._id, {
+            google: googleDefaultAccessLink
+          });
+        } else {
+          await this.connectionLinkService.createDefaultConnectionLink(foundAgency._id, {
+            google: googleDefaultAccessLink
+          });
+        }
       }
     } catch (error) {
       this.logger.error('Error in agencies-listener.service:', error);
@@ -100,48 +105,58 @@ export class AgenciesListenerService {
 
       const facebookAccessLink: TFacebookAccessLink = {
         ads: {
-          entityId: user.facebook.adsAccounts[0]?.id || '',
+          businessPortfolioId: user.facebook.businessAccounts[0]?.id || '',
           isViewAccessEnabled: user.isFacebookAdsManagementGranted,
           isManageAccessEnabled: user.isFacebookAdsManagementGranted
         },
         business: {
-          entityId: user.facebook.businessAccounts[0]?.id || '',
+          businessPortfolioId: user.facebook.businessAccounts[0]?.id || '',
           isViewAccessEnabled: user.isFacebookBusinessManagementGranted,
           isManageAccessEnabled: user.isFacebookBusinessManagementGranted
         },
         pages: {
-          entityId: user.facebook.pages[0]?.id || '',
+          businessPortfolioId: user.facebook.businessAccounts[0]?.id || '',
           isViewAccessEnabled: user.isFacebookPagesManageMetadataGranted,
           isManageAccessEnabled: user.isFacebookPagesManageMetadataGranted
         },
         catalogs: {
-          entityId: user.facebook.catalogs[0]?.id || '',
+          businessPortfolioId: user.facebook.businessAccounts[0]?.id || '',
           isViewAccessEnabled: user.isFacebookCatalogManagementGranted,
           isManageAccessEnabled: user.isFacebookCatalogManagementGranted
-        }
+        },
+        pixels: {
+          businessPortfolioId: user.facebook.businessAccounts[0]?.id || '',
+          isViewAccessEnabled: user.isFacebookAdsManagementGranted,
+          isManageAccessEnabled: user.isFacebookAdsManagementGranted
+        },
       };
 
       if (!foundAgency) {
         const agency: IAgencyBase = {
           userId: event.payload.userId,
-          email: user.email,
-          defaultAccessLink: {
-            facebook: facebookAccessLink
-          }
+          email: user.email
         };
-        await this.agenciesService.createAgency(agency);
-      } else {
-        if (foundAgency?.defaultAccessLink?.facebook) return;
+        const createdAgency = await this.agenciesService.createAgency(agency);
 
-        await this.agenciesService.updateAgency(
-          foundAgency._id,
-          {
-            defaultAccessLink: {
-              ...foundAgency.defaultAccessLink,
-              facebook: facebookAccessLink
-            }
-          }
-        );
+        const defaultConnectionLink = await this.connectionLinkService.findDefaultConnectionLink(createdAgency._id);
+        if (defaultConnectionLink) {
+          await this.connectionLinkService.updateConnectionLink(defaultConnectionLink._id, {
+            facebook: facebookAccessLink
+          });
+        }
+      } else {
+        const defaultConnectionLink = await this.connectionLinkService.findDefaultConnectionLink(foundAgency._id);
+        if (defaultConnectionLink) {
+          if (defaultConnectionLink.facebook) return;
+
+          await this.connectionLinkService.updateConnectionLink(defaultConnectionLink._id, {
+            facebook: facebookAccessLink
+          });
+        } else {
+          await this.connectionLinkService.createDefaultConnectionLink(foundAgency._id, {
+            facebook: facebookAccessLink
+          });
+        }
       }
     } catch (error) {
       this.logger.error('Error in agencies-listener.service:', error);

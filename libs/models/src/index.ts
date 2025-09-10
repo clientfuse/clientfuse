@@ -9,3 +9,4 @@ export * from './lib/integrations/google.model';
 export * from './lib/integrations/facebook.model';
 export * from './lib/integrations/integrations.model';
 export * from './lib/agency.model';
+export * from './lib/connection-link.model';
