@@ -1,5 +1,6 @@
-import { ENDPOINTS, TConnectionLinkResponse, ServerErrorCode } from '@clientfuse/models';
+import { ENDPOINTS, ServerErrorCode, TConnectionLinkResponse } from '@clientfuse/models';
 import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Query } from '@nestjs/common';
+import { Public } from '../auth/decorators/is-public.decorator';
 import { CreateConnectionLinkDto } from './dto/create-connection-link.dto';
 import { UpdateConnectionLinkDto } from './dto/update-connection-link.dto';
 import { ConnectionLinkService } from './services/connection-link.service';
@@ -29,6 +30,7 @@ export class ConnectionLinkController {
     return connectionLink;
   }
 
+  @Public()
   @Get(ENDPOINTS.connectionLinks.getOne)
   async findOne(@Param('id') id: string): Promise<TConnectionLinkResponse> {
     const connectionLink = await this.connectionLinkService.findConnectionLink({ _id: id });

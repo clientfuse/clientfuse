@@ -29,7 +29,7 @@ export class AgenciesListenerService {
       const foundUser = await this.usersService.findUser({ _id: event.payload.userId });
       const user = new User(foundUser);
       const email = user.email;
-      const googleDefaultAccessLink: TGoogleConnectionLink = {
+      const googleAccessLink: TGoogleConnectionLink = {
         ads: {
           email,
           method: 'email',
@@ -74,7 +74,7 @@ export class AgenciesListenerService {
         const defaultConnectionLink = await this.connectionLinkService.findDefaultConnectionLink(createdAgency._id);
         if (defaultConnectionLink) {
           await this.connectionLinkService.updateConnectionLink(defaultConnectionLink._id, {
-            google: googleDefaultAccessLink
+            google: googleAccessLink
           });
         }
       } else {
@@ -83,11 +83,11 @@ export class AgenciesListenerService {
           if (defaultConnectionLink.google) return;
 
           await this.connectionLinkService.updateConnectionLink(defaultConnectionLink._id, {
-            google: googleDefaultAccessLink
+            google: googleAccessLink
           });
         } else {
           await this.connectionLinkService.createDefaultConnectionLink(foundAgency._id, {
-            google: googleDefaultAccessLink
+            google: googleAccessLink
           });
         }
       }
