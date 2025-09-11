@@ -1,15 +1,15 @@
 <div class="request-details-grid">
-  @if (facebookServicesText()) {
+  @for (group of facebookServiceGroups(); track group.identifier) {
     <div class="detail-row">
-      <span class="detail-label">Meta Business Portfolio</span>
-      <span class="detail-value body-strong">{{ connectionSettings()?.email }}</span>
+      <span class="detail-label">{{ group.displayName }}</span>
+      <span class="detail-value body-strong">{{ group.identifier }}</span>
     </div>
   }
 
-  @if (googleServicesText()) {
+  @for (group of googleServiceGroups(); track group.identifier) {
     <div class="detail-row">
-      <span class="detail-label">Google Account</span>
-      <span class="detail-value body-strong">{{ connectionSettings()?.email }}</span>
+      <span class="detail-label">{{ group.displayName }}</span>
+      <span class="detail-value body-strong">{{ group.identifier }}</span>
     </div>
   }
 

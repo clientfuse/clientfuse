@@ -10,11 +10,11 @@ import { Component, computed, effect, inject, input, OnInit, output, PLATFORM_ID
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import {
-  IAgencyResponse,
   IFacebookConnectionDto,
   IGoogleConnectionDto,
   ServiceNames,
   TAccessType,
+  TConnectionLinkResponse,
   TFacebookAccessLinkKeys,
   TGoogleAccessLinkKeys
 } from '@clientfuse/models';
@@ -55,7 +55,8 @@ export class ConnectAccountsComponent implements OnInit {
     });
   }
 
-  readonly connectionSettings = input.required<IAgencyResponse | null>();
+  readonly connectionLink = input.required<TConnectionLinkResponse | null>();
+  readonly agencyEmail = input<string>('');
   readonly accessType = input.required<TAccessType>();
   readonly enabledGoogleServicesNames = input.required<TGoogleAccessLinkKeys[]>();
   readonly enabledFacebookServicesNames = input.required<TFacebookAccessLinkKeys[]>();

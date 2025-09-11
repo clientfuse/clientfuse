@@ -65,20 +65,7 @@ export class ConnectionsPageComponent implements OnInit {
   hasValidConnections = signal(false);
   agency = signal<IAgencyResponse | null>(null);
 
-  connectionSettings = computed<IAgencyResponse | null>(() => {
-    const link = this.connectionLink();
-    const agency = this.agency();
-    if (!link || !agency) return null;
-
-    return {
-      ...agency,
-      _id: link._id,
-      defaultAccessLink: {
-        google: link.google,
-        facebook: link.facebook
-      }
-    } as IAgencyResponse;
-  });
+  agencyEmail = computed(() => this.agency()?.email || '');
   readonly urlSegments = toSignal(this.route.url, { initialValue: [] });
   readonly accessType = computed<TAccessType>(() => {
     const segments = this.urlSegments();

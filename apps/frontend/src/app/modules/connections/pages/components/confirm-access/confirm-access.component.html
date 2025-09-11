@@ -12,7 +12,7 @@
         <div class="platform-info">
           <div class="platform-icon"><img src="./assets/icons/google.svg" alt="Google" /></div>
           <div class="user-info">
-            <p class="email">{{ connectionSettings()?.email }}</p>
+            <p class="email">{{ agencyEmail() }}</p>
             <p class="manage-text">would like to manage your Google accounts</p>
           </div>
         </div>
@@ -54,7 +54,7 @@
                             <span class="account-name">{{ getAccountDisplayName(account, panel) }}</span>
                             <span class="account-details">{{ getAccountDetails(account, panel) }}</span>
                             @if (isDisabled) {
-                              <span class="already-connected-text">{{ getAlreadyConnectedText() }}</span>
+                              <span class="already-connected-text">{{ getAlreadyConnectedText(panel) }}</span>
                             }
                             @if (isLoading) {
                               <span class="loading-text">Checking access...</span>
@@ -92,7 +92,7 @@
         <div class="platform-info">
           <div class="platform-icon"><img src="./assets/icons/meta.svg" alt="Meta" /></div>
           <div class="user-info">
-            <p class="email">{{ connectionSettings()?.email }}</p>
+            <p class="email">{{ agencyEmail() }}</p>
             <p class="manage-text">would like to manage your Meta accounts</p>
           </div>
         </div>
@@ -134,7 +134,7 @@
                             <span class="account-name">{{ getAccountDisplayName(account, panel) }}</span>
                             <span class="account-details">{{ getAccountDetails(account, panel) }}</span>
                             @if (isDisabled) {
-                              <span class="already-connected-text">{{ getAlreadyConnectedText() }}</span>
+                              <span class="already-connected-text">{{ getAlreadyConnectedText(panel) }}</span>
                             }
                             @if (isLoading) {
                               <span class="loading-text">Checking access...</span>
@@ -171,7 +171,8 @@
     </div>
     <div slot="content">
       <app-request-details
-        [connectionSettings]="connectionSettings()"
+        [connectionLink]="connectionLink()"
+        [agencyEmail]="agencyEmail()"
         [accessType]="accessType()"
         [enabledGoogleServicesNames]="enabledGoogleServicesNames()"
         [enabledFacebookServicesNames]="enabledFacebookServicesNames()">

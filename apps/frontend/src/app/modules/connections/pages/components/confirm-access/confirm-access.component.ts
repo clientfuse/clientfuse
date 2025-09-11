@@ -11,9 +11,9 @@ import {
   FacebookCatalog,
   FacebookPage,
   GoogleServiceType,
-  IAgencyResponse,
   IGoogleAdsAccount,
   TAccessType,
+  TConnectionLinkResponse,
   TFacebookAccessLinkKeys,
   TGoogleAccessLinkKeys,
   TPlatformNamesKeys
@@ -47,6 +47,7 @@ interface ServicePanel {
   noAccountsMessage: string;
   existingUsers?: Map<string, string[]>;
   loadingUsers?: Set<string>;
+  serviceEmail?: string; // Email for this specific service
 }
 
 @Component({
@@ -75,7 +76,8 @@ export class ConfirmAccessComponent {
   private readonly snackbarService = inject(SnackbarService);
   private readonly dialogService = inject(DialogService);
 
-  readonly connectionSettings = input.required<IAgencyResponse | null>();
+  readonly connectionLink = input.required<TConnectionLinkResponse | null>();
+  readonly agencyEmail = input<string>('');
   readonly accessType = input.required<TAccessType>();
   readonly enabledGoogleServicesNames = input<TGoogleAccessLinkKeys[]>([]);
   readonly enabledFacebookServicesNames = input<TFacebookAccessLinkKeys[]>([]);
@@ -161,7 +163,8 @@ export class ConfirmAccessComponent {
         selectedAccount: '',
         noAccountsMessage: 'No Ads Account found.',
         existingUsers: new Map(),
-        loadingUsers: new Set()
+        loadingUsers: new Set(),
+        serviceEmail: this.connectionLink()?.google?.ads?.email
       });
     }
 
@@ -176,7 +179,8 @@ export class ConfirmAccessComponent {
         selectedAccount: '',
         noAccountsMessage: 'No Analytics Account found.',
         existingUsers: new Map(),
-        loadingUsers: new Set()
+        loadingUsers: new Set(),
+        serviceEmail: this.connectionLink()?.google?.analytics?.email
       });
     }
 
@@ -191,7 +195,8 @@ export class ConfirmAccessComponent {
         selectedAccount: '',
         noAccountsMessage: 'No Search Console found.',
         existingUsers: new Map(),
-        loadingUsers: new Set()
+        loadingUsers: new Set(),
+        serviceEmail: this.connectionLink()?.google?.searchConsole?.email
       });
     }
 
@@ -206,7 +211,8 @@ export class ConfirmAccessComponent {
         selectedAccount: '',
         noAccountsMessage: 'No Tag Manager found.',
         existingUsers: new Map(),
-        loadingUsers: new Set()
+        loadingUsers: new Set(),
+        serviceEmail: this.connectionLink()?.google?.tagManager?.email
       });
     }
 
@@ -221,7 +227,8 @@ export class ConfirmAccessComponent {
         selectedAccount: '',
         noAccountsMessage: 'No Merchant Center found.',
         existingUsers: new Map(),
-        loadingUsers: new Set()
+        loadingUsers: new Set(),
+        serviceEmail: this.connectionLink()?.google?.merchantCenter?.email
       });
     }
 
@@ -236,7 +243,8 @@ export class ConfirmAccessComponent {
         selectedAccount: '',
         noAccountsMessage: 'No Business Profile found.',
         existingUsers: new Map(),
-        loadingUsers: new Set()
+        loadingUsers: new Set(),
+        serviceEmail: this.connectionLink()?.google?.myBusiness?.emailOrId
       });
     }
 
@@ -251,7 +259,8 @@ export class ConfirmAccessComponent {
         selectedAccount: '',
         noAccountsMessage: 'No Meta Ads Account found.',
         existingUsers: new Map(),
-        loadingUsers: new Set()
+        loadingUsers: new Set(),
+        serviceEmail: this.connectionLink()?.facebook?.ads?.businessPortfolioId
       });
     }
 
@@ -265,7 +274,8 @@ export class ConfirmAccessComponent {
         selectedAccount: '',
         noAccountsMessage: 'No Meta Business Account found.',
         existingUsers: new Map(),
-        loadingUsers: new Set()
+        loadingUsers: new Set(),
+        serviceEmail: this.connectionLink()?.facebook?.business?.businessPortfolioId
       });
     }
 
@@ -279,7 +289,8 @@ export class ConfirmAccessComponent {
         selectedAccount: '',
         noAccountsMessage: 'No Meta Pages found.',
         existingUsers: new Map(),
-        loadingUsers: new Set()
+        loadingUsers: new Set(),
+        serviceEmail: this.connectionLink()?.facebook?.pages?.businessPortfolioId
       });
     }
 
@@ -293,7 +304,8 @@ export class ConfirmAccessComponent {
         selectedAccount: '',
         noAccountsMessage: 'No Meta Catalogs found.',
         existingUsers: new Map(),
-        loadingUsers: new Set()
+        loadingUsers: new Set(),
+        serviceEmail: this.connectionLink()?.facebook?.catalogs?.businessPortfolioId
       });
     }
 
@@ -440,7 +452,7 @@ export class ConfirmAccessComponent {
     }
 
     const accessType = this.accessType();
-    const agencyEmail = this.connectionSettings()?.email || '';
+    const agencyEmail = panel.serviceEmail || this.agencyEmail() || '';
 
     if (panel.provider === 'google') {
       const service = this.mapPanelKeyToServiceType(panel.key);
@@ -469,7 +481,7 @@ export class ConfirmAccessComponent {
             domain: panel.selectedAccount,
             agencyEmail: agencyEmail,
             accessType: accessType,
-            agencyId: this.connectionSettings()?._id
+            agencyId: this.connectionLink()?._id
           }
         );
 
@@ -591,7 +603,7 @@ export class ConfirmAccessComponent {
       await this.googleStoreService.loadEntityUsers({
         service: service,
         entityId: accountValue,
-        agencyId: this.connectionSettings()?._id
+        agencyId: this.connectionLink()?._id
       });
 
       const entityUsers = this.googleStoreService.entityUsers();
@@ -614,13 +626,13 @@ export class ConfirmAccessComponent {
   }
 
   isAccountDisabled(panel: ServicePanel, accountValue: string): boolean {
-    const agencyEmail = this.connectionSettings()?.email?.toLowerCase() || '';
+    const agencyEmail = (panel.serviceEmail || this.agencyEmail() || '').toLowerCase();
     const existingUsers = panel.existingUsers?.get(accountValue) || [];
     return existingUsers.some(email => email.toLowerCase() === agencyEmail);
   }
 
-  getAlreadyConnectedText(): string {
-    const agencyEmail = this.connectionSettings()?.email || '';
+  getAlreadyConnectedText(panel?: ServicePanel): string {
+    const agencyEmail = panel?.serviceEmail || this.agencyEmail() || '';
     return `The agency ${agencyEmail} already has access to this account`;
   }
 

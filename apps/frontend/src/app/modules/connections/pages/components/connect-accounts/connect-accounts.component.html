@@ -57,7 +57,8 @@
     </div>
 
     <div slot="content">
-      <app-request-details [connectionSettings]="connectionSettings()"
+      <app-request-details [connectionLink]="connectionLink()"
+                           [agencyEmail]="agencyEmail()"
                            [accessType]="accessType()"
                            [enabledGoogleServicesNames]="enabledGoogleServicesNames()"
                            [enabledFacebookServicesNames]="enabledFacebookServicesNames()" />

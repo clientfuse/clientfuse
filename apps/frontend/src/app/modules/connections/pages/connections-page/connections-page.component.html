@@ -2,7 +2,7 @@
 
   <div class="header-section">
     <h1 class="title-heading-2">
-      {{ connectionSettings()?.email }} is requesting access to
+      {{ agencyEmail() }} is requesting access to
       <span class="platforms">{{ requestedPlatformsText() }}</span>
     </h1>
   </div>
@@ -28,7 +28,8 @@
 
             @case ('connect') {
               <div class="step-content">
-                <app-connect-accounts [connectionSettings]="connectionSettings()"
+                <app-connect-accounts [connectionLink]="connectionLink()"
+                                      [agencyEmail]="agencyEmail()"
                                       [enabledGoogleServicesNames]="enabledGoogleServicesNames()"
                                       [enabledFacebookServicesNames]="enabledFacebookServicesNames()"
                                       [accessType]="accessType()"
@@ -51,7 +52,8 @@
             }
             @case ('confirm') {
               <div class="step-content">
-                <app-confirm-access [connectionSettings]="connectionSettings()"
+                <app-confirm-access [connectionLink]="connectionLink()"
+                                    [agencyEmail]="agencyEmail()"
                                     [accessType]="accessType()"
                                     [enabledGoogleServicesNames]="enabledGoogleServicesNames()"
                                     [enabledFacebookServicesNames]="enabledFacebookServicesNames()" />
