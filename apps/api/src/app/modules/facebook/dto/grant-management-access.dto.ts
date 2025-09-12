@@ -1,12 +1,12 @@
 import { FacebookServiceType, IGrantAgencyAccessDto } from '@clientfuse/models';
-import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 
 export class GrantManagementAccessDto implements IGrantAgencyAccessDto {
   @IsString()
   @IsNotEmpty()
   accessToken: string;
 
-  @IsEnum(['business', 'adAccount', 'page', 'catalog'])
+  @IsEnum(FacebookServiceType)
   @IsNotEmpty()
   service: FacebookServiceType;
 
