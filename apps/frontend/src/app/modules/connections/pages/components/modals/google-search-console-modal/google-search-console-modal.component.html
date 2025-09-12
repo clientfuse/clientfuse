@@ -78,9 +78,7 @@
     @if (accessStatus() !== 'pending') {
       <app-status-card
         [variant]="accessStatus() === 'granted' ? 'success' : accessStatus() === 'incorrect_access' ? 'warning' : 'info'"
-        [header]="accessStatus() === 'granted' ? 'Access Granted' : 
-                  accessStatus() === 'incorrect_access' ? 'Incorrect Access Level' : 
-                  'Access Not Yet Granted'">
+        [header]="accessStatus() === 'granted' ? 'Access Granted' : accessStatus() === 'incorrect_access' ? 'Incorrect Access Level' : 'Access Not Yet Granted'">
         @if (accessMessage()) {
           <p>{{ accessMessage() }}</p>
         }
