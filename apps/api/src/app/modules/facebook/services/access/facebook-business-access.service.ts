@@ -5,17 +5,20 @@ import {
   TFacebookAccessRequest,
   TFacebookAccessResponse,
   IFacebookBaseAccessService,
-  TFacebookUserInfo
+  TFacebookUserInfo,
+  ApiEnv
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
-import { FacebookAdsApi } from 'facebook-nodejs-business-sdk';
+import { ConfigService } from '@nestjs/config';
 import { isEmpty, isNil } from 'lodash';
+import { facebookHttpClient } from '../../../../core/utils/http';
 
 @Injectable()
 export class FacebookBusinessAccessService implements IFacebookBaseAccessService {
   private readonly logger = new Logger(FacebookBusinessAccessService.name);
-  private facebookApi: FacebookAdsApi;
   private accessToken: string;
+
+  constructor(private readonly configService: ConfigService) {}
 
   setCredentials(tokens: { access_token: string }): void {
     if (isEmpty(tokens) || isNil(tokens) || !tokens.access_token) {
@@ -23,7 +26,6 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
     }
 
     this.accessToken = tokens.access_token;
-    this.facebookApi = FacebookAdsApi.init(this.accessToken);
   }
 
   async grantManagementAccess(businessId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
@@ -78,17 +80,18 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
         message: `Please manually invite ${request.agencyEmail} through Facebook Business Manager. The user invitation must be sent through the Business Manager interface at https://business.facebook.com/${request.entityId}/settings/people`
       };
 
-    } catch (error) {
-      this.logger.error(`Failed to grant Facebook Business access: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Failed to grant Facebook Business access: ${error.message}`);
+      console.error(error);
 
-      if (error.response?.error?.code === FACEBOOK_ERROR_CODES.INVALID_TOKEN) {
+      if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.INVALID_TOKEN) {
         return {
           success: false,
           error: 'Access token is invalid or expired'
         };
       }
 
-      if (error.response?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
+      if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
         return {
           success: false,
           error: 'Insufficient permissions to manage business users'
@@ -108,11 +111,13 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
         return null;
       }
 
-      const response = await this.facebookApi.call<any>(
-        'GET',
+      const { data: response } = await facebookHttpClient.get(
         `/${entityId}/business_users`,
         {
-          fields: 'id,email,role,name,pending_email'
+          params: {
+            fields: 'id,email,role,name,pending_email',
+            access_token: this.accessToken
+          }
         }
       );
 
@@ -140,8 +145,9 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
         roleType: existingUser.role
       };
 
-    } catch (error) {
-      this.logger.error(`Error checking existing Facebook Business user access: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Error checking existing Facebook Business user access: ${error.message}`);
+      console.error(error);
       return null;
     }
   }
@@ -153,11 +159,13 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
       }
 
       // *** Get all business users ***
-      const response = await this.facebookApi.call<any>(
-        'GET',
+      const { data: response } = await facebookHttpClient.get(
         `/${entityId}/business_users`,
         {
-          fields: 'id,email,role,name,pending_email'
+          params: {
+            fields: 'id,email,role,name,pending_email',
+            access_token: this.accessToken
+          }
         }
       );
 
@@ -174,8 +182,9 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
         roleType: user.role
       }));
 
-    } catch (error) {
-      this.logger.error(`Error fetching Facebook Business entity users: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Error fetching Facebook Business entity users: ${error.message}`);
+      console.error(error);
       return [];
     }
   }
@@ -187,11 +196,13 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
       }
 
       // *** Remove business user ***
-      await this.facebookApi.call<any>(
-        'DELETE',
+      await facebookHttpClient.delete(
         `/${entityId}/business_users`,
         {
-          user: linkId
+          params: {
+            user: linkId,
+            access_token: this.accessToken
+          }
         }
       );
 
@@ -202,10 +213,11 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
         message: 'Facebook Business access revoked successfully'
       };
 
-    } catch (error) {
-      this.logger.error(`Failed to revoke Facebook Business access: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Failed to revoke Facebook Business access: ${error.message}`);
+      console.error(error);
 
-      if (error.response?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
+      if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
         return {
           success: false,
           error: 'Insufficient permissions to remove business users'
@@ -232,18 +244,21 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
 
   async getBusinessInfo(businessId: string): Promise<any> {
     try {
-      const response = await this.facebookApi.call(
-        'GET',
+      const { data: response } = await facebookHttpClient.get(
         `/${businessId}`,
         {
-          fields: 'id,name,verification_status,created_time,updated_time'
+          params: {
+            fields: 'id,name,verification_status,created_time,updated_time',
+            access_token: this.accessToken
+          }
         }
       );
 
       return response;
 
-    } catch (error) {
-      this.logger.error(`Error fetching business info: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Error fetching business info: ${error.message}`);
+      console.error(error);
       return null;
     }
   }

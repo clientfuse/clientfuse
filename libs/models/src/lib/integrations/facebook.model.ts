@@ -182,11 +182,17 @@ export enum FacebookCatalogPermission {
   ADVERTISER = 'ADVERTISER'
 }
 
+export enum FacebookPixelPermission {
+  ADMIN = 'ADMIN',
+  ADVERTISER = 'ADVERTISER'
+}
+
 export enum FacebookServiceType {
   BUSINESS = 'business',
   AD_ACCOUNT = 'adAccount',
   PAGE = 'page',
-  CATALOG = 'catalog'
+  CATALOG = 'catalog',
+  PIXEL = 'pixel'
 }
 
 export const FACEBOOK_BUSINESS_ROLES = {
@@ -210,6 +216,11 @@ export const FACEBOOK_AD_ACCOUNT_ROLES = {
 } as const;
 
 export const FACEBOOK_CATALOG_ROLES = {
+  ADMIN: 'ADMIN',
+  ADVERTISER: 'ADVERTISER'
+} as const;
+
+export const FACEBOOK_PIXEL_ROLES = {
   ADMIN: 'ADMIN',
   ADVERTISER: 'ADVERTISER'
 } as const;

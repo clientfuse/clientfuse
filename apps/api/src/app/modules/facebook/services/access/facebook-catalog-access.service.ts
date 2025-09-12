@@ -6,17 +6,20 @@ import {
   TFacebookAccessRequest,
   TFacebookAccessResponse,
   IFacebookBaseAccessService,
-  TFacebookUserInfo
+  TFacebookUserInfo,
+  ApiEnv
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
-import { FacebookAdsApi } from 'facebook-nodejs-business-sdk';
+import { ConfigService } from '@nestjs/config';
 import { isEmpty, isNil } from 'lodash';
+import { facebookHttpClient } from '../../../../core/utils/http';
 
 @Injectable()
 export class FacebookCatalogAccessService implements IFacebookBaseAccessService {
   private readonly logger = new Logger(FacebookCatalogAccessService.name);
-  private facebookApi: FacebookAdsApi;
   private accessToken: string;
+
+  constructor(private readonly configService: ConfigService) {}
 
   setCredentials(tokens: { access_token: string }): void {
     if (isEmpty(tokens) || isNil(tokens) || !tokens.access_token) {
@@ -24,7 +27,6 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
     }
 
     this.accessToken = tokens.access_token;
-    this.facebookApi = FacebookAdsApi.init(this.accessToken);
   }
 
   async grantManagementAccess(catalogId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
@@ -71,12 +73,15 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
       const role = this.mapPermissionToRole(request.permissions[0] || FacebookCatalogPermission.ADVERTISER);
 
       try {
-        const response = await this.facebookApi.call<any>(
-          'POST',
+        const { data: response } = await facebookHttpClient.post(
           `/${request.entityId}/collaborators`,
+          {},
           {
-            email: request.agencyEmail,
-            role: role
+            params: {
+              email: request.agencyEmail,
+              role: role,
+              access_token: this.accessToken
+            }
           }
         );
 
@@ -105,17 +110,18 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
         };
       }
 
-    } catch (error) {
-      this.logger.error(`Failed to grant Facebook Catalog access: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Failed to grant Facebook Catalog access: ${error.message}`);
+      console.error(error);
 
-      if (error.response?.error?.code === FACEBOOK_ERROR_CODES.INVALID_TOKEN) {
+      if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.INVALID_TOKEN) {
         return {
           success: false,
           error: 'Access token is invalid or expired'
         };
       }
 
-      if (error.response?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
+      if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
         return {
           success: false,
           error: 'Insufficient permissions to manage catalog collaborators. You must be an admin of this catalog.',
@@ -139,11 +145,13 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
         return null;
       }
 
-      const response = await this.facebookApi.call<any>(
-        'GET',
+      const { data: response } = await facebookHttpClient.get(
         `/${entityId}/collaborators`,
         {
-          fields: 'id,email,role,status'
+          params: {
+            fields: 'id,email,role,status',
+            access_token: this.accessToken
+          }
         }
       );
 
@@ -170,8 +178,9 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
         roleType: existingUser.role
       };
 
-    } catch (error) {
-      this.logger.error(`Error checking existing Facebook Catalog user access: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Error checking existing Facebook Catalog user access: ${error.message}`);
+      console.error(error);
       return null;
     }
   }
@@ -182,11 +191,13 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
         return [];
       }
 
-      const response = await this.facebookApi.call<any>(
-        'GET',
+      const { data: response } = await facebookHttpClient.get(
         `/${entityId}/collaborators`,
         {
-          fields: 'id,email,role,status'
+          params: {
+            fields: 'id,email,role,status',
+            access_token: this.accessToken
+          }
         }
       );
 
@@ -203,8 +214,9 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
         roleType: collaborator.role
       }));
 
-    } catch (error) {
-      this.logger.error(`Error fetching Facebook Catalog entity users: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Error fetching Facebook Catalog entity users: ${error.message}`);
+      console.error(error);
       return [];
     }
   }
@@ -217,11 +229,13 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
 
       const collaboratorId = linkId.includes('_') ? linkId.split('_')[1] : linkId;
 
-      await this.facebookApi.call(
-        'DELETE',
+      await facebookHttpClient.delete(
         `/${entityId}/collaborators`,
         {
-          email: collaboratorId // Use email for deletion
+          params: {
+            email: collaboratorId,
+            access_token: this.accessToken
+          }
         }
       );
 
@@ -232,10 +246,11 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
         message: 'Facebook Catalog access revoked successfully'
       };
 
-    } catch (error) {
-      this.logger.error(`Failed to revoke Facebook Catalog access: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Failed to revoke Facebook Catalog access: ${error.message}`);
+      console.error(error);
 
-      if (error.response?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
+      if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
         return {
           success: false,
           error: 'Insufficient permissions to remove catalog collaborators. Manual removal may be required.',
@@ -264,18 +279,21 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
 
   async getCatalogInfo(catalogId: string): Promise<any> {
     try {
-      const response = await this.facebookApi.call(
-        'GET',
+      const { data: response } = await facebookHttpClient.get(
         `/${catalogId}`,
         {
-          fields: 'id,name,business,product_count,vertical'
+          params: {
+            fields: 'id,name,business,product_count,vertical',
+            access_token: this.accessToken
+          }
         }
       );
 
       return response;
 
-    } catch (error) {
-      this.logger.error(`Error fetching catalog info: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Error fetching catalog info: ${error.message}`);
+      console.error(error);
       return null;
     }
   }

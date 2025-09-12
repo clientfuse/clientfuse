@@ -7,17 +7,20 @@ import {
   TFacebookAccessRequest,
   TFacebookAccessResponse,
   IFacebookBaseAccessService,
-  TFacebookUserInfo
+  TFacebookUserInfo,
+  ApiEnv
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
-import { FacebookAdsApi } from 'facebook-nodejs-business-sdk';
+import { ConfigService } from '@nestjs/config';
 import { isEmpty, isNil } from 'lodash';
+import { facebookHttpClient } from '../../../../core/utils/http';
 
 @Injectable()
 export class FacebookPageAccessService implements IFacebookBaseAccessService {
   private readonly logger = new Logger(FacebookPageAccessService.name);
-  private facebookApi: FacebookAdsApi;
   private accessToken: string;
+
+  constructor(private readonly configService: ConfigService) {}
 
   setCredentials(tokens: { access_token: string }): void {
     if (isEmpty(tokens) || isNil(tokens) || !tokens.access_token) {
@@ -25,7 +28,6 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
     }
 
     this.accessToken = tokens.access_token;
-    this.facebookApi = FacebookAdsApi.init(this.accessToken);
   }
 
   async grantManagementAccess(pageId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
@@ -72,16 +74,19 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
       const role = this.mapPermissionToRole(request.permissions[0] || FacebookPagePermission.EDITOR);
 
       try {
-        const response = await this.facebookApi.call<any>(
-          'POST',
+        const { data: response } = await facebookHttpClient.post(
           `/${request.entityId}/roles`,
+          {},
           {
-            user: request.agencyEmail, // Use email or user ID
-            role: role
+            params: {
+              user: request.agencyEmail,
+              role: role,
+              access_token: this.accessToken
+            }
           }
         );
 
-        if (response.success) {
+        if (response.success !== false) {
           this.logger.log(`Successfully granted Facebook Page access to ${request.agencyEmail} for page ${request.entityId}`);
 
           return {
@@ -106,17 +111,18 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
         };
       }
 
-    } catch (error) {
-      this.logger.error(`Failed to grant Facebook Page access: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Failed to grant Facebook Page access: ${error.message}`);
+      console.error(error);
 
-      if (error.response?.error?.code === FACEBOOK_ERROR_CODES.INVALID_TOKEN) {
+      if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.INVALID_TOKEN) {
         return {
           success: false,
           error: 'Access token is invalid or expired'
         };
       }
 
-      if (error.response?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
+      if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
         return {
           success: false,
           error: 'Insufficient permissions to manage page roles. You must be an admin of this page.',
@@ -140,11 +146,13 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
         return null;
       }
 
-      const response = await this.facebookApi.call<any>(
-        'GET',
+      const { data: response } = await facebookHttpClient.get(
         `/${entityId}/roles`,
         {
-          fields: 'user,role'
+          params: {
+            fields: 'user,role',
+            access_token: this.accessToken
+          }
         }
       );
 
@@ -173,8 +181,9 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
         roleType: existingUser.role
       };
 
-    } catch (error) {
-      this.logger.error(`Error checking existing Facebook Page user access: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Error checking existing Facebook Page user access: ${error.message}`);
+      console.error(error);
       return null;
     }
   }
@@ -185,11 +194,13 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
         return [];
       }
 
-      const response = await this.facebookApi.call<any>(
-        'GET',
+      const { data: response } = await facebookHttpClient.get(
         `/${entityId}/roles`,
         {
-          fields: 'user,role'
+          params: {
+            fields: 'user,role',
+            access_token: this.accessToken
+          }
         }
       );
 
@@ -206,8 +217,9 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
         roleType: roleData.role
       }));
 
-    } catch (error) {
-      this.logger.error(`Error fetching Facebook Page entity users: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Error fetching Facebook Page entity users: ${error.message}`);
+      console.error(error);
       return [];
     }
   }
@@ -220,11 +232,13 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
 
       const userId = linkId.includes('_') ? linkId.split('_')[1] : linkId;
 
-      await this.facebookApi.call<any>(
-        'DELETE',
+      await facebookHttpClient.delete(
         `/${entityId}/roles`,
         {
-          user: userId
+          params: {
+            user: userId,
+            access_token: this.accessToken
+          }
         }
       );
 
@@ -235,10 +249,11 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
         message: 'Facebook Page access revoked successfully'
       };
 
-    } catch (error) {
-      this.logger.error(`Failed to revoke Facebook Page access: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Failed to revoke Facebook Page access: ${error.message}`);
+      console.error(error);
 
-      if (error.response?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
+      if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
         return {
           success: false,
           error: 'Insufficient permissions to remove page users. Manual removal may be required.',
@@ -267,18 +282,21 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
 
   async getPageInfo(pageId: string): Promise<any> {
     try {
-      const response = await this.facebookApi.call<any>(
-        'GET',
+      const { data: response } = await facebookHttpClient.get(
         `/${pageId}`,
         {
-          fields: 'id,name,category,verification_status,fan_count,about,website'
+          params: {
+            fields: 'id,name,category,verification_status,fan_count,about,website',
+            access_token: this.accessToken
+          }
         }
       );
 
       return response;
 
-    } catch (error) {
-      this.logger.error(`Error fetching page info: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Error fetching page info: ${error.message}`);
+      console.error(error);
       return null;
     }
   }

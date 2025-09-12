@@ -15,6 +15,7 @@ import { FacebookAdAccountAccessService } from './services/access/facebook-ad-ac
 import { FacebookBusinessAccessService } from './services/access/facebook-business-access.service';
 import { FacebookCatalogAccessService } from './services/access/facebook-catalog-access.service';
 import { FacebookPageAccessService } from './services/access/facebook-page-acess.service';
+import { FacebookPixelAccessService } from './services/access/facebook-pixel-access.service';
 
 @Controller(`${ENDPOINTS.facebook.root}/${ENDPOINTS.facebook.accessManagement.root}`)
 export class FacebookAccessController {
@@ -25,13 +26,15 @@ export class FacebookAccessController {
     private readonly facebookBusinessAccessService: FacebookBusinessAccessService,
     private readonly facebookAdAccountAccessService: FacebookAdAccountAccessService,
     private readonly facebookPageAccessService: FacebookPageAccessService,
-    private readonly facebookCatalogAccessService: FacebookCatalogAccessService
+    private readonly facebookCatalogAccessService: FacebookCatalogAccessService,
+    private readonly facebookPixelAccessService: FacebookPixelAccessService
   ) {
     this.serviceMap = new Map<FacebookServiceType, IFacebookBaseAccessService>();
     this.serviceMap.set(FacebookServiceType.BUSINESS, this.facebookBusinessAccessService);
     this.serviceMap.set(FacebookServiceType.AD_ACCOUNT, this.facebookAdAccountAccessService);
     this.serviceMap.set(FacebookServiceType.PAGE, this.facebookPageAccessService);
     this.serviceMap.set(FacebookServiceType.CATALOG, this.facebookCatalogAccessService);
+    this.serviceMap.set(FacebookServiceType.PIXEL, this.facebookPixelAccessService);
   }
 
   @Public()

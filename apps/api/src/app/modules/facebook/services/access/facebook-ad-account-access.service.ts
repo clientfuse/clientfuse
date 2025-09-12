@@ -6,18 +6,21 @@ import {
   TFacebookAccessRequest,
   TFacebookAccessResponse,
   IFacebookBaseAccessService,
-  TFacebookUserInfo
+  TFacebookUserInfo,
+  ApiEnv
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
-import { FacebookAdsApi } from 'facebook-nodejs-business-sdk';
+import { ConfigService } from '@nestjs/config';
 import { isEmpty, isNil } from 'lodash';
+import { facebookHttpClient } from '../../../../core/utils/http';
 
 
 @Injectable()
 export class FacebookAdAccountAccessService implements IFacebookBaseAccessService {
   private readonly logger = new Logger(FacebookAdAccountAccessService.name);
-  private facebookApi: FacebookAdsApi;
   private accessToken: string;
+
+  constructor(private readonly configService: ConfigService) {}
 
   setCredentials(tokens: { access_token: string }): void {
     if (isEmpty(tokens) || isNil(tokens) || !tokens.access_token) {
@@ -25,7 +28,6 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
     }
 
     this.accessToken = tokens.access_token;
-    this.facebookApi = FacebookAdsApi.init(this.accessToken);
   }
 
   async grantManagementAccess(adAccountId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
@@ -74,16 +76,19 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
 
       const role = this.mapPermissionToRole(request.permissions[0] || FacebookAdAccountPermission.GENERAL_USER);
 
-      const response = await this.facebookApi.call<any>(
-        'POST',
-        `/${accountId}/users`,
+      const { data: response } = await facebookHttpClient.post(
+        `/${accountId}/assigned_users`,
+        {},
         {
-          uid: request.agencyEmail, // Use email as identifier
-          role: role
+          params: {
+            user: request.agencyEmail,
+            role: role,
+            access_token: this.accessToken
+          }
         }
       );
 
-      if (response.success) {
+      if (response.success !== false) {
         this.logger.log(`Successfully granted Facebook Ad Account access to ${request.agencyEmail} for account ${accountId}`);
 
         return {
@@ -96,17 +101,18 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
         throw new Error('Failed to add user to ad account');
       }
 
-    } catch (error) {
-      this.logger.error(`Failed to grant Facebook Ad Account access: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Failed to grant Facebook Ad Account access: ${error.message}`);
+      console.error(error);
 
-      if (error.response?.error?.code === FACEBOOK_ERROR_CODES.INVALID_TOKEN) {
+      if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.INVALID_TOKEN) {
         return {
           success: false,
           error: 'Access token is invalid or expired'
         };
       }
 
-      if (error.response?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
+      if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
         return {
           success: false,
           error: 'Insufficient permissions to manage ad account users. You must be an admin of this ad account.',
@@ -115,7 +121,7 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
         };
       }
 
-      if (error.response?.error?.code === FACEBOOK_ERROR_CODES.USER_NOT_FOUND) {
+      if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.USER_NOT_FOUND) {
         return {
           success: false,
           error: 'User not found. The user must have a Facebook account.',
@@ -142,11 +148,13 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
       const cleanAccountId = entityId.replace('act_', '');
       const accountId = `act_${cleanAccountId}`;
 
-      const response = await this.facebookApi.call<any>(
-        'GET',
-        `/${accountId}/users`,
+      const { data: response } = await facebookHttpClient.get(
+        `/${accountId}/assigned_users`,
         {
-          fields: 'id,name,email,role,permissions'
+          params: {
+            fields: 'id,name,email,role,permissions',
+            access_token: this.accessToken
+          }
         }
       );
 
@@ -173,8 +181,9 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
         roleType: existingUser.role
       };
 
-    } catch (error) {
-      this.logger.error(`Error checking existing Facebook Ad Account user access: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Error checking existing Facebook Ad Account user access: ${error.message}`);
+      console.error(error);
       return null;
     }
   }
@@ -188,11 +197,13 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
       const cleanAccountId = entityId.replace('act_', '');
       const accountId = `act_${cleanAccountId}`;
 
-      const response = await this.facebookApi.call<any>(
-        'GET',
-        `/${accountId}/users`,
+      const { data: response } = await facebookHttpClient.get(
+        `/${accountId}/assigned_users`,
         {
-          fields: 'id,name,email,role,permissions'
+          params: {
+            fields: 'id,name,email,role,permissions',
+            access_token: this.accessToken
+          }
         }
       );
 
@@ -209,8 +220,9 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
         roleType: user.role
       }));
 
-    } catch (error) {
-      this.logger.error(`Error fetching Facebook Ad Account entity users: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Error fetching Facebook Ad Account entity users: ${error.message}`);
+      console.error(error);
       return [];
     }
   }
@@ -226,11 +238,13 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
 
       const userId = linkId.includes('_') ? linkId.split('_')[1] : linkId;
 
-      await this.facebookApi.call(
-        'DELETE',
-        `/${accountId}/users`,
+      await facebookHttpClient.delete(
+        `/${accountId}/assigned_users`,
         {
-          uid: userId
+          params: {
+            user: userId,
+            access_token: this.accessToken
+          }
         }
       );
 
@@ -241,10 +255,11 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
         message: 'Facebook Ad Account access revoked successfully'
       };
 
-    } catch (error) {
-      this.logger.error(`Failed to revoke Facebook Ad Account access: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Failed to revoke Facebook Ad Account access: ${error.message}`);
+      console.error(error);
 
-      if (error.response?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
+      if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
         return {
           success: false,
           error: 'Insufficient permissions to remove ad account users'
@@ -274,18 +289,21 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
       const cleanAccountId = adAccountId.replace('act_', '');
       const accountId = `act_${cleanAccountId}`;
 
-      const response = await this.facebookApi.call(
-        'GET',
+      const { data: response } = await facebookHttpClient.get(
         `/${accountId}`,
         {
-          fields: 'id,name,account_id,currency,timezone_name,account_status,business'
+          params: {
+            fields: 'id,name,account_id,currency,timezone_name,account_status,business',
+            access_token: this.accessToken
+          }
         }
       );
 
       return response;
 
-    } catch (error) {
-      this.logger.error(`Error fetching ad account info: ${error.message}`, error);
+    } catch (error: any) {
+      this.logger.error(`Error fetching ad account info: ${error.message}`);
+      console.error(error);
       return null;
     }
   }
