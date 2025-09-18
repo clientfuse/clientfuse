@@ -1,0 +1,133 @@
+<div class="common-issues-section">
+  <h3 class="common-issues-title">Common Issues and How to Solve Them</h3>
+
+  <mat-accordion class="accordion" [multi]="false">
+    <mat-expansion-panel class="accordion-panel">
+      <mat-expansion-panel-header class="accordion-header">
+        <mat-panel-title class="accordion-title">
+          <div class="accordion-info">
+            <span class="accordion-name">"Unable to assign assets - please try again later"</span>
+          </div>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div class="issue-panel-content">
+        <p class="body issue-description">There are several possible fixes for this issue:</p>
+        <ol class="solution-list">
+          <li>
+            <a target="_blank" rel="noopener noreferrer"
+               [href]="'https://business.facebook.com/security/twofactor/reauth/?twofac_next=https%3A%2F%2Fbusiness.facebook.com%2Flatest%2Fsettings%2Fpartners%3Fbusiness_id%3D' + businessPortfolioId() + '%26selected_partner_id%3D' + businessPortfolioId()">
+              Enter your 2-Factor Authentication Code (2FA)
+            </a>
+          </li>
+          <li>
+            <a target="_blank" rel="noopener noreferrer"
+               [href]="'https://business.facebook.com/latest/settings/business_info?business_id=' + businessPortfolioId()">
+              Verify your email address
+            </a> (scroll down) and then
+            <a target="_blank" rel="noopener noreferrer"
+               [href]="'https://business.facebook.com/latest/settings/partners?business_id=' + businessPortfolioId()">
+              try sharing again
+            </a>
+            <div class="issue-image-wrapper">
+              <img src="/assets/images/facebook-pixel/verify-email.png" alt="Verify Email">
+            </div>
+          </li>
+          <li>
+            Verify the
+            <a [href]="'https://business.facebook.com/latest/settings/ad_accounts?business_id=' + businessPortfolioId() + '&selected_asset_type=ad-account'"
+               target="_blank" rel="noopener noreferrer">
+              Ad account
+            </a> if prompted.
+            <div class="issue-image-wrapper">
+              <img src="/assets/images/facebook-pixel/verify-ad-account.png" alt="Verify Ad Account">
+            </div>
+
+            <div class="verify-account-subsection">
+              <button type="button" class="body-small expandable-trigger" (click)="toggleVerifyAccountSection()">
+                "Verify account" does not work?
+              </button>
+              @if (showVerifyAccountSection()) {
+                <div class="subsection-content">
+                  <p class="body">We will try to use the old Business Manager:</p>
+                  <ol class="solution-list">
+                    <li>
+                      <a [href]="'https://business.facebook.com/latest/settings/partners?business_id=' + businessPortfolioId() + '&selected_partner_id=' + businessPortfolioId()"
+                         rel="noopener noreferrer" target="_blank">Open your Business Portfolio</a>
+                    </li>
+                    <li>
+                      Click "Business Manager" (scroll to bottom left)
+                      <div class="issue-image-wrapper">
+                        <img src="/assets/images/facebook-pixel/old-business-manager.png" alt="Old Business Manager">
+                      </div>
+                    </li>
+                    <li>Click "Partners" (top left)</li>
+                    <li>Click "Assign Assets"</li>
+                    <li>As before: find the Ad Account, select the permissions, click "Save changes" and you will be prompted to "Verify
+                        account"
+                    </li>
+                  </ol>
+                </div>
+              }
+            </div>
+          </li>
+          <li>
+            Are you subscribed to Meta Verified Badge? Check out
+            <a target="_blank" rel="noopener noreferrer"
+               href="https://www.leadsie.com/blog/unable-to-assign-assets-meta#reason-1-meta-verifieds-added-security">
+              our blog post
+            </a>.
+          </li>
+          <li>If the issue persists, please contact our support team.</li>
+        </ol>
+      </div>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel class="accordion-panel">
+      <mat-expansion-panel-header class="accordion-header">
+        <mat-panel-title class="accordion-title">
+          <div class="accordion-info">
+            <span class="accordion-name">Can't click "Save changes" when assigning assets</span>
+          </div>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div class="issue-panel-content">
+        <div class="issue-image-wrapper">
+          <img src="/assets/images/facebook-pixel/save-changes-button.png" alt="Save Changes Button">
+        </div>
+        <p class="body issue-description">If the "Save changes" button isn't clickable:</p>
+        <ul class="issue-list">
+          <li>Ensure you've selected an asset and assigned permissions to it.</li>
+          <li>Permissions must be set for each selected asset. (See screenshot for reference.)</li>
+        </ul>
+        <div class="issue-image-wrapper">
+          <img src="/assets/images/facebook-pixel/permissions.png" alt="Meta Permissions">
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel class="accordion-panel">
+      <mat-expansion-panel-header class="accordion-header">
+        <mat-panel-title class="accordion-title">
+          <div class="accordion-info">
+            <span class="accordion-name">Can't see "Partners"?</span>
+          </div>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div class="issue-panel-content">
+        <p class="body">You may need to switch to a Facebook account rather than your Instagram account. Please click in the top right
+                        hand corner of
+                        the page where you are logged in.</p>
+        <div class="issue-image-wrapper">
+          <img src="/assets/images/facebook-pixel/top-right.png" alt="Top Right Corner">
+        </div>
+        <p class="body">And switch to your Facebook account</p>
+        <div class="issue-image-wrapper">
+          <img src="/assets/images/facebook-pixel/switch-account.png" alt="Switch Account">
+        </div>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
+</div>

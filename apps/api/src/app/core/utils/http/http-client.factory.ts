@@ -111,4 +111,4 @@ export class HttpClientFactory {
   }
 }
 
-export const facebookHttpClient = HttpClientFactory.create({ baseURL: 'https://graph.facebook.com/v19.0' });
+export const facebookHttpClient = HttpClientFactory.create({ baseURL: 'https://graph.facebook.com/v23.0' });

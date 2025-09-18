@@ -1,0 +1,126 @@
+<div class="connectly-modal">
+  <div class="connectly-modal-header">
+    <h2 class="subtitle-medium">Share Meta Pixel Access</h2>
+    <button mat-icon-button (click)="onClose()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="connectly-modal-description">
+    <p>You're almost done! Share <strong>Meta</strong> access to <strong>{{ data.pixelName }}</strong></p>
+    <p>Follow these manual steps to grant access to your Meta Pixel:</p>
+  </div>
+
+  <div class="connectly-modal-content">
+    <ol class="manual-step-list">
+      <li class="manual-step-list-item">
+        <app-island variant="neutral" density="compact">
+          <div class="step-content-wrapper">
+            <div class="step-content">
+              <p class="step-title">Copy your partner's Business ID:</p>
+              <div class="id-copy-section">
+                <mat-form-field appearance="outline" class="business-id-field">
+                  <input matInput [value]="data.businessPortfolioId" readonly>
+                </mat-form-field>
+                <button mat-flat-button
+                        color="primary"
+                        [cdkCopyToClipboard]="data.businessPortfolioId"
+                        (cdkCopyToClipboardCopied)="copyBusinessId()">
+                  {{ copyButtonText() }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </app-island>
+      </li>
+
+      <li class="manual-step-list-item">
+        <app-island variant="neutral" density="compact">
+          <div class="step-content-wrapper">
+            <div class="step-content">
+              <p class="step-title">Open Your Business Portfolio:</p>
+              <button mat-flat-button color="primary" (click)="openBusinessPortfolio()">
+                Open Business Portfolio
+              </button>
+            </div>
+          </div>
+        </app-island>
+      </li>
+
+      <li class="manual-step-list-item">
+        <app-island variant="neutral" density="compact">
+          <div class="step-content-wrapper">
+            <div class="step-content">
+              <p class="step-title">In the Meta Business Settings, add your partner:</p>
+              <ul class="sub-steps">
+                <li>Click on the blue button <strong>Add</strong></li>
+                <li>Click <strong>Give a partner access to your assets</strong></li>
+              </ul>
+            </div>
+            <div class="step-image">
+              <img src="/assets/images/facebook-pixel/add-partner-first-time.png"
+                   alt="Add Partner to Meta Business Manager">
+            </div>
+          </div>
+        </app-island>
+      </li>
+
+      <li class="manual-step-list-item">
+        <app-island variant="neutral" density="compact">
+          <div class="step-content-wrapper">
+            <div class="step-content">
+              <p class="step-title">Paste in the copied Business Portfolio ID:</p>
+              <ul class="sub-steps">
+                <li>Enter the Business Portfolio ID: <strong>{{ data.businessPortfolioId }}</strong></li>
+                <li>Click <strong>Next</strong> to proceed</li>
+              </ul>
+            </div>
+          </div>
+        </app-island>
+      </li>
+
+      <li class="manual-step-list-item">
+        <app-island variant="neutral" density="compact">
+          <div class="step-content-wrapper">
+            <div class="step-content">
+              <p class="step-title">Configure Datasets permissions:</p>
+              <ul class="sub-steps">
+                <li>Select <strong>Datasets</strong> on the left sidebar</li>
+                <li>Choose <strong>{{ data.pixelName }}</strong> from the list</li>
+                <li>Switch on <strong>Manage events dataset</strong> permission</li>
+              </ul>
+            </div>
+          </div>
+        </app-island>
+      </li>
+
+      <li class="manual-step-list-item">
+        <app-island variant="neutral" density="compact">
+          <div class="step-content-wrapper">
+            <div class="step-content">
+              <p class="step-title">Complete the process:</p>
+              <ul class="sub-steps">
+                <li>Review the selected permissions</li>
+                <li>Click <strong>Assign assets</strong> to finish</li>
+              </ul>
+            </div>
+          </div>
+        </app-island>
+      </li>
+    </ol>
+
+    <app-status-card variant="warning" header="Current status">
+      <strong>Meta Dataset</strong>
+      {{ data.pixelName }}: We can't check the status of these - if you've completed the steps or don't wish to, press Continue below
+    </app-status-card>
+
+    <p class="done-text">Done? Hit "Continue" 🙌</p>
+
+    <div class="connectly-modal-actions">
+      <button mat-stroked-button (click)="onClose()">Cancel</button>
+      <button mat-flat-button color="primary" (click)="onContinue()">Continue</button>
+    </div>
+
+    <app-common-issues [businessPortfolioId]="data.businessPortfolioId"></app-common-issues>
+  </div>
+</div>

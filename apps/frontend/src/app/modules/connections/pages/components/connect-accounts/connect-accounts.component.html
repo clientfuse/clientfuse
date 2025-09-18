@@ -135,13 +135,6 @@
               <app-island [variant]="'neutral'">
                 <p class="subtitle-smaller">Available Accounts:</p>
                 <div class="accounts-list">
-                  @if (facebookConnectionData()?.accounts?.facebookBusinessAccounts?.length) {
-                    <div class="account-section">
-                      <p class="body-smaller-text"><strong>
-                        Business Accounts:</strong> {{ facebookConnectionData()?.accounts?.facebookBusinessAccounts?.length }} account(s)
-                      </p>
-                    </div>
-                  }
                   @if (facebookConnectionData()?.accounts?.facebookAdAccounts?.length) {
                     <div class="account-section">
                       <p class="body-smaller-text"><strong>

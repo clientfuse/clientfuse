@@ -1,17 +1,14 @@
 import {
   FACEBOOK_CATALOG_MANAGEMENT_SCOPE,
   FACEBOOK_ERROR_CODES,
-  FACEBOOK_PAGE_ROLES,
   FACEBOOK_PAGES_SHOW_LIST_SCOPE,
   FacebookPagePermission,
+  IFacebookBaseAccessService,
   TFacebookAccessRequest,
   TFacebookAccessResponse,
-  IFacebookBaseAccessService,
-  TFacebookUserInfo,
-  ApiEnv
+  TFacebookUserInfo
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { isEmpty, isNil } from 'lodash';
 import { facebookHttpClient } from '../../../../core/utils/http';
 
@@ -19,8 +16,10 @@ import { facebookHttpClient } from '../../../../core/utils/http';
 export class FacebookPageAccessService implements IFacebookBaseAccessService {
   private readonly logger = new Logger(FacebookPageAccessService.name);
   private accessToken: string;
+  private pageAccessTokens: Map<string, string> = new Map();
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor() {
+  }
 
   setCredentials(tokens: { access_token: string }): void {
     if (isEmpty(tokens) || isNil(tokens) || !tokens.access_token) {
@@ -31,22 +30,24 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
   }
 
   async grantManagementAccess(pageId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
-    this.logger.log(`Granting Facebook Page management access to ${agencyEmail} for page ${pageId}`);
+    const businessId = agencyEmail; // This actually contains the business ID
+    this.logger.log(`Granting Facebook Page management access to business ${businessId} for page ${pageId}`);
 
     return this.grantAgencyAccess({
       entityId: pageId,
-      agencyEmail: agencyEmail,
+      agencyEmail: businessId, // Passing business ID
       permissions: [FacebookPagePermission.ADMIN],
       roleType: FacebookPagePermission.ADMIN
     });
   }
 
   async grantViewAccess(pageId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
-    this.logger.log(`Granting Facebook Page view access to ${agencyEmail} for page ${pageId}`);
+    const businessId = agencyEmail; // This actually contains the business ID
+    this.logger.log(`Granting Facebook Page view access to business ${businessId} for page ${pageId}`);
 
     return this.grantAgencyAccess({
       entityId: pageId,
-      agencyEmail: agencyEmail,
+      agencyEmail: businessId, // Passing business ID
       permissions: [FacebookPagePermission.ANALYST],
       roleType: FacebookPagePermission.ANALYST
     });
@@ -54,60 +55,74 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
 
   async grantAgencyAccess(request: TFacebookAccessRequest): Promise<TFacebookAccessResponse> {
     try {
-      this.logger.log(`Attempting to grant Facebook Page access to ${request.agencyEmail} for page ${request.entityId}`);
+      const businessId = request.agencyEmail; // This actually contains the business ID
+      this.logger.log(`Attempting to grant Facebook Page access to business ${businessId} for page ${request.entityId}`);
 
       if (!this.accessToken) {
         throw new Error('Access token must be set before granting access');
       }
 
-      const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyEmail);
-
-      if (existingAccess) {
-        this.logger.warn(`User ${request.agencyEmail} already has access to page ${request.entityId}`);
+      const pageAccessToken = await this.getPageAccessToken(request.entityId);
+      if (!pageAccessToken) {
+        this.logger.error(`Failed to get page access token for page ${request.entityId}`);
         return {
           success: false,
-          error: 'User already has access to this page',
+          error: 'Unable to get page access token. Ensure you have admin access to this page.',
+          requiresManualApproval: true,
+          businessManagerUrl: `https://business.facebook.com/settings/pages/${request.entityId}`
+        };
+      }
+
+      const existingAccess = await this.checkExistingUserAccess(request.entityId, businessId);
+
+      if (existingAccess) {
+        this.logger.warn(`Business ${businessId} already has access to page ${request.entityId}`);
+        return {
+          success: false,
+          error: 'Business already has access to this page',
           linkId: existingAccess.linkId
         };
       }
 
-      const role = this.mapPermissionToRole(request.permissions[0] || FacebookPagePermission.EDITOR);
+      const tasks = this.mapPermissionToTasks(request.permissions[0] || FacebookPagePermission.EDITOR);
 
       try {
         const { data: response } = await facebookHttpClient.post(
-          `/${request.entityId}/roles`,
-          {},
+          `/${request.entityId}/agencies`,
+          {
+            business: businessId,
+            permitted_tasks: tasks
+          },
           {
             params: {
-              user: request.agencyEmail,
-              role: role,
-              access_token: this.accessToken
+              access_token: pageAccessToken
             }
           }
         );
 
         if (response.success !== false) {
-          this.logger.log(`Successfully granted Facebook Page access to ${request.agencyEmail} for page ${request.entityId}`);
+          this.logger.log(`Successfully granted Facebook Page access to business ${businessId} for page ${request.entityId}`);
 
           return {
             success: true,
-            linkId: `${request.entityId}_${request.agencyEmail}`,
+            linkId: `${request.entityId}_${businessId}`,
             entityId: request.entityId,
-            message: `Facebook Page access granted successfully to ${request.agencyEmail}`
+            message: `Facebook Page access granted successfully to business ${businessId}`
           };
         } else {
-          throw new Error('Failed to add user to page roles');
+          throw new Error('Failed to add business as agency to page');
         }
 
-      } catch (apiError) {
+      } catch (apiError: any) {
         this.logger.warn(`API method failed, may require manual page role assignment: ${apiError.message}`);
+        console.error('API Error details:', apiError.response?.data);
 
         return {
           success: false,
-          error: 'Facebook Page role assignment requires manual intervention through Page settings',
+          error: 'Facebook Page access assignment requires manual intervention through Business Manager',
           requiresManualApproval: true,
-          businessManagerUrl: `https://www.facebook.com/${request.entityId}/settings/?tab=page_roles`,
-          message: `Please manually assign ${request.agencyEmail} the role of ${role} through Facebook Page settings at https://www.facebook.com/${request.entityId}/settings/?tab=page_roles`
+          businessManagerUrl: `https://business.facebook.com/settings/pages/${request.entityId}`,
+          message: `Please manually assign business ${businessId} access through Facebook Business Manager at https://business.facebook.com/settings/pages/${request.entityId}`
         };
       }
 
@@ -125,9 +140,9 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
       if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
         return {
           success: false,
-          error: 'Insufficient permissions to manage page roles. You must be an admin of this page.',
+          error: 'Insufficient permissions to manage page access. You must be an admin of this page.',
           requiresManualApproval: true,
-          businessManagerUrl: `https://www.facebook.com/${request.entityId}/settings/?tab=page_roles`
+          businessManagerUrl: `https://business.facebook.com/settings/pages/${request.entityId}`
         };
       }
 
@@ -135,23 +150,27 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
         success: false,
         error: `Failed to grant access: ${error.message}`,
         requiresManualApproval: true,
-        businessManagerUrl: `https://www.facebook.com/${request.entityId}/settings/?tab=page_roles`
+        businessManagerUrl: `https://business.facebook.com/settings/pages/${request.entityId}`
       };
     }
   }
 
-  async checkExistingUserAccess(entityId: string, email: string): Promise<TFacebookUserInfo | null> {
+  async checkExistingUserAccess(entityId: string, businessId: string): Promise<TFacebookUserInfo | null> {
     try {
       if (!this.accessToken) {
         return null;
       }
 
+      const pageAccessToken = await this.getPageAccessToken(entityId);
+      if (!pageAccessToken) {
+        this.logger.warn(`Using user access token for checking existing access on page ${entityId}`);
+      }
+
       const { data: response } = await facebookHttpClient.get(
-        `/${entityId}/roles`,
+        `/${entityId}/agencies`,
         {
           params: {
-            fields: 'user,role',
-            access_token: this.accessToken
+            access_token: pageAccessToken || this.accessToken
           }
         }
       );
@@ -160,29 +179,27 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
         return null;
       }
 
-      const normalizedEmail = email.toLowerCase().trim();
-
-      const existingUser = response.data.find((roleData: any) => {
-        const user = roleData.user;
-        return user?.email?.toLowerCase() === normalizedEmail ||
-          user?.name?.toLowerCase().includes(normalizedEmail);
+      const existingAgency = response.data.find((agency: any) => {
+        return agency.id === businessId;
       });
 
-      if (!existingUser) {
+      if (!existingAgency) {
         return null;
       }
 
+      const permission = this.mapTasksToPermission(existingAgency.permitted_tasks || []);
+
       return {
-        linkId: existingUser.user?.id || `${entityId}_${email}`,
-        email: existingUser.user?.email || email,
-        permissions: [existingUser.role || FacebookPagePermission.EDITOR],
-        kind: 'facebook#pageUser',
-        status: 'ACTIVE',
-        roleType: existingUser.role
+        linkId: existingAgency.id || `${entityId}_${businessId}`,
+        email: businessId, // Using businessId as email for compatibility
+        permissions: [permission],
+        kind: 'facebook#pageAgency',
+        status: existingAgency.access_status || 'ACTIVE',
+        roleType: permission
       };
 
     } catch (error: any) {
-      this.logger.error(`Error checking existing Facebook Page user access: ${error.message}`);
+      this.logger.error(`Error checking existing Facebook Page agency access: ${error.message}`);
       console.error(error);
       return null;
     }
@@ -194,12 +211,16 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
         return [];
       }
 
+      const pageAccessToken = await this.getPageAccessToken(entityId);
+      if (!pageAccessToken) {
+        this.logger.warn(`Using user access token for fetching agencies on page ${entityId}`);
+      }
+
       const { data: response } = await facebookHttpClient.get(
-        `/${entityId}/roles`,
+        `/${entityId}/agencies`,
         {
           params: {
-            fields: 'user,role',
-            access_token: this.accessToken
+            access_token: pageAccessToken || this.accessToken
           }
         }
       );
@@ -208,17 +229,22 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
         return [];
       }
 
-      return response.data.map((roleData: any) => ({
-        linkId: roleData.user?.id || `${entityId}_${roleData.user?.email}`,
-        email: roleData.user?.email || '',
-        permissions: [roleData.role || FacebookPagePermission.EDITOR],
-        kind: 'facebook#pageUser',
-        status: 'ACTIVE',
-        roleType: roleData.role
-      }));
+      return response.data.map((agency: any) => {
+        const permission = this.mapTasksToPermission(agency.permitted_tasks || []);
+        const businessId = agency.id;
+
+        return {
+          linkId: businessId || `${entityId}_${agency.name}`,
+          email: businessId || '', // Using businessId as email for compatibility
+          permissions: [permission],
+          kind: 'facebook#pageAgency',
+          status: agency.access_status || 'ACTIVE',
+          roleType: permission
+        };
+      });
 
     } catch (error: any) {
-      this.logger.error(`Error fetching Facebook Page entity users: ${error.message}`);
+      this.logger.error(`Error fetching Facebook Page agencies: ${error.message}`);
       console.error(error);
       return [];
     }
@@ -230,19 +256,29 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
         throw new Error('Access token must be set before revoking access');
       }
 
-      const userId = linkId.includes('_') ? linkId.split('_')[1] : linkId;
+      const pageAccessToken = await this.getPageAccessToken(entityId);
+      if (!pageAccessToken) {
+        return {
+          success: false,
+          error: 'Unable to get page access token. Ensure you have admin access to this page.',
+          requiresManualApproval: true,
+          businessManagerUrl: `https://business.facebook.com/settings/pages/${entityId}`
+        };
+      }
+
+      const businessId = linkId.includes('_') ? linkId.split('_')[0] : linkId;
 
       await facebookHttpClient.delete(
-        `/${entityId}/roles`,
+        `/${entityId}/agencies`,
         {
           params: {
-            user: userId,
-            access_token: this.accessToken
+            business: businessId,
+            access_token: pageAccessToken
           }
         }
       );
 
-      this.logger.log(`Successfully revoked Facebook Page access for user ${userId} from page ${entityId}`);
+      this.logger.log(`Successfully revoked Facebook Page access for business ${businessId} from page ${entityId}`);
 
       return {
         success: true,
@@ -256,9 +292,9 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
       if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
         return {
           success: false,
-          error: 'Insufficient permissions to remove page users. Manual removal may be required.',
+          error: 'Insufficient permissions to remove page agencies. Manual removal may be required.',
           requiresManualApproval: true,
-          businessManagerUrl: `https://www.facebook.com/${entityId}/settings/?tab=page_roles`
+          businessManagerUrl: `https://business.facebook.com/settings/pages/${entityId}`
         };
       }
 
@@ -280,36 +316,72 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
     return [FACEBOOK_PAGES_SHOW_LIST_SCOPE, FACEBOOK_CATALOG_MANAGEMENT_SCOPE];
   }
 
-  async getPageInfo(pageId: string): Promise<any> {
+  private mapPermissionToTasks(permission: string): string[] {
+    const taskMap: Record<string, string[]> = {
+      [FacebookPagePermission.ADMIN]: ['MANAGE', 'CREATE_CONTENT', 'MODERATE', 'ADVERTISE', 'ANALYZE'],
+      [FacebookPagePermission.EDITOR]: ['CREATE_CONTENT', 'MODERATE', 'ADVERTISE'],
+      [FacebookPagePermission.MODERATOR]: ['MODERATE', 'ADVERTISE'],
+      [FacebookPagePermission.ADVERTISER]: ['ADVERTISE'],
+      [FacebookPagePermission.ANALYST]: ['ANALYZE']
+    };
+
+    return taskMap[permission] || ['ADVERTISE', 'ANALYZE'];
+  }
+
+  private mapTasksToPermission(tasks: string[]): string {
+    if (!tasks || tasks.length === 0) {
+      return FacebookPagePermission.ANALYST;
+    }
+
+    if (tasks.includes('MANAGE')) {
+      return FacebookPagePermission.ADMIN;
+    }
+
+    if (tasks.includes('CREATE_CONTENT') && tasks.includes('MODERATE')) {
+      return FacebookPagePermission.EDITOR;
+    }
+
+    if (tasks.includes('MODERATE') && !tasks.includes('CREATE_CONTENT')) {
+      return FacebookPagePermission.MODERATOR;
+    }
+
+    if (tasks.includes('ADVERTISE') && !tasks.includes('MODERATE')) {
+      return FacebookPagePermission.ADVERTISER;
+    }
+
+    if (tasks.includes('ANALYZE')) {
+      return FacebookPagePermission.ANALYST;
+    }
+
+    return FacebookPagePermission.ANALYST;
+  }
+
+  private async getPageAccessToken(pageId: string): Promise<string | null> {
     try {
+      if (this.pageAccessTokens.has(pageId)) {
+        return this.pageAccessTokens.get(pageId);
+      }
+
       const { data: response } = await facebookHttpClient.get(
         `/${pageId}`,
         {
           params: {
-            fields: 'id,name,category,verification_status,fan_count,about,website',
+            fields: 'access_token',
             access_token: this.accessToken
           }
         }
       );
 
-      return response;
+      if (response.access_token) {
+        this.pageAccessTokens.set(pageId, response.access_token);
+        return response.access_token;
+      }
 
+      return null;
     } catch (error: any) {
-      this.logger.error(`Error fetching page info: ${error.message}`);
-      console.error(error);
+      this.logger.error(`Failed to get page access token for page ${pageId}: ${error.message}`);
+      console.error('Error details:', error.response?.data);
       return null;
     }
-  }
-
-  private mapPermissionToRole(permission: string): string {
-    const roleMap: Record<string, string> = {
-      [FacebookPagePermission.ADMIN]: FACEBOOK_PAGE_ROLES.ADMIN,
-      [FacebookPagePermission.EDITOR]: FACEBOOK_PAGE_ROLES.EDITOR,
-      [FacebookPagePermission.MODERATOR]: FACEBOOK_PAGE_ROLES.MODERATOR,
-      [FacebookPagePermission.ADVERTISER]: FACEBOOK_PAGE_ROLES.ADVERTISER,
-      [FacebookPagePermission.ANALYST]: FACEBOOK_PAGE_ROLES.ANALYST
-    };
-
-    return roleMap[permission] || FACEBOOK_PAGE_ROLES.EDITOR;
   }
 }

@@ -1,0 +1,10 @@
+@import 'variables';
+@import 'fonts';
+@import 'material-overrides/mat-modal';
+@import '../shared-manual-steps';
+
+.done-text {
+  margin: var(--spacing-4) 0;
+  font-size: var(--fs-14);
+  color: $dark-80;
+}

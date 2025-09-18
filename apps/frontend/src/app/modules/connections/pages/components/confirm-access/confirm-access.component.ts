@@ -7,9 +7,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
 import {
   FacebookAdAccount,
-  FacebookBusinessAccount,
   FacebookCatalog,
   FacebookPage,
+  FacebookPixel,
+  FacebookServiceType,
   GoogleServiceType,
   IGoogleAdsAccount,
   TAccessType,
@@ -22,6 +23,7 @@ import { analytics_v3, content_v2_1, mybusinessbusinessinformation_v1, searchcon
 import { firstValueFrom } from 'rxjs';
 import { IslandComponent } from '../../../../../components/island/island.component';
 import { DialogService } from '../../../../../services/dialog.service';
+import { FacebookStoreService } from '../../../../../services/facebook/facebook-store.service';
 import { GoogleStoreService } from '../../../../../services/google/google-store.service';
 import { SnackbarService } from '../../../../../services/snackbar.service';
 import { GOOGLE_ICON_PATHS } from '../../../../../utils/icon.utils';
@@ -34,6 +36,14 @@ import {
   GoogleSearchConsoleModalComponent,
   IGoogleSearchConsoleModalData
 } from '../modals/google-search-console-modal/google-search-console-modal.component';
+import {
+  FacebookPixelModalComponent,
+  IFacebookPixelModalData
+} from '../modals/facebook-pixel-modal/facebook-pixel-modal.component';
+import {
+  FacebookAdsModalComponent,
+  IFacebookAdsModalData
+} from '../modals/facebook-ads-modal/facebook-ads-modal.component';
 import { RequestDetailsComponent } from '../request-details/request-details.component';
 
 interface ServicePanel {
@@ -73,6 +83,7 @@ interface ServicePanel {
 })
 export class ConfirmAccessComponent {
   private readonly googleStoreService = inject(GoogleStoreService);
+  private readonly facebookStoreService = inject(FacebookStoreService);
   private readonly snackbarService = inject(SnackbarService);
   private readonly dialogService = inject(DialogService);
 
@@ -86,6 +97,7 @@ export class ConfirmAccessComponent {
   readonly servicesEffect = effect(() => {
     // Read the signals to track changes
     this.googleStoreService.connectionData();
+    this.facebookStoreService.connectionData();
     this.enabledGoogleServicesNames();
     this.enabledFacebookServicesNames();
 
@@ -103,53 +115,10 @@ export class ConfirmAccessComponent {
   servicePanels: ServicePanel[] = [];
   readonly entityUsersCache = signal<Map<string, { users: string[]; timestamp: number }>>(new Map());
 
-  mockFacebookAdsAccounts: FacebookAdAccount[] = [
-    {
-      id: 'act_123456789',
-      name: 'Test Ad Account',
-      account_id: '123456789',
-      currency: 'USD',
-      timezone_name: 'America/New_York',
-      account_status: 1,
-      created_time: '2024-01-01'
-    }
-  ];
-
-  mockFacebookBusinessAccounts: FacebookBusinessAccount[] = [
-    {
-      id: '987654321',
-      name: 'Test Business',
-      verification_status: 'verified',
-      created_time: '2024-01-01',
-      updated_time: '2024-01-01',
-      business_type: 'Technology'
-    }
-  ];
-
-  mockFacebookPages: FacebookPage[] = [
-    {
-      id: 'page_123',
-      name: 'Test Page',
-      category: 'Business',
-      category_list: [{ id: '1', name: 'Business' }],
-      fan_count: 100
-    }
-  ];
-
-  mockFacebookCatalogs: FacebookCatalog[] = [
-    {
-      id: 'catalog_123',
-      name: 'Test Catalog',
-      business_id: '987654321',
-      product_count: 50,
-      created_time: '2024-01-01',
-      updated_time: '2024-01-01'
-    }
-  ];
-
   private initializeServicePanels() {
     const panels: ServicePanel[] = [];
     const connectionData = this.googleStoreService.connectionData();
+    const facebookConnectionData = this.facebookStoreService.connectionData();
 
     const googleServices = this.enabledGoogleServicesNames();
     if (googleServices.includes('ads')) {
@@ -255,27 +224,12 @@ export class ConfirmAccessComponent {
         name: 'Meta Ads Account',
         expanded: panels.length === 0,
         provider: 'facebook',
-        accounts: this.mockFacebookAdsAccounts,
+        accounts: facebookConnectionData?.accounts?.facebookAdAccounts || [],
         selectedAccount: '',
         noAccountsMessage: 'No Meta Ads Account found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
         serviceEmail: this.connectionLink()?.facebook?.ads?.businessPortfolioId
-      });
-    }
-
-    if (facebookServices.includes('business')) {
-      panels.push({
-        key: 'facebookBusiness',
-        name: 'Meta Business Account',
-        expanded: false,
-        provider: 'facebook',
-        accounts: this.mockFacebookBusinessAccounts,
-        selectedAccount: '',
-        noAccountsMessage: 'No Meta Business Account found.',
-        existingUsers: new Map(),
-        loadingUsers: new Set(),
-        serviceEmail: this.connectionLink()?.facebook?.business?.businessPortfolioId
       });
     }
 
@@ -285,7 +239,7 @@ export class ConfirmAccessComponent {
         name: 'Meta Pages',
         expanded: false,
         provider: 'facebook',
-        accounts: this.mockFacebookPages,
+        accounts: facebookConnectionData?.accounts?.facebookPages || [],
         selectedAccount: '',
         noAccountsMessage: 'No Meta Pages found.',
         existingUsers: new Map(),
@@ -300,7 +254,7 @@ export class ConfirmAccessComponent {
         name: 'Meta Catalogs',
         expanded: false,
         provider: 'facebook',
-        accounts: this.mockFacebookCatalogs,
+        accounts: facebookConnectionData?.accounts?.facebookCatalogs || [],
         selectedAccount: '',
         noAccountsMessage: 'No Meta Catalogs found.',
         existingUsers: new Map(),
@@ -309,10 +263,25 @@ export class ConfirmAccessComponent {
       });
     }
 
+    if (facebookServices.includes('pixels')) {
+      panels.push({
+        key: 'facebookPixels',
+        name: 'Meta Pixels',
+        expanded: false,
+        provider: 'facebook',
+        accounts: facebookConnectionData?.accounts?.facebookPixels || [],
+        selectedAccount: '',
+        noAccountsMessage: 'No Meta Pixels found.',
+        existingUsers: new Map(),
+        loadingUsers: new Set(),
+        serviceEmail: this.connectionLink()?.facebook?.pixels?.businessPortfolioId
+      });
+    }
+
     this.servicePanels = panels;
 
     panels.forEach(panel => {
-      if (panel.accounts.length > 0 && panel.provider === 'google') {
+      if (panel.accounts.length > 0) {
         panel.accounts.forEach(async account => {
           const accountValue = this.getAccountValue(account, panel);
           if (accountValue) {
@@ -324,100 +293,139 @@ export class ConfirmAccessComponent {
   }
 
   getAccountValue(account: any, panel: ServicePanel): string {
-    if (panel.key === 'googleAds') {
-      return (account as IGoogleAdsAccount).customerId || (account as IGoogleAdsAccount).id;
+    if (panel.provider === 'google') {
+      return this.getGoogleAccountValue(account, panel);
+    } else if (panel.provider === 'facebook') {
+      return this.getFacebookAccountValue(account, panel);
     }
-    if (panel.key === 'googleAnalytics') {
-      return (account as analytics_v3.Schema$Account).id || '';
-    }
-    if (panel.key === 'googleSearchConsole') {
-      return (account as searchconsole_v1.Schema$WmxSite).siteUrl || '';
-    }
-    if (panel.key === 'googleTagManager') {
-      return (account as tagmanager_v2.Schema$Account).accountId || '';
-    }
-    if (panel.key === 'googleMerchantCenter') {
-      return String((account as content_v2_1.Schema$AccountIdentifier).merchantId || '');
-    }
-    if (panel.key === 'googleMyBusiness') {
-      return (account as mybusinessbusinessinformation_v1.Schema$Location).name || '';
-    }
-
-    if (panel.provider === 'facebook' && panel.key === 'facebookAds') {
-      return (account as FacebookAdAccount).account_id;
-    }
-
     return account.id || '';
+  }
+
+  private getGoogleAccountValue(account: any, panel: ServicePanel): string {
+    switch (panel.key) {
+      case 'googleAds':
+        return (account as IGoogleAdsAccount).customerId || (account as IGoogleAdsAccount).id;
+      case 'googleAnalytics':
+        return (account as analytics_v3.Schema$Account).id || '';
+      case 'googleSearchConsole':
+        return (account as searchconsole_v1.Schema$WmxSite).siteUrl || '';
+      case 'googleTagManager':
+        return (account as tagmanager_v2.Schema$Account).accountId || '';
+      case 'googleMerchantCenter':
+        return String((account as content_v2_1.Schema$AccountIdentifier).merchantId || '');
+      case 'googleMyBusiness':
+        return (account as mybusinessbusinessinformation_v1.Schema$Location).name || '';
+      default:
+        return account.id || '';
+    }
+  }
+
+  private getFacebookAccountValue(account: any, panel: ServicePanel): string {
+    switch (panel.key) {
+      case 'facebookAds':
+        return (account as FacebookAdAccount).account_id;
+      case 'facebookPages':
+        return (account as FacebookPage).id;
+      case 'facebookCatalogs':
+        return (account as FacebookCatalog).id;
+      case 'facebookPixels':
+        return (account as FacebookPixel).id;
+      default:
+        return account.id || account.account_id || '';
+    }
   }
 
   getAccountDisplayName(account: any, panel: ServicePanel): string {
-    if (panel.key === 'googleAds') {
-      return (account as IGoogleAdsAccount).name;
+    if (panel.provider === 'google') {
+      return this.getGoogleAccountDisplayName(account, panel);
+    } else if (panel.provider === 'facebook') {
+      return this.getFacebookAccountDisplayName(account, panel);
     }
-    if (panel.key === 'googleAnalytics') {
-      return (account as analytics_v3.Schema$Account).name || 'Analytics Account';
-    }
-    if (panel.key === 'googleSearchConsole') {
-      return (account as searchconsole_v1.Schema$WmxSite).siteUrl || '';
-    }
-    if (panel.key === 'googleTagManager') {
-      return (account as tagmanager_v2.Schema$Account).name || 'Tag Manager Account';
-    }
-    if (panel.key === 'googleMerchantCenter') {
-      return `Merchant Account ${(account as content_v2_1.Schema$AccountIdentifier).merchantId}`;
-    }
-    if (panel.key === 'googleMyBusiness') {
-      return (account as mybusinessbusinessinformation_v1.Schema$Location).title || 'Business Location';
-    }
-
-    if (panel.provider === 'facebook') {
-      return account.name || 'Account';
-    }
-
     return account.name || 'Account';
   }
 
+  private getGoogleAccountDisplayName(account: any, panel: ServicePanel): string {
+    switch (panel.key) {
+      case 'googleAds':
+        return (account as IGoogleAdsAccount).name;
+      case 'googleAnalytics':
+        return (account as analytics_v3.Schema$Account).name || 'Analytics Account';
+      case 'googleSearchConsole':
+        return (account as searchconsole_v1.Schema$WmxSite).siteUrl || '';
+      case 'googleTagManager':
+        return (account as tagmanager_v2.Schema$Account).name || 'Tag Manager Account';
+      case 'googleMerchantCenter':
+        return `Merchant Account ${(account as content_v2_1.Schema$AccountIdentifier).merchantId}`;
+      case 'googleMyBusiness':
+        return (account as mybusinessbusinessinformation_v1.Schema$Location).title || 'Business Location';
+      default:
+        return account.name || 'Account';
+    }
+  }
+
+  private getFacebookAccountDisplayName(account: any, panel: ServicePanel): string {
+    switch (panel.key) {
+      case 'facebookAds':
+        return (account as FacebookAdAccount).name || 'Ad Account';
+      case 'facebookPages':
+        return (account as FacebookPage).name || 'Page';
+      case 'facebookCatalogs':
+        return (account as FacebookCatalog).name || 'Catalog';
+      case 'facebookPixels':
+        return (account as FacebookPixel).name || 'Pixel';
+      default:
+        return account.name || 'Account';
+    }
+  }
+
   getAccountDetails(account: any, panel: ServicePanel): string {
-    if (panel.key === 'googleAds') {
-      const adsAccount = account as IGoogleAdsAccount;
-      return `${adsAccount.customerId || adsAccount.id} • ${adsAccount.currencyCode}`;
+    if (panel.provider === 'google') {
+      return this.getGoogleAccountDetails(account, panel);
+    } else if (panel.provider === 'facebook') {
+      return this.getFacebookAccountDetails(account, panel);
     }
-    if (panel.key === 'googleAnalytics') {
-      return (account as analytics_v3.Schema$Account).id || '';
-    }
-    if (panel.key === 'googleSearchConsole') {
-      return (account as searchconsole_v1.Schema$WmxSite).permissionLevel || '';
-    }
-    if (panel.key === 'googleTagManager') {
-      return (account as tagmanager_v2.Schema$Account).accountId || '';
-    }
-    if (panel.key === 'googleMerchantCenter') {
-      const merchant = account as content_v2_1.Schema$AccountIdentifier;
-      return `ID: ${merchant.merchantId}${merchant.aggregatorId ? ` • Aggregator: ${merchant.aggregatorId}` : ''}`;
-    }
-    if (panel.key === 'googleMyBusiness') {
-      const location = account as mybusinessbusinessinformation_v1.Schema$Location;
-      return location.storeCode ? `${location.name} • ${location.storeCode}` : location.name || '';
-    }
-
-    if (panel.key === 'facebookAds') {
-      const adAccount = account as FacebookAdAccount;
-      return `${adAccount.account_id} • ${adAccount.currency}`;
-    }
-    if (panel.key === 'facebookBusiness') {
-      const businessAccount = account as FacebookBusinessAccount;
-      return `${businessAccount.id} • ${businessAccount.business_type || 'Business'}`;
-    }
-    if (panel.key === 'facebookPages') {
-      const page = account as FacebookPage;
-      return `${page.id} • ${page.category || 'Page'}`;
-    }
-    if (panel.key === 'facebookCatalogs') {
-      const catalog = account as FacebookCatalog;
-      return `${catalog.id} • ${catalog.product_count} products`;
-    }
-
     return account.id || '';
+  }
+
+  private getGoogleAccountDetails(account: any, panel: ServicePanel): string {
+    switch (panel.key) {
+      case 'googleAds':
+        const adsAccount = account as IGoogleAdsAccount;
+        return `${adsAccount.customerId || adsAccount.id} • ${adsAccount.currencyCode}`;
+      case 'googleAnalytics':
+        return (account as analytics_v3.Schema$Account).id || '';
+      case 'googleSearchConsole':
+        return (account as searchconsole_v1.Schema$WmxSite).permissionLevel || '';
+      case 'googleTagManager':
+        return (account as tagmanager_v2.Schema$Account).accountId || '';
+      case 'googleMerchantCenter':
+        const merchant = account as content_v2_1.Schema$AccountIdentifier;
+        return `ID: ${merchant.merchantId}${merchant.aggregatorId ? ` • Aggregator: ${merchant.aggregatorId}` : ''}`;
+      case 'googleMyBusiness':
+        const location = account as mybusinessbusinessinformation_v1.Schema$Location;
+        return location.storeCode ? `${location.name} • ${location.storeCode}` : location.name || '';
+      default:
+        return account.id || '';
+    }
+  }
+
+  private getFacebookAccountDetails(account: any, panel: ServicePanel): string {
+    switch (panel.key) {
+      case 'facebookAds':
+        const adAccount = account as FacebookAdAccount;
+        return `${adAccount.account_id} • ${adAccount.currency}`;
+      case 'facebookPages':
+        const page = account as FacebookPage;
+        return `${page.id} • ${page.category || 'Page'}`;
+      case 'facebookCatalogs':
+        const catalog = account as FacebookCatalog;
+        return `${catalog.id} • ${catalog.product_count} products`;
+      case 'facebookPixels':
+        const pixel = account as FacebookPixel;
+        return `${pixel.id}${pixel.last_fired_time ? ` • Last fired: ${new Date(pixel.last_fired_time).toLocaleDateString()}` : ''}`;
+      default:
+        return account.id || account.account_id || '';
+    }
   }
 
   googleServicePanels(): ServicePanel[] {
@@ -451,125 +459,213 @@ export class ConfirmAccessComponent {
       return;
     }
 
+    if (panel.provider === 'google') {
+      await this.grantGoogleAccess(panel);
+    } else if (panel.provider === 'facebook') {
+      await this.grantFacebookAccess(panel);
+    } else {
+      this.snackbarService.error('Unknown provider type');
+    }
+  }
+
+  private async grantGoogleAccess(panel: ServicePanel): Promise<void> {
     const accessType = this.accessType();
     const agencyEmail = panel.serviceEmail || this.agencyEmail() || '';
 
-    if (panel.provider === 'google') {
-      const service = this.mapPanelKeyToServiceType(panel.key);
-      if (!service) {
-        this.snackbarService.error('Unknown service type');
-        return;
-      }
-
-      if (panel.key === 'googleAds' && agencyEmail && !agencyEmail.toLowerCase().endsWith('@gmail.com')) {
-        const domain = agencyEmail.split('@')[1];
-
-        const dialogRef = this.dialogService.open<GoogleAdsDomainModalComponent, IGoogleAdsDomainModalData>(
-          GoogleAdsDomainModalComponent,
-          { domain: domain }
-        );
-
-        const result = await firstValueFrom(dialogRef.afterClosed());
-
-        if (!result) return;
-      }
-
-      if (panel.key === 'googleSearchConsole') {
-        const dialogRef = this.dialogService.open<GoogleSearchConsoleModalComponent, IGoogleSearchConsoleModalData>(
-          GoogleSearchConsoleModalComponent,
-          {
-            domain: panel.selectedAccount,
-            agencyEmail: agencyEmail,
-            accessType: accessType,
-            agencyId: this.connectionLink()?._id
-          }
-        );
-
-        const result = await firstValueFrom(dialogRef.afterClosed());
-
-        if (result) {
-          if (panel.existingUsers) {
-            const currentUsers = panel.existingUsers.get(panel.selectedAccount) || [];
-            if (!currentUsers.some(email => email.toLowerCase() === agencyEmail.toLowerCase())) {
-              panel.existingUsers.set(panel.selectedAccount, [...currentUsers, agencyEmail]);
-            }
-          }
-
-          const cacheKey = `${panel.key}_${panel.selectedAccount}`;
-          const updatedCache = new Map(this.entityUsersCache());
-          updatedCache.set(cacheKey, {
-            users: [agencyEmail],
-            timestamp: Date.now()
-          });
-          this.entityUsersCache.set(updatedCache);
-
-          panel.selectedAccount = '';
-        }
-        return;
-      }
-
-      const dto = {
-        service: service,
-        entityId: panel.selectedAccount,
-        agencyEmail: agencyEmail
-      };
-
-      try {
-        let response;
-        if (accessType === 'manage') {
-          response = await this.googleStoreService.grantManagementAccess(dto);
-        } else {
-          response = await this.googleStoreService.grantViewAccess(dto);
-        }
-
-        if (response) {
-          const accessTypeText = accessType === 'manage' ? 'Management' : 'View';
-          this.snackbarService.success(
-            `${accessTypeText} access granted successfully for ${panel.name}`
-          );
-
-          if (panel.existingUsers) {
-            const currentUsers = panel.existingUsers.get(panel.selectedAccount) || [];
-            if (!currentUsers.some(email => email.toLowerCase() === agencyEmail.toLowerCase())) {
-              panel.existingUsers.set(panel.selectedAccount, [...currentUsers, agencyEmail]);
-            }
-          }
-
-          const cacheKey = `${panel.key}_${panel.selectedAccount}`;
-          const updatedCache = new Map(this.entityUsersCache());
-          const cachedEntry = updatedCache.get(cacheKey);
-          if (cachedEntry) {
-            if (!cachedEntry.users.some(email => email.toLowerCase() === agencyEmail.toLowerCase())) {
-              cachedEntry.users.push(agencyEmail);
-            }
-            updatedCache.set(cacheKey, {
-              users: cachedEntry.users,
-              timestamp: Date.now()
-            });
-          } else {
-            updatedCache.set(cacheKey, {
-              users: [agencyEmail],
-              timestamp: Date.now()
-            });
-          }
-          this.entityUsersCache.set(updatedCache);
-
-          panel.selectedAccount = '';
-        } else {
-          const errorMessage = this.googleStoreService.error();
-          if (errorMessage) {
-            this.snackbarService.error(errorMessage);
-          }
-        }
-      } catch (error: any) {
-        console.error('Failed to grant access:', error);
-        const errorMessage = error?.error?.message || error?.message ||
-          'An error occurred while granting access. Please try again later.';
-        this.snackbarService.error(errorMessage);
-      }
-    } else {
-      this.snackbarService.info('Facebook/Meta access grant will be available soon');
+    const service = this.mapPanelKeyToGoogleServiceType(panel.key);
+    if (!service) {
+      this.snackbarService.error('Unknown service type');
+      return;
     }
+
+    // Special handling for Google Ads non-Gmail domains
+    if (panel.key === 'googleAds' && agencyEmail && !agencyEmail.toLowerCase().endsWith('@gmail.com')) {
+      const domain = agencyEmail.split('@')[1];
+      const dialogRef = this.dialogService.open<GoogleAdsDomainModalComponent, IGoogleAdsDomainModalData>(
+        GoogleAdsDomainModalComponent,
+        { domain: domain }
+      );
+      const result = await firstValueFrom(dialogRef.afterClosed());
+      if (!result) return;
+    }
+
+    // Special handling for Google Search Console
+    if (panel.key === 'googleSearchConsole') {
+      const dialogRef = this.dialogService.open<GoogleSearchConsoleModalComponent, IGoogleSearchConsoleModalData>(
+        GoogleSearchConsoleModalComponent,
+        {
+          domain: panel.selectedAccount,
+          agencyEmail: agencyEmail,
+          accessType: accessType,
+          agencyId: this.connectionLink()?._id
+        }
+      );
+      const result: boolean = await firstValueFrom(dialogRef.afterClosed());
+      if (result) {
+        this.updatePanelAfterGrant(panel, agencyEmail);
+      }
+      return;
+    }
+
+    // Standard Google service grant
+    const dto = {
+      service: service,
+      entityId: panel.selectedAccount,
+      agencyEmail: agencyEmail
+    };
+
+    try {
+      const response = accessType === 'manage'
+        ? await this.googleStoreService.grantManagementAccess(dto)
+        : await this.googleStoreService.grantViewAccess(dto);
+
+      if (response) {
+        const accessTypeText = accessType === 'manage' ? 'Management' : 'View';
+        this.snackbarService.success(
+          `${accessTypeText} access granted successfully for ${panel.name}`
+        );
+        this.updatePanelAfterGrant(panel, agencyEmail);
+      } else {
+        const errorMessage = this.googleStoreService.error();
+        if (errorMessage) {
+          this.snackbarService.error(errorMessage);
+        }
+      }
+    } catch (error: any) {
+      console.error('Failed to grant Google access:', error);
+      const errorMessage = error?.error?.message || error?.message ||
+        'An error occurred while granting access. Please try again later.';
+      this.snackbarService.error(errorMessage);
+    }
+  }
+
+  private async grantFacebookAccess(panel: ServicePanel): Promise<void> {
+    const accessType = this.accessType();
+    const agencyEmail = panel.serviceEmail || this.agencyEmail() || '';
+
+    const service = this.mapPanelKeyToFacebookServiceType(panel.key);
+    if (!service) {
+      this.snackbarService.error('Unknown service type');
+      return;
+    }
+
+    // Special handling for Facebook Ads
+    if (panel.key === 'facebookAds') {
+      const adAccount = panel.accounts.find((a: FacebookAdAccount) => a.account_id === panel.selectedAccount);
+      if (!adAccount) {
+        this.snackbarService.error('Selected ad account not found');
+        return;
+      }
+
+      const businessPortfolioId = this.connectionLink()?.facebook?.ads?.businessPortfolioId || '';
+
+      const dialogRef = this.dialogService.open<FacebookAdsModalComponent, IFacebookAdsModalData>(
+        FacebookAdsModalComponent,
+        {
+          adAccountName: adAccount.name,
+          adAccountId: adAccount.account_id,
+          adAccountBusinessId: adAccount.business_id,
+          businessPortfolioId: businessPortfolioId,
+          accessType: accessType,
+          agencyId: this.connectionLink()?._id
+        }
+      );
+
+      const result = await firstValueFrom(dialogRef.afterClosed());
+      if (result) {
+        this.updatePanelAfterGrant(panel, businessPortfolioId);
+      }
+      return;
+    }
+
+    // Special handling for Facebook Pixels
+    if (panel.key === 'facebookPixels') {
+      const pixel = panel.accounts.find((p: FacebookPixel) => p.id === panel.selectedAccount);
+      if (!pixel) {
+        this.snackbarService.error('Selected pixel not found');
+        return;
+      }
+
+      const businessPortfolioId = this.connectionLink()?.facebook?.pixels?.businessPortfolioId || '';
+
+      const dialogRef = this.dialogService.open<FacebookPixelModalComponent, IFacebookPixelModalData>(
+        FacebookPixelModalComponent,
+        {
+          pixelName: pixel.name,
+          pixelId: pixel.id,
+          businessPortfolioId: businessPortfolioId,
+          accessType: accessType,
+          agencyId: this.connectionLink()?._id
+        }
+      );
+
+      const result = await firstValueFrom(dialogRef.afterClosed());
+      if (result) {
+        this.updatePanelAfterGrant(panel, businessPortfolioId);
+      }
+      return;
+    }
+
+    const dto = {
+      service: service,
+      entityId: panel.selectedAccount,
+      agencyEmail: agencyEmail
+    };
+
+    try {
+      const response = accessType === 'manage'
+        ? await this.facebookStoreService.grantManagementAccess(dto)
+        : await this.facebookStoreService.grantViewAccess(dto);
+
+      if (response) {
+        const accessTypeText = accessType === 'manage' ? 'Management' : 'View';
+        this.snackbarService.success(
+          `${accessTypeText} access granted successfully for ${panel.name}`
+        );
+        this.updatePanelAfterGrant(panel, agencyEmail);
+      } else {
+        const errorMessage = this.facebookStoreService.error();
+        if (errorMessage) {
+          this.snackbarService.error(errorMessage);
+        }
+      }
+    } catch (error: any) {
+      console.error('Failed to grant Facebook access:', error);
+      const errorMessage = error?.error?.message || error?.message ||
+        'An error occurred while granting access. Please try again later.';
+      this.snackbarService.error(errorMessage);
+    }
+  }
+
+  private updatePanelAfterGrant(panel: ServicePanel, agencyEmail: string): void {
+    if (panel.existingUsers) {
+      const currentUsers = panel.existingUsers.get(panel.selectedAccount) || [];
+      if (!currentUsers.some(email => email.toLowerCase() === agencyEmail.toLowerCase())) {
+        panel.existingUsers.set(panel.selectedAccount, [...currentUsers, agencyEmail]);
+      }
+    }
+
+    const cacheKey = `${panel.key}_${panel.selectedAccount}`;
+    const updatedCache = new Map(this.entityUsersCache());
+    const cachedEntry = updatedCache.get(cacheKey);
+
+    if (cachedEntry) {
+      if (!cachedEntry.users.some(email => email.toLowerCase() === agencyEmail.toLowerCase())) {
+        cachedEntry.users.push(agencyEmail);
+      }
+      updatedCache.set(cacheKey, {
+        users: cachedEntry.users,
+        timestamp: Date.now()
+      });
+    } else {
+      updatedCache.set(cacheKey, {
+        users: [agencyEmail],
+        timestamp: Date.now()
+      });
+    }
+
+    this.entityUsersCache.set(updatedCache);
+    panel.selectedAccount = '';
   }
 
   async onAccountSelectionChange(panel: ServicePanel, accountValue: string): Promise<void> {
@@ -578,7 +674,7 @@ export class ConfirmAccessComponent {
   }
 
   async checkAccountUsers(panel: ServicePanel, accountValue: string): Promise<void> {
-    if (!accountValue || panel.provider !== 'google') {
+    if (!accountValue) {
       return;
     }
 
@@ -586,13 +682,21 @@ export class ConfirmAccessComponent {
     const cached = this.entityUsersCache();
     const cachedEntry = cached.get(cacheKey);
 
-    const CACHE_DURATION = 5 * 60 * 1000;
+    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
     if (cachedEntry && (Date.now() - cachedEntry.timestamp) < CACHE_DURATION) {
       panel.existingUsers?.set(accountValue, cachedEntry.users);
       return;
     }
 
-    const service = this.mapPanelKeyToServiceType(panel.key);
+    if (panel.provider === 'google') {
+      await this.checkGoogleAccountUsers(panel, accountValue);
+    } else if (panel.provider === 'facebook') {
+      await this.checkFacebookAccountUsers(panel, accountValue);
+    }
+  }
+
+  private async checkGoogleAccountUsers(panel: ServicePanel, accountValue: string): Promise<void> {
+    const service = this.mapPanelKeyToGoogleServiceType(panel.key);
     if (!service) {
       return;
     }
@@ -609,20 +713,51 @@ export class ConfirmAccessComponent {
       const entityUsers = this.googleStoreService.entityUsers();
       if (entityUsers && entityUsers.users) {
         const userEmails = entityUsers.users.map(user => user.email);
-        panel.existingUsers?.set(accountValue, userEmails);
-
-        const updatedCache = new Map(this.entityUsersCache());
-        updatedCache.set(cacheKey, {
-          users: userEmails,
-          timestamp: Date.now()
-        });
-        this.entityUsersCache.set(updatedCache);
+        this.updateAccountUsersCache(panel, accountValue, userEmails);
       }
     } catch (error) {
-      console.error('Failed to load entity users:', error);
+      console.error('Failed to load Google entity users:', error);
     } finally {
       panel.loadingUsers?.delete(accountValue);
     }
+  }
+
+  private async checkFacebookAccountUsers(panel: ServicePanel, accountValue: string): Promise<void> {
+    const service = this.mapPanelKeyToFacebookServiceType(panel.key);
+    if (!service) {
+      return;
+    }
+
+    panel.loadingUsers?.add(accountValue);
+
+    try {
+      await this.facebookStoreService.loadEntityUsers({
+        service: service,
+        entityId: accountValue
+      });
+
+      const entityUsers = this.facebookStoreService.entityUsers();
+      if (entityUsers && entityUsers.users) {
+        const userEmails = entityUsers.users.map(user => user.email);
+        this.updateAccountUsersCache(panel, accountValue, userEmails);
+      }
+    } catch (error) {
+      console.error('Failed to load Facebook entity users:', error);
+    } finally {
+      panel.loadingUsers?.delete(accountValue);
+    }
+  }
+
+  private updateAccountUsersCache(panel: ServicePanel, accountValue: string, userEmails: string[]): void {
+    panel.existingUsers?.set(accountValue, userEmails);
+
+    const cacheKey = `${panel.key}_${accountValue}`;
+    const updatedCache = new Map(this.entityUsersCache());
+    updatedCache.set(cacheKey, {
+      users: userEmails,
+      timestamp: Date.now()
+    });
+    this.entityUsersCache.set(updatedCache);
   }
 
   isAccountDisabled(panel: ServicePanel, accountValue: string): boolean {
@@ -640,7 +775,7 @@ export class ConfirmAccessComponent {
     return panel.loadingUsers?.has(accountValue) || false;
   }
 
-  private mapPanelKeyToServiceType(key: string): GoogleServiceType | null {
+  private mapPanelKeyToGoogleServiceType(key: string): GoogleServiceType | null {
     const mapping: Record<string, GoogleServiceType> = {
       'googleAds': 'ads',
       'googleAnalytics': 'analytics',
@@ -648,6 +783,16 @@ export class ConfirmAccessComponent {
       'googleTagManager': 'tagManager',
       'googleMerchantCenter': 'merchantCenter',
       'googleMyBusiness': 'myBusiness'
+    };
+    return mapping[key] || null;
+  }
+
+  private mapPanelKeyToFacebookServiceType(key: string): FacebookServiceType | null {
+    const mapping: Record<string, FacebookServiceType> = {
+      'facebookAds': FacebookServiceType.AD_ACCOUNT,
+      'facebookPages': FacebookServiceType.PAGE,
+      'facebookCatalogs': FacebookServiceType.CATALOG,
+      'facebookPixels': FacebookServiceType.PIXEL
     };
     return mapping[key] || null;
   }

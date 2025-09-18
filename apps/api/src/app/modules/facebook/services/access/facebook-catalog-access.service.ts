@@ -3,14 +3,12 @@ import {
   FACEBOOK_CATALOG_ROLES,
   FACEBOOK_ERROR_CODES,
   FacebookCatalogPermission,
+  IFacebookBaseAccessService,
   TFacebookAccessRequest,
   TFacebookAccessResponse,
-  IFacebookBaseAccessService,
-  TFacebookUserInfo,
-  ApiEnv
+  TFacebookUserInfo
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { isEmpty, isNil } from 'lodash';
 import { facebookHttpClient } from '../../../../core/utils/http';
 
@@ -19,7 +17,8 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
   private readonly logger = new Logger(FacebookCatalogAccessService.name);
   private accessToken: string;
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor() {
+  }
 
   setCredentials(tokens: { access_token: string }): void {
     if (isEmpty(tokens) || isNil(tokens) || !tokens.access_token) {

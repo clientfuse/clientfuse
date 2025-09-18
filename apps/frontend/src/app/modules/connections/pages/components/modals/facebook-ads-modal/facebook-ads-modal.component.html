@@ -1,0 +1,105 @@
+<div class="connectly-modal">
+  <div class="connectly-modal-header">
+    <h2 class="subtitle-medium">Share Meta Ad Account Access</h2>
+    <button mat-icon-button (click)="onClose()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="connectly-modal-description">
+    <p>You're almost done! Share <strong>Meta</strong> access to <strong>{{ data.adAccountName }}</strong></p>
+    <p>Follow these manual steps to grant access to your Meta Ad Account:</p>
+  </div>
+
+  <div class="connectly-modal-content">
+    <ol class="manual-step-list">
+      <li class="manual-step-list-item">
+        <app-island variant="neutral" density="compact">
+          <div class="step-content-wrapper">
+            <div class="step-content">
+              <p class="step-title">Open Your Business Portfolio:</p>
+              <button mat-flat-button color="primary" (click)="openBusinessPortfolio()">
+                Open Business Portfolio
+              </button>
+            </div>
+          </div>
+        </app-island>
+      </li>
+
+      <li class="manual-step-list-item">
+        <app-island variant="neutral" density="compact">
+          <div class="step-content-wrapper">
+            <div class="step-content">
+              <p class="step-title">In your Business Portfolio, click on "Assign Assets" or "Share Assets":</p>
+              <ul class="sub-steps">
+                <li>This button appears under your partner's name</li>
+                <li>Click it to proceed to asset sharing</li>
+              </ul>
+            </div>
+            <div class="step-image">
+              <img src="/assets/images/facebook-ads/share-assets-button.png"
+                   alt="Share Assets Button">
+            </div>
+          </div>
+        </app-island>
+      </li>
+
+      <li class="manual-step-list-item">
+        <app-island variant="neutral" density="compact">
+          <div class="step-content-wrapper">
+            <div class="step-content">
+              <p class="step-title">Configure Ad Account permissions:</p>
+              <ul class="sub-steps">
+                <li>Select <strong>Ad Accounts</strong> on the left</li>
+                <li>Choose <strong>{{ data.adAccountName }}</strong></li>
+                <li>Switch on <strong>View Performance</strong> permission</li>
+              </ul>
+            </div>
+            <div class="step-image">
+              <img src="/assets/images/facebook-ads/ad-account-permission.png"
+                   alt="Ad Account Permissions">
+            </div>
+          </div>
+        </app-island>
+      </li>
+
+      <li class="manual-step-list-item">
+        <app-island variant="neutral" density="compact">
+          <div class="step-content-wrapper">
+            <div class="step-content">
+              <p class="step-title">Complete the process:</p>
+              <ul class="sub-steps">
+                <li>Review the selected permissions</li>
+                <li>Click <strong>Assign assets</strong> to finish</li>
+              </ul>
+            </div>
+          </div>
+        </app-island>
+      </li>
+    </ol>
+
+    @if (accessStatus() !== 'pending') {
+      <app-status-card
+        [variant]="accessStatus() === 'granted' ? 'success' : 'info'"
+        [header]="accessStatus() === 'granted' ? 'Access Granted' : 'Access Not Yet Granted'">
+        @if (accessMessage()) {
+          <p>{{ accessMessage() }}</p>
+        }
+      </app-status-card>
+    }
+
+    <div class="connectly-modal-actions">
+      <button mat-stroked-button (click)="onClose()">
+        Cancel
+      </button>
+      <button mat-flat-button
+              color="primary"
+              (click)="checkAccess()"
+              [disabled]="isChecking()">
+        <span>{{ isChecking() ? 'Checking...' : 'Check Access' }}</span>
+      </button>
+    </div>
+
+    <app-common-issues [businessPortfolioId]="data.businessPortfolioId"></app-common-issues>
+  </div>
+</div>

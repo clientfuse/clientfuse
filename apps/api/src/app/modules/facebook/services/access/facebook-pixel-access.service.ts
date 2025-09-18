@@ -9,7 +9,6 @@ import {
   TFacebookUserInfo
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { isEmpty, isNil } from 'lodash';
 import { facebookHttpClient } from '../../../../core/utils/http';
 
@@ -18,7 +17,7 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
   private readonly logger = new Logger(FacebookPixelAccessService.name);
   private accessToken: string;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor() {
   }
 
   setCredentials(tokens: { access_token: string }): void {
@@ -58,7 +57,7 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
       // IMPORTANT: The agencyEmail field actually contains a Facebook business account ID, not an email address
       // This is because Facebook's API requires account IDs for access management, not email addresses
       const businessAccountId = request.agencyEmail; // This is actually a business account ID
-      
+
       this.logger.log(`Attempting to grant Facebook Pixel access to business account ${businessAccountId} for pixel ${request.entityId}`);
 
       if (!this.accessToken) {
@@ -172,8 +171,8 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
 
       // Check if the business account has access
       // Note: The response contains user IDs with tasks/permissions, not email addresses
-      const existingUser = response.data.find((user: any) => 
-        user.id === businessAccountId || 
+      const existingUser = response.data.find((user: any) =>
+        user.id === businessAccountId ||
         user.business?.id === businessAccountId
       );
 

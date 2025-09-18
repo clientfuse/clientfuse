@@ -24,6 +24,9 @@ body .connectly-modal {
 
   .connectly-modal-content {
     padding: 0 var(--spacing-6) var(--spacing-6) var(--spacing-6);
+    max-height: 75vh;
+    overflow-y: auto;
+    position: relative;
   }
 
   .connectly-modal-actions {
@@ -31,7 +34,10 @@ body .connectly-modal {
     justify-content: flex-end;
     gap: var(--spacing-3);
     margin-top: var(--spacing-6);
-    padding-top: var(--spacing-4);
+    padding: var(--spacing-4) 0;
     border-top: 1px solid $dark-20;
+    position: sticky;
+    bottom: -25px;
+    background: var(--mdc-dialog-container-color, var(--mat-app-surface, white));
   }
 }

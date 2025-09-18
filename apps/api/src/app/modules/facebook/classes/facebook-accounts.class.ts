@@ -91,7 +91,9 @@ export class FacebookAccounts {
 
       const adminAccounts = data.data.filter((account: any) => {
         const tasks = account.user_tasks || [];
-        return tasks.includes(FacebookTask.MANAGE) || true;
+        // Filter out personal accounts (those without business_id)
+        const hasBusinessId = account.business?.id;
+        return hasBusinessId && (tasks.includes(FacebookTask.MANAGE) || true);
       });
 
       return adminAccounts.map((account: any) => ({
