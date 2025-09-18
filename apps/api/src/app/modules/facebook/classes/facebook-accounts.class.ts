@@ -3,7 +3,6 @@ import {
   FacebookBusinessAccount,
   FacebookBusinessRole,
   FacebookCatalog,
-  FacebookCatalogRole,
   FacebookCredentials,
   FacebookPage,
   FacebookPixel,
@@ -312,48 +311,15 @@ export class FacebookAccounts {
             }
           );
 
-          if (catalogsData?.data) {
-            for (const catalog of catalogsData.data) {
-              let role: FacebookCatalogRole | undefined;
-
-              try {
-                const { data: permData } = await facebookHttpClient.get(
-                  `/${catalog.id}/assigned_users`,
-                  {
-                    params: {
-                      access_token: this.accessToken,
-                      fields: 'id,name,role',
-                      business: business.id
-                    }
-                  }
-                );
-
-                if (permData?.data && this.userId) {
-                  const userPerm = permData.data.find((user: any) => user.id === this.userId);
-
-                  if (userPerm?.role === FacebookCatalogRole.ADMIN) {
-                    role = userPerm.role;
-                  } else {
-                    continue;
-                  }
-                }
-              } catch (permError: any) {
-                this.logger.warn(
-                  `Could not fetch permissions for catalog ${catalog.id}:`,
-                  permError?.response?.data || permError
-                );
-                role = FacebookCatalogRole.ADMIN;
-              }
-
-              catalogs.push({
-                id: catalog.id,
-                name: catalog.name,
-                business_id: business.id,
-                product_count: catalog.product_count || 0,
-                created_time: catalog.created_time,
-                updated_time: catalog.updated_time
-              });
-            }
+          for (const catalog of catalogsData.data) {
+            catalogs.push({
+              id: catalog.id,
+              name: catalog.name,
+              business_id: business.id,
+              product_count: catalog.product_count || 0,
+              created_time: catalog.created_time,
+              updated_time: catalog.updated_time
+            });
           }
         } catch (catalogError: any) {
           this.logger.error(
