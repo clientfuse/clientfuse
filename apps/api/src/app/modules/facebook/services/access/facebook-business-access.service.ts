@@ -2,8 +2,8 @@ import {
   FACEBOOK_BUSINESS_MANAGEMENT_SCOPE,
   FACEBOOK_ERROR_CODES,
   FacebookBusinessPermission,
+  IBaseAccessRequest,
   IFacebookBaseAccessService,
-  TFacebookAccessRequest,
   TFacebookAccessResponse,
   TFacebookUserInfo
 } from '@clientfuse/models';
@@ -33,8 +33,7 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
     return this.grantAgencyAccess({
       entityId: businessId,
       agencyEmail: agencyEmail,
-      permissions: [FacebookBusinessPermission.ADMIN],
-      roleType: FacebookBusinessPermission.ADMIN
+      permissions: [FacebookBusinessPermission.ADMIN]
     });
   }
 
@@ -44,12 +43,11 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
     return this.grantAgencyAccess({
       entityId: businessId,
       agencyEmail: agencyEmail,
-      permissions: [FacebookBusinessPermission.EMPLOYEE],
-      roleType: FacebookBusinessPermission.EMPLOYEE
+      permissions: [FacebookBusinessPermission.EMPLOYEE]
     });
   }
 
-  async grantAgencyAccess(request: TFacebookAccessRequest): Promise<TFacebookAccessResponse> {
+  async grantAgencyAccess(request: IBaseAccessRequest): Promise<TFacebookAccessResponse> {
     try {
       this.logger.log(`Attempting to grant Facebook Business access to ${request.agencyEmail} for business ${request.entityId}`);
 

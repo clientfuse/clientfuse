@@ -3,8 +3,8 @@ import {
   FACEBOOK_ERROR_CODES,
   FACEBOOK_PIXEL_ROLES,
   FacebookPixelPermission,
+  IBaseAccessRequest,
   IFacebookBaseAccessService,
-  TFacebookAccessRequest,
   TFacebookAccessResponse,
   TFacebookUserInfo
 } from '@clientfuse/models';
@@ -35,8 +35,7 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
     return this.grantAgencyAccess({
       entityId: pixelId,
       agencyEmail: agencyEmail, // This is actually a business account ID
-      permissions: [FacebookPixelPermission.ADMIN],
-      roleType: FacebookPixelPermission.ADMIN
+      permissions: [FacebookPixelPermission.ADMIN]
     });
   }
 
@@ -47,12 +46,11 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
     return this.grantAgencyAccess({
       entityId: pixelId,
       agencyEmail: agencyEmail, // This is actually a business account ID
-      permissions: [FacebookPixelPermission.ADVERTISER],
-      roleType: FacebookPixelPermission.ADVERTISER
+      permissions: [FacebookPixelPermission.ADVERTISER]
     });
   }
 
-  async grantAgencyAccess(request: TFacebookAccessRequest): Promise<TFacebookAccessResponse> {
+  async grantAgencyAccess(request: IBaseAccessRequest): Promise<TFacebookAccessResponse> {
     try {
       // IMPORTANT: The agencyEmail field actually contains a Facebook business account ID, not an email address
       // This is because Facebook's API requires account IDs for access management, not email addresses

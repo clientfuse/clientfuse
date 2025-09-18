@@ -3,8 +3,8 @@ import {
   FACEBOOK_ERROR_CODES,
   FACEBOOK_PAGES_SHOW_LIST_SCOPE,
   FacebookPagePermission,
+  IBaseAccessRequest,
   IFacebookBaseAccessService,
-  TFacebookAccessRequest,
   TFacebookAccessResponse,
   TFacebookUserInfo
 } from '@clientfuse/models';
@@ -36,8 +36,7 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
     return this.grantAgencyAccess({
       entityId: pageId,
       agencyEmail: businessId, // Passing business ID
-      permissions: [FacebookPagePermission.ADMIN],
-      roleType: FacebookPagePermission.ADMIN
+      permissions: [FacebookPagePermission.ADMIN]
     });
   }
 
@@ -48,12 +47,11 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
     return this.grantAgencyAccess({
       entityId: pageId,
       agencyEmail: businessId, // Passing business ID
-      permissions: [FacebookPagePermission.ANALYST],
-      roleType: FacebookPagePermission.ANALYST
+      permissions: [FacebookPagePermission.ANALYST]
     });
   }
 
-  async grantAgencyAccess(request: TFacebookAccessRequest): Promise<TFacebookAccessResponse> {
+  async grantAgencyAccess(request: IBaseAccessRequest): Promise<TFacebookAccessResponse> {
     try {
       const businessId = request.agencyEmail; // This actually contains the business ID
       this.logger.log(`Attempting to grant Facebook Page access to business ${businessId} for page ${request.entityId}`);

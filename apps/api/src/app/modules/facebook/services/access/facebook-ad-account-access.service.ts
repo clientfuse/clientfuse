@@ -3,8 +3,8 @@ import {
   FACEBOOK_ADS_MANAGEMENT_SCOPE,
   FACEBOOK_ERROR_CODES,
   FacebookAdAccountPermission,
+  IBaseAccessRequest,
   IFacebookBaseAccessService,
-  TFacebookAccessRequest,
   TFacebookAccessResponse,
   TFacebookUserInfo
 } from '@clientfuse/models';
@@ -36,8 +36,7 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
     return this.grantAgencyAccess({
       entityId: adAccountId,
       agencyEmail: businessId, // Passing business ID
-      permissions: [FacebookAdAccountPermission.ADMIN],
-      roleType: FacebookAdAccountPermission.ADMIN
+      permissions: [FacebookAdAccountPermission.ADMIN]
     });
   }
 
@@ -48,12 +47,11 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
     return this.grantAgencyAccess({
       entityId: adAccountId,
       agencyEmail: businessId, // Passing business ID
-      permissions: [FacebookAdAccountPermission.REPORTS_ONLY],
-      roleType: FacebookAdAccountPermission.REPORTS_ONLY
+      permissions: [FacebookAdAccountPermission.REPORTS_ONLY]
     });
   }
 
-  async grantAgencyAccess(request: TFacebookAccessRequest): Promise<TFacebookAccessResponse> {
+  async grantAgencyAccess(request: IBaseAccessRequest): Promise<TFacebookAccessResponse> {
     try {
       const businessId = request.agencyEmail; // This actually contains the business ID
       this.logger.log(`Attempting to grant Facebook Ad Account access to business ${businessId} for account ${request.entityId}`);

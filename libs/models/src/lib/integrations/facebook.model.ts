@@ -1,9 +1,5 @@
 import { IBaseAccessRequest, IBaseAccessResponse, IBaseUserInfo } from './integrations.model';
 
-export type TFacebookAccessRequest = IBaseAccessRequest & {
-  roleType?: string;
-}
-
 export type TFacebookAccessResponse = IBaseAccessResponse & {
   requiresManualApproval?: boolean; // Facebook specific
   businessManagerUrl?: string; // Direct link for manual actions
@@ -21,7 +17,7 @@ export interface IFacebookBaseAccessService {
 
   grantViewAccess(entityId: string, agencyEmail: string): Promise<TFacebookAccessResponse>;
 
-  grantAgencyAccess(request: TFacebookAccessRequest): Promise<TFacebookAccessResponse>;
+  grantAgencyAccess(request: IBaseAccessRequest): Promise<TFacebookAccessResponse>;
 
   checkExistingUserAccess(entityId: string, email: string): Promise<TFacebookUserInfo | null>;
 
@@ -218,6 +214,13 @@ export const FACEBOOK_AD_ACCOUNT_ROLES = {
 export const FACEBOOK_CATALOG_ROLES = {
   ADMIN: 'ADMIN',
   ADVERTISER: 'ADVERTISER'
+} as const;
+
+export const FACEBOOK_CATALOG_TASKS = {
+  MANAGE: 'MANAGE',
+  ADVERTISE: 'ADVERTISE',
+  MANAGE_AR: 'MANAGE_AR',
+  AA_ANALYZE: 'AA_ANALYZE'
 } as const;
 
 export const FACEBOOK_PIXEL_ROLES = {

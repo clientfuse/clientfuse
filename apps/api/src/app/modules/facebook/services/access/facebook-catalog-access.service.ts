@@ -3,8 +3,8 @@ import {
   FACEBOOK_CATALOG_ROLES,
   FACEBOOK_ERROR_CODES,
   FacebookCatalogPermission,
+  IBaseAccessRequest,
   IFacebookBaseAccessService,
-  TFacebookAccessRequest,
   TFacebookAccessResponse,
   TFacebookUserInfo
 } from '@clientfuse/models';
@@ -34,8 +34,7 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
     return this.grantAgencyAccess({
       entityId: catalogId,
       agencyEmail: agencyEmail,
-      permissions: [FacebookCatalogPermission.ADMIN],
-      roleType: FacebookCatalogPermission.ADMIN
+      permissions: [FacebookCatalogPermission.ADMIN]
     });
   }
 
@@ -45,12 +44,11 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
     return this.grantAgencyAccess({
       entityId: catalogId,
       agencyEmail: agencyEmail,
-      permissions: [FacebookCatalogPermission.ADVERTISER],
-      roleType: FacebookCatalogPermission.ADVERTISER
+      permissions: [FacebookCatalogPermission.ADVERTISER]
     });
   }
 
-  async grantAgencyAccess(request: TFacebookAccessRequest): Promise<TFacebookAccessResponse> {
+  async grantAgencyAccess(request: IBaseAccessRequest): Promise<TFacebookAccessResponse> {
     try {
       this.logger.log(`Attempting to grant Facebook Catalog access to ${request.agencyEmail} for catalog ${request.entityId}`);
 
