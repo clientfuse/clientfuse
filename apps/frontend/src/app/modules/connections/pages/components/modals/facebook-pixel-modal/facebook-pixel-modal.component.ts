@@ -69,7 +69,7 @@ export class FacebookPixelModalComponent {
       service: FacebookServiceType.PIXEL,
       accessType: this.data.accessType,
       entityId: this.data.pixelId,
-      agencyEmail: this.data.businessPortfolioId // Use businessPortfolioId as agency identifier
+      agencyIdentifier: this.data.businessPortfolioId
     });
 
     this.snackbarService.info('Please complete the steps in Meta Business Manager');

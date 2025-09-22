@@ -54,7 +54,7 @@ export class FacebookAccessController {
       service: dto.service,
       accessType: 'manage',
       entityId: dto.entityId,
-      agencyEmail: dto.agencyEmail,
+      agencyIdentifier: dto.agencyEmail,
       linkId: result.linkId,
       message: result.message
     };
@@ -77,7 +77,7 @@ export class FacebookAccessController {
       service: dto.service,
       accessType: 'view',
       entityId: dto.entityId,
-      agencyEmail: dto.agencyEmail,
+      agencyIdentifier: dto.agencyEmail,
       linkId: result.linkId,
       message: result.message
     };

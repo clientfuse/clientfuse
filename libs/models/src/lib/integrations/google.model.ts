@@ -6,22 +6,28 @@ import {
   searchconsole_v1,
   tagmanager_v2
 } from 'googleapis';
-import { IBaseAccessRequest, IBaseAccessResponse, IBaseGetEntityUsersParams, IBaseUserInfo } from './integrations.model';
+import {
+  IBaseAccessRequest,
+  IGrantAccessResponse,
+  IBaseGetEntityUsersParams,
+  IBaseUserInfo,
+  IRevokeAccessResponse
+} from './integrations.model';
 
 export interface IGoogleBaseAccessService {
   setCredentials(tokens: { access_token?: string; refresh_token?: string }): void;
 
-  grantManagementAccess(entityId: string, agencyEmail: string): Promise<IBaseAccessResponse>;
+  grantManagementAccess(entityId: string, agencyEmail: string): Promise<IGrantAccessResponse>;
 
-  grantViewAccess(entityId: string, agencyEmail: string): Promise<IBaseAccessResponse>;
+  grantViewAccess(entityId: string, agencyEmail: string): Promise<IGrantAccessResponse>;
 
-  grantAgencyAccess(request: IBaseAccessRequest): Promise<IBaseAccessResponse>;
+  grantAgencyAccess(request: IBaseAccessRequest): Promise<IGrantAccessResponse>;
 
   checkExistingUserAccess(entityId: string, email: string): Promise<IBaseUserInfo | null>;
 
   getEntityUsers(params: IBaseGetEntityUsersParams): Promise<IBaseUserInfo[]>;
 
-  revokeUserAccess(entityId: string, linkId: string): Promise<IBaseAccessResponse>;
+  revokeUserAccess(entityId: string, linkId: string): Promise<IRevokeAccessResponse>;
 
   validateRequiredScopes(grantedScopes: string[]): boolean;
 

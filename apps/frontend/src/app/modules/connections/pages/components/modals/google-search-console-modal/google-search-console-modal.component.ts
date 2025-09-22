@@ -99,7 +99,7 @@ export class GoogleSearchConsoleModalComponent {
               service: 'searchConsole' as GoogleServiceType,
               accessType: this.data.accessType,
               entityId: this.data.domain,
-              agencyEmail: this.data.agencyEmail
+              agencyIdentifier: this.data.agencyEmail
             });
 
             setTimeout(() => this.dialogRef.close(true), 1500);
@@ -116,7 +116,7 @@ export class GoogleSearchConsoleModalComponent {
               service: 'searchConsole' as GoogleServiceType,
               accessType: this.data.accessType,
               entityId: this.data.domain,
-              agencyEmail: this.data.agencyEmail
+              agencyIdentifier: this.data.agencyEmail
             });
           }
         } else {

@@ -3,10 +3,13 @@ import {
   FACEBOOK_ERROR_CODES,
   FACEBOOK_PAGES_SHOW_LIST_SCOPE,
   FacebookPagePermission,
+  FacebookServiceType,
   IBaseAccessRequest,
+  IBaseUserInfo,
   IFacebookBaseAccessService,
-  TFacebookAccessResponse,
-  TFacebookUserInfo
+  IRevokeAccessResponse,
+  TAccessType,
+  TFacebookAccessResponse
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { isEmpty, isNil } from 'lodash';
@@ -33,27 +36,43 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
     const businessId = agencyEmail; // This actually contains the business ID
     this.logger.log(`Granting Facebook Page management access to business ${businessId} for page ${pageId}`);
 
-    return this.grantAgencyAccess({
+    const result = await this.grantAgencyAccess({
       entityId: pageId,
-      agencyEmail: businessId, // Passing business ID
+      agencyIdentifier: businessId, // Passing business ID
       permissions: [FacebookPagePermission.ADMIN]
     });
+
+    return {
+      ...result,
+      service: FacebookServiceType.PAGE,
+      accessType: 'manage' as TAccessType,
+      entityId: pageId,
+      agencyIdentifier: businessId
+    };
   }
 
   async grantViewAccess(pageId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
     const businessId = agencyEmail; // This actually contains the business ID
     this.logger.log(`Granting Facebook Page view access to business ${businessId} for page ${pageId}`);
 
-    return this.grantAgencyAccess({
+    const result = await this.grantAgencyAccess({
       entityId: pageId,
-      agencyEmail: businessId, // Passing business ID
+      agencyIdentifier: businessId, // Passing business ID
       permissions: [FacebookPagePermission.ANALYST]
     });
+
+    return {
+      ...result,
+      service: FacebookServiceType.PAGE,
+      accessType: 'view' as TAccessType,
+      entityId: pageId,
+      agencyIdentifier: businessId
+    };
   }
 
   async grantAgencyAccess(request: IBaseAccessRequest): Promise<TFacebookAccessResponse> {
     try {
-      const businessId = request.agencyEmail; // This actually contains the business ID
+      const businessId = request.agencyIdentifier; // This actually contains the business ID
       this.logger.log(`Attempting to grant Facebook Page access to business ${businessId} for page ${request.entityId}`);
 
       if (!this.accessToken) {
@@ -65,6 +84,10 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
         this.logger.error(`Failed to get page access token for page ${request.entityId}`);
         return {
           success: false,
+          service: FacebookServiceType.PAGE,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: businessId,
           error: 'Unable to get page access token. Ensure you have admin access to this page.',
           requiresManualApproval: true,
           businessManagerUrl: `https://business.facebook.com/settings/pages/${request.entityId}`
@@ -77,6 +100,10 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
         this.logger.warn(`Business ${businessId} already has access to page ${request.entityId}`);
         return {
           success: false,
+          service: FacebookServiceType.PAGE,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: businessId,
           error: 'Business already has access to this page',
           linkId: existingAccess.linkId
         };
@@ -103,8 +130,11 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
 
           return {
             success: true,
-            linkId: `${request.entityId}_${businessId}`,
+            service: FacebookServiceType.PAGE,
+            accessType: this.determineAccessType(request.permissions),
             entityId: request.entityId,
+            agencyIdentifier: businessId,
+            linkId: `${request.entityId}_${businessId}`,
             message: `Facebook Page access granted successfully to business ${businessId}`
           };
         } else {
@@ -117,6 +147,10 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
 
         return {
           success: false,
+          service: FacebookServiceType.PAGE,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: businessId,
           error: 'Facebook Page access assignment requires manual intervention through Business Manager',
           requiresManualApproval: true,
           businessManagerUrl: `https://business.facebook.com/settings/pages/${request.entityId}`,
@@ -131,6 +165,10 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
       if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.INVALID_TOKEN) {
         return {
           success: false,
+          service: FacebookServiceType.PAGE,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: request.agencyIdentifier,
           error: 'Access token is invalid or expired'
         };
       }
@@ -138,6 +176,10 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
       if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
         return {
           success: false,
+          service: FacebookServiceType.PAGE,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: request.agencyIdentifier,
           error: 'Insufficient permissions to manage page access. You must be an admin of this page.',
           requiresManualApproval: true,
           businessManagerUrl: `https://business.facebook.com/settings/pages/${request.entityId}`
@@ -146,6 +188,10 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
 
       return {
         success: false,
+        service: FacebookServiceType.PAGE,
+        accessType: this.determineAccessType(request.permissions),
+        entityId: request.entityId,
+        agencyIdentifier: request.agencyIdentifier,
         error: `Failed to grant access: ${error.message}`,
         requiresManualApproval: true,
         businessManagerUrl: `https://business.facebook.com/settings/pages/${request.entityId}`
@@ -153,7 +199,7 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
     }
   }
 
-  async checkExistingUserAccess(entityId: string, businessId: string): Promise<TFacebookUserInfo | null> {
+  async checkExistingUserAccess(entityId: string, businessId: string): Promise<IBaseUserInfo | null> {
     try {
       if (!this.accessToken) {
         return null;
@@ -191,9 +237,7 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
         linkId: existingAgency.id || `${entityId}_${businessId}`,
         email: businessId, // Using businessId as email for compatibility
         permissions: [permission],
-        kind: 'facebook#pageAgency',
-        status: existingAgency.access_status || 'ACTIVE',
-        roleType: permission
+        kind: 'facebook#pageAgency'
       };
 
     } catch (error: any) {
@@ -203,7 +247,7 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
     }
   }
 
-  async getEntityUsers(entityId: string): Promise<TFacebookUserInfo[]> {
+  async getEntityUsers(entityId: string): Promise<IBaseUserInfo[]> {
     try {
       if (!this.accessToken) {
         return [];
@@ -235,9 +279,7 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
           linkId: businessId || `${entityId}_${agency.name}`,
           email: businessId || '', // Using businessId as email for compatibility
           permissions: [permission],
-          kind: 'facebook#pageAgency',
-          status: agency.access_status || 'ACTIVE',
-          roleType: permission
+          kind: 'facebook#pageAgency'
         };
       });
 
@@ -248,7 +290,7 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
     }
   }
 
-  async revokeUserAccess(entityId: string, linkId: string): Promise<TFacebookAccessResponse> {
+  async revokeUserAccess(entityId: string, linkId: string): Promise<IRevokeAccessResponse> {
     try {
       if (!this.accessToken) {
         throw new Error('Access token must be set before revoking access');
@@ -258,9 +300,8 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
       if (!pageAccessToken) {
         return {
           success: false,
-          error: 'Unable to get page access token. Ensure you have admin access to this page.',
-          requiresManualApproval: true,
-          businessManagerUrl: `https://business.facebook.com/settings/pages/${entityId}`
+          service: FacebookServiceType.PAGE,
+          error: 'Unable to get page access token. Ensure you have admin access to this page.'
         };
       }
 
@@ -280,6 +321,7 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
 
       return {
         success: true,
+        service: FacebookServiceType.PAGE,
         message: 'Facebook Page access revoked successfully'
       };
 
@@ -290,14 +332,14 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
       if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
         return {
           success: false,
-          error: 'Insufficient permissions to remove page agencies. Manual removal may be required.',
-          requiresManualApproval: true,
-          businessManagerUrl: `https://business.facebook.com/settings/pages/${entityId}`
+          service: FacebookServiceType.PAGE,
+          error: 'Insufficient permissions to remove page agencies. Manual removal may be required.'
         };
       }
 
       return {
         success: false,
+        service: FacebookServiceType.PAGE,
         error: `Failed to revoke access: ${error.message}`
       };
     }
@@ -381,5 +423,12 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
       console.error('Error details:', error.response?.data);
       return null;
     }
+  }
+
+  private determineAccessType(permissions: string[]): TAccessType {
+    if (permissions.includes(FacebookPagePermission.ADMIN) || permissions.includes(FacebookPagePermission.EDITOR)) {
+      return 'manage';
+    }
+    return 'view';
   }
 }

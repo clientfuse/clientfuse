@@ -1,12 +1,15 @@
 import {
   ApiEnv,
   GOOGLE_MERCHANT_CENTER_SCOPE,
+  GoogleServiceType,
   IBaseAccessRequest,
-  IBaseAccessResponse,
+  IGrantAccessResponse,
   IBaseUserInfo,
   IGoogleBaseAccessService,
   IBaseGetEntityUsersParams,
-  ServerErrorCode
+  IRevokeAccessResponse,
+  ServerErrorCode,
+  TAccessType
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -28,24 +31,40 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
   ) {
   }
 
-  async grantManagementAccess(merchantId: string, agencyEmail: string): Promise<IBaseAccessResponse> {
+  async grantManagementAccess(merchantId: string, agencyEmail: string): Promise<IGrantAccessResponse> {
     this.logger.log(`Granting Merchant Center management access to ${agencyEmail} for merchant ${merchantId}`);
 
-    return this.grantAgencyAccess({
+    const result = await this.grantAgencyAccess({
       entityId: merchantId,
-      agencyEmail: agencyEmail,
+      agencyIdentifier: agencyEmail,
       permissions: ['ADMIN']
     });
+
+    return {
+      ...result,
+      service: 'merchantCenter' as GoogleServiceType,
+      accessType: 'manage' as TAccessType,
+      entityId: merchantId,
+      agencyIdentifier: agencyEmail
+    };
   }
 
-  async grantViewAccess(merchantId: string, agencyEmail: string): Promise<IBaseAccessResponse> {
+  async grantViewAccess(merchantId: string, agencyEmail: string): Promise<IGrantAccessResponse> {
     this.logger.log(`Granting Merchant Center view access to ${agencyEmail} for merchant ${merchantId}`);
 
-    return this.grantAgencyAccess({
+    const result = await this.grantAgencyAccess({
       entityId: merchantId,
-      agencyEmail: agencyEmail,
+      agencyIdentifier: agencyEmail,
       permissions: ['STANDARD']
     });
+
+    return {
+      ...result,
+      service: 'merchantCenter' as GoogleServiceType,
+      accessType: 'view' as TAccessType,
+      entityId: merchantId,
+      agencyIdentifier: agencyEmail
+    };
   }
 
 
@@ -57,18 +76,22 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
     this.oauth2Client.setCredentials(tokens);
   }
 
-  async grantAgencyAccess(request: IBaseAccessRequest): Promise<IBaseAccessResponse> {
+  async grantAgencyAccess(request: IBaseAccessRequest): Promise<IGrantAccessResponse> {
     try {
-      this.logger.log(`Granting Google Merchant Center access to account ${request.entityId} for ${request.agencyEmail}`);
+      this.logger.log(`Granting Google Merchant Center access to account ${request.entityId} for ${request.agencyIdentifier}`);
 
       const merchantapi = google.merchantapi({ version: 'accounts_v1beta', auth: this.oauth2Client });
 
-      const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyEmail);
+      const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyIdentifier);
 
       if (existingAccess) {
-        this.logger.warn(`User ${request.agencyEmail} already has access to merchant ${request.entityId}`);
+        this.logger.warn(`User ${request.agencyIdentifier} already has access to merchant ${request.entityId}`);
         return {
           success: false,
+          service: 'merchantCenter' as GoogleServiceType,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: request.agencyIdentifier,
           error: ServerErrorCode.USER_ALREADY_EXISTS,
           linkId: existingAccess.linkId
         };
@@ -78,22 +101,25 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
 
       const userRequest = {
         parent: `accounts/${request.entityId}`,
-        userId: request.agencyEmail,
+        userId: request.agencyIdentifier,
         requestBody: {
           accessRights: accessRights,
-          name: `accounts/${request.entityId}/users/${request.agencyEmail}`
+          name: `accounts/${request.entityId}/users/${request.agencyIdentifier}`
         }
       };
 
       const response = await merchantapi.accounts.users.create(userRequest);
 
-      this.logger.log(`Successfully granted Merchant Center access to ${request.agencyEmail} for account ${request.entityId}`);
+      this.logger.log(`Successfully granted Merchant Center access to ${request.agencyIdentifier} for account ${request.entityId}`);
 
       return {
         success: true,
-        linkId: response.data.name || `accounts/${request.entityId}/users/${request.agencyEmail}`,
+        service: 'merchantCenter' as GoogleServiceType,
+        accessType: this.determineAccessType(request.permissions),
         entityId: request.entityId,
-        message: `Merchant Center access granted successfully to ${request.agencyEmail}`
+        agencyIdentifier: request.agencyIdentifier,
+        linkId: response.data.name || `accounts/${request.entityId}/users/${request.agencyIdentifier}`,
+        message: `Merchant Center access granted successfully to ${request.agencyIdentifier}`
       };
 
     } catch (error) {
@@ -101,6 +127,10 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
 
       return {
         success: false,
+        service: 'merchantCenter' as GoogleServiceType,
+        accessType: this.determineAccessType(request.permissions),
+        entityId: request.entityId,
+        agencyIdentifier: request.agencyIdentifier,
         error: `Failed to grant access: ${error.message}`
       };
     }
@@ -165,7 +195,7 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
     }
   }
 
-  async revokeUserAccess(entityId: string, linkId: string): Promise<IBaseAccessResponse> {
+  async revokeUserAccess(entityId: string, linkId: string): Promise<IRevokeAccessResponse> {
     try {
       const merchantapi = google.merchantapi({ version: 'accounts_v1beta', auth: this.oauth2Client });
 
@@ -177,6 +207,7 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
 
       return {
         success: true,
+        service: 'merchantCenter',
         message: 'Merchant Center access revoked successfully'
       };
 
@@ -185,6 +216,7 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
 
       return {
         success: false,
+        service: 'merchantCenter',
         error: `Failed to revoke access: ${error.message}`
       };
     }
@@ -216,5 +248,10 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
     // *** Extract email from user name format: accounts/{merchantId}/users/{email} ***
     const parts = userName.split('/');
     return parts.length >= 4 ? parts[3] : null;
+  }
+
+  private determineAccessType(permissions: string[]): TAccessType {
+    const firstPermission = permissions[0];
+    return firstPermission === 'ADMIN' ? 'manage' : 'view';
   }
 }

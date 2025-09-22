@@ -2,16 +2,8 @@ import { TAccessType } from '../connection-link.model';
 
 export interface IBaseAccessRequest {
   entityId: string; // account/property/site ID etc.
-  agencyEmail: string;
+  agencyIdentifier: string; // google email or facebook business ID etc.
   permissions: string[];
-}
-
-export interface IBaseAccessResponse {
-  success: boolean;
-  linkId?: string;
-  entityId?: string;
-  message?: string;
-  error?: string;
 }
 
 export interface IBaseUserInfo {
@@ -24,12 +16,12 @@ export interface IBaseUserInfo {
 
 export interface IBaseGetEntityUsersParams {
   entityId: string;
-  agencyId?: string;
+  agencyId?: string; // internal agency id from DB
 }
 
 export interface IGetEntityUsersQueryDto {
   accessToken: string;
-  agencyId?: string;
+  agencyId?: string; // internal agency id from DB
 }
 
 export interface IGrantAgencyAccessDto {
@@ -51,9 +43,10 @@ export interface IGrantAccessResponse {
   service: string;
   accessType: TAccessType;
   entityId: string;
-  agencyEmail: string;
+  agencyIdentifier: string;
   linkId?: string;
   message?: string;
+  error?: string;
 }
 
 export interface IGetEntityUsersResponse {
@@ -67,4 +60,5 @@ export interface IRevokeAccessResponse {
   success: boolean;
   service: string;
   message?: string;
+  error?: string;
 }

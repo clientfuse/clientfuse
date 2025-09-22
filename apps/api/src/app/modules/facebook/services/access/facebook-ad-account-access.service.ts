@@ -3,10 +3,13 @@ import {
   FACEBOOK_ADS_MANAGEMENT_SCOPE,
   FACEBOOK_ERROR_CODES,
   FacebookAdAccountPermission,
+  FacebookServiceType,
   IBaseAccessRequest,
+  IBaseUserInfo,
   IFacebookBaseAccessService,
-  TFacebookAccessResponse,
-  TFacebookUserInfo
+  IRevokeAccessResponse,
+  TAccessType,
+  TFacebookAccessResponse
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { isEmpty, isNil } from 'lodash';
@@ -29,13 +32,12 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
     this.accessToken = tokens.access_token;
   }
 
-  async grantManagementAccess(adAccountId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
-    const businessId = agencyEmail; // This actually contains the business ID
-    this.logger.log(`Granting Facebook Ad Account management access to business ${businessId} for account ${adAccountId}`);
+  async grantManagementAccess(adAccountId: string, businessPortfolioId: string): Promise<TFacebookAccessResponse> {
+    this.logger.log(`Granting Facebook Ad Account management access to business ${businessPortfolioId} for account ${adAccountId}`);
 
     return this.grantAgencyAccess({
       entityId: adAccountId,
-      agencyEmail: businessId, // Passing business ID
+      agencyIdentifier: businessPortfolioId, // Passing business ID
       permissions: [FacebookAdAccountPermission.ADMIN]
     });
   }
@@ -46,20 +48,21 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
 
     return this.grantAgencyAccess({
       entityId: adAccountId,
-      agencyEmail: businessId, // Passing business ID
+      agencyIdentifier: businessId, // Passing business ID
       permissions: [FacebookAdAccountPermission.REPORTS_ONLY]
     });
   }
 
   async grantAgencyAccess(request: IBaseAccessRequest): Promise<TFacebookAccessResponse> {
     try {
-      const businessId = request.agencyEmail; // This actually contains the business ID
+      const businessId = request.agencyIdentifier; // This actually contains the business ID
       this.logger.log(`Attempting to grant Facebook Ad Account access to business ${businessId} for account ${request.entityId}`);
 
       if (!this.accessToken) {
         throw new Error('Access token must be set before granting access');
       }
 
+      const accessType: 'view' | 'manage' = request.permissions[0] === FacebookAdAccountPermission.REPORTS_ONLY ? 'view' : 'manage';
       const existingAccess = await this.checkExistingUserAccess(request.entityId, businessId);
 
       if (existingAccess) {
@@ -67,7 +70,11 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
         return {
           success: false,
           error: 'Business already has access to this ad account',
-          linkId: existingAccess.linkId
+          linkId: existingAccess.linkId,
+          service: FacebookServiceType.AD_ACCOUNT,
+          accessType: accessType,
+          entityId: request.entityId,
+          agencyIdentifier: request.agencyIdentifier
         };
       }
 
@@ -83,7 +90,11 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
           error: 'Unable to get business user ID. Please ensure the business has users assigned.',
           requiresManualApproval: true,
           businessManagerUrl: `https://business.facebook.com/settings/ad-accounts/${cleanAccountId}`,
-          message: `Please manually assign business ${businessId} access through Facebook Business Manager`
+          message: `Please manually assign business ${businessId} access through Facebook Business Manager`,
+          service: FacebookServiceType.AD_ACCOUNT,
+          accessType: accessType,
+          entityId: request.entityId,
+          agencyIdentifier: request.agencyIdentifier
         };
       }
 
@@ -110,7 +121,10 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
             success: true,
             linkId: `${accountId}_${businessId}`,
             entityId: request.entityId,
-            message: `Facebook Ad Account access granted successfully to business ${businessId}`
+            message: `Facebook Ad Account access granted successfully to business ${businessId}`,
+            service: FacebookServiceType.AD_ACCOUNT,
+            accessType: accessType,
+            agencyIdentifier: request.agencyIdentifier
           };
         } else {
           throw new Error('Failed to add business user to ad account');
@@ -125,7 +139,11 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
           error: 'Unable to grant access via API. Manual intervention required.',
           requiresManualApproval: true,
           businessManagerUrl: `https://business.facebook.com/settings/ad-accounts/${cleanAccountId}`,
-          message: `Please manually assign business ${businessId} access through Facebook Business Manager`
+          message: `Please manually assign business ${businessId} access through Facebook Business Manager`,
+          service: FacebookServiceType.AD_ACCOUNT,
+          accessType: accessType,
+          entityId: request.entityId,
+          agencyIdentifier: request.agencyIdentifier
         };
       }
 
@@ -136,7 +154,11 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
       if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.INVALID_TOKEN) {
         return {
           success: false,
-          error: 'Access token is invalid or expired'
+          error: 'Access token is invalid or expired',
+          service: FacebookServiceType.AD_ACCOUNT,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: request.agencyIdentifier
         };
       }
 
@@ -145,7 +167,11 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
           success: false,
           error: 'Insufficient permissions to manage ad account users. You must be an admin of this ad account.',
           requiresManualApproval: true,
-          businessManagerUrl: `https://business.facebook.com/settings/ad-accounts/${request.entityId.replace('act_', '')}/people`
+          businessManagerUrl: `https://business.facebook.com/settings/ad-accounts/${request.entityId.replace('act_', '')}/people`,
+          service: FacebookServiceType.AD_ACCOUNT,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: request.agencyIdentifier
         };
       }
 
@@ -154,7 +180,11 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
           success: false,
           error: 'Business user not found. Please ensure the business has valid users.',
           requiresManualApproval: true,
-          businessManagerUrl: `https://business.facebook.com/settings/ad-accounts/${request.entityId.replace('act_', '')}/people`
+          businessManagerUrl: `https://business.facebook.com/settings/ad-accounts/${request.entityId.replace('act_', '')}/people`,
+          service: FacebookServiceType.AD_ACCOUNT,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: request.agencyIdentifier
         };
       }
 
@@ -162,12 +192,16 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
         success: false,
         error: `Failed to grant access: ${error.message}`,
         requiresManualApproval: true,
-        businessManagerUrl: `https://business.facebook.com/settings/ad-accounts/${request.entityId.replace('act_', '')}/people`
+        businessManagerUrl: `https://business.facebook.com/settings/ad-accounts/${request.entityId.replace('act_', '')}/people`,
+        service: 'facebook',
+        accessType: 'manage',
+        entityId: request.entityId,
+        agencyIdentifier: request.agencyIdentifier
       };
     }
   }
 
-  async checkExistingUserAccess(entityId: string, businessId: string): Promise<TFacebookUserInfo | null> {
+  async checkExistingUserAccess(entityId: string, businessId: string): Promise<IBaseUserInfo | null> {
     try {
       if (!this.accessToken) {
         return null;
@@ -196,9 +230,7 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
               linkId: agency.id,
               email: businessId, // Using businessId for compatibility
               permissions: [agency.role || FacebookAdAccountPermission.GENERAL_USER],
-              kind: 'facebook#adAccountAgency',
-              status: 'ACTIVE',
-              roleType: agency.role || FacebookAdAccountPermission.GENERAL_USER
+              kind: 'facebook#adAccountAgency'
             };
           }
         }
@@ -229,15 +261,11 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
           });
 
           if (existingUser) {
-            const roleType = this.mapTasksToRole(existingUser.tasks);
-
             return {
               linkId: existingUser.id || `${accountId}_${businessId}`,
               email: businessId, // Using businessId for compatibility
               permissions: existingUser.tasks || [FacebookAdAccountPermission.GENERAL_USER],
-              kind: 'facebook#adAccountUser',
-              status: 'ACTIVE',
-              roleType: roleType
+              kind: 'facebook#adAccountUser'
             };
           }
         }
@@ -254,7 +282,7 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
     }
   }
 
-  async getEntityUsers(entityId: string): Promise<TFacebookUserInfo[]> {
+  async getEntityUsers(entityId: string): Promise<IBaseUserInfo[]> {
     try {
       if (!this.accessToken) {
         return [];
@@ -262,7 +290,7 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
 
       const cleanAccountId = entityId.replace('act_', '');
       const accountId = `act_${cleanAccountId}`;
-      const users: TFacebookUserInfo[] = [];
+      const users: IBaseUserInfo[] = [];
 
       const adAccountInfo = await this.getAdAccountInfo(entityId);
 
@@ -288,15 +316,12 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
         if (usersResponse?.data) {
           usersResponse.data.forEach((user: any) => {
             const identifier = user.business?.id || user.id || '';
-            const roleType = this.mapTasksToRole(user.tasks);
 
             users.push({
               linkId: user.id || `${accountId}_${identifier}`,
               email: identifier,
               permissions: user.tasks || [FacebookAdAccountPermission.GENERAL_USER],
-              kind: 'facebook#adAccountUser',
-              status: 'ACTIVE',
-              roleType: roleType
+              kind: 'facebook#adAccountUser'
             });
           });
         }
@@ -323,9 +348,7 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
               linkId: agency.id,
               email: agency.id, // Using business ID as identifier
               permissions: [roleType],
-              kind: 'facebook#adAccountAgency',
-              status: 'ACTIVE',
-              roleType: roleType
+              kind: 'facebook#adAccountAgency'
             });
           });
         }
@@ -342,7 +365,7 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
     }
   }
 
-  async revokeUserAccess(entityId: string, linkId: string): Promise<TFacebookAccessResponse> {
+  async revokeUserAccess(entityId: string, linkId: string): Promise<IRevokeAccessResponse> {
     try {
       if (!this.accessToken) {
         throw new Error('Access token must be set before revoking access');
@@ -367,7 +390,8 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
 
       return {
         success: true,
-        message: 'Facebook Ad Account access revoked successfully'
+        message: 'Facebook Ad Account access revoked successfully',
+        service: FacebookServiceType.AD_ACCOUNT
       };
 
     } catch (error: any) {
@@ -378,14 +402,14 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
         return {
           success: false,
           error: 'Insufficient permissions to remove ad account users',
-          requiresManualApproval: true,
-          businessManagerUrl: `https://business.facebook.com/settings/ad-accounts/${entityId.replace('act_', '')}`
+          service: FacebookServiceType.AD_ACCOUNT
         };
       }
 
       return {
         success: false,
-        error: `Failed to revoke access: ${error.message}`
+        error: `Failed to revoke access: ${error.message}`,
+        service: FacebookServiceType.AD_ACCOUNT
       };
     }
   }
@@ -462,23 +486,8 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
     return roleMap[permission] || FACEBOOK_AD_ACCOUNT_ROLES.GENERAL_USER;
   }
 
-  private mapTasksToRole(tasks: string[] | undefined): string {
-    if (!tasks || tasks.length === 0) {
-      return FacebookAdAccountPermission.GENERAL_USER;
-    }
-
-    if (tasks.includes('MANAGE')) {
-      return FacebookAdAccountPermission.ADMIN;
-    }
-
-    if (tasks.includes('ADVERTISE') || tasks.includes('DRAFT')) {
-      return FacebookAdAccountPermission.GENERAL_USER;
-    }
-
-    if (tasks.includes('ANALYZE')) {
-      return FacebookAdAccountPermission.REPORTS_ONLY;
-    }
-
-    return FacebookAdAccountPermission.GENERAL_USER;
+  private determineAccessType(permissions: string[]): TAccessType {
+    const firstPermission = permissions[0];
+    return firstPermission === 'ADMIN' ? 'manage' : 'view';
   }
 }

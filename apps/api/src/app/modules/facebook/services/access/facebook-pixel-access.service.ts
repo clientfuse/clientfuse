@@ -1,12 +1,14 @@
 import {
   FACEBOOK_ADS_MANAGEMENT_SCOPE,
   FACEBOOK_ERROR_CODES,
-  FACEBOOK_PIXEL_ROLES,
   FacebookPixelPermission,
+  FacebookServiceType,
   IBaseAccessRequest,
+  IBaseUserInfo,
   IFacebookBaseAccessService,
-  TFacebookAccessResponse,
-  TFacebookUserInfo
+  IRevokeAccessResponse,
+  TAccessType,
+  TFacebookAccessResponse
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { isEmpty, isNil } from 'lodash';
@@ -32,29 +34,45 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
     // Note: agencyEmail parameter actually contains the Facebook business account ID, not an email
     this.logger.log(`Granting Facebook Pixel management access to business account ${agencyEmail} for pixel ${pixelId}`);
 
-    return this.grantAgencyAccess({
+    const result = await this.grantAgencyAccess({
       entityId: pixelId,
-      agencyEmail: agencyEmail, // This is actually a business account ID
+      agencyIdentifier: agencyEmail, // This is actually a business account ID
       permissions: [FacebookPixelPermission.ADMIN]
     });
+
+    return {
+      ...result,
+      service: FacebookServiceType.PIXEL,
+      accessType: 'manage' as TAccessType,
+      entityId: pixelId,
+      agencyIdentifier: agencyEmail
+    };
   }
 
   async grantViewAccess(pixelId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
     // Note: agencyEmail parameter actually contains the Facebook business account ID, not an email
     this.logger.log(`Granting Facebook Pixel view access to business account ${agencyEmail} for pixel ${pixelId}`);
 
-    return this.grantAgencyAccess({
+    const result = await this.grantAgencyAccess({
       entityId: pixelId,
-      agencyEmail: agencyEmail, // This is actually a business account ID
+      agencyIdentifier: agencyEmail, // This is actually a business account ID
       permissions: [FacebookPixelPermission.ADVERTISER]
     });
+
+    return {
+      ...result,
+      service: FacebookServiceType.PIXEL,
+      accessType: 'view' as TAccessType,
+      entityId: pixelId,
+      agencyIdentifier: agencyEmail
+    };
   }
 
   async grantAgencyAccess(request: IBaseAccessRequest): Promise<TFacebookAccessResponse> {
     try {
       // IMPORTANT: The agencyEmail field actually contains a Facebook business account ID, not an email address
       // This is because Facebook's API requires account IDs for access management, not email addresses
-      const businessAccountId = request.agencyEmail; // This is actually a business account ID
+      const businessAccountId = request.agencyIdentifier; // This is actually a business account ID
 
       this.logger.log(`Attempting to grant Facebook Pixel access to business account ${businessAccountId} for pixel ${request.entityId}`);
 
@@ -68,13 +86,16 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
         this.logger.warn(`Business account ${businessAccountId} already has access to pixel ${request.entityId}`);
         return {
           success: false,
+          service: FacebookServiceType.PIXEL,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: businessAccountId,
           error: 'Business account already has access to this pixel',
           linkId: existingAccess.linkId
         };
       }
 
       try {
-        // Use the shared_accounts endpoint to grant access to a business account
         const { data: response } = await facebookHttpClient.post(
           `/${request.entityId}/shared_accounts`,
           {},
@@ -92,8 +113,11 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
 
           return {
             success: true,
-            linkId: `${request.entityId}_${businessAccountId}`,
+            service: FacebookServiceType.PIXEL,
+            accessType: this.determineAccessType(request.permissions),
             entityId: request.entityId,
+            agencyIdentifier: businessAccountId,
+            linkId: `${request.entityId}_${businessAccountId}`,
             message: `Facebook Pixel access granted successfully to business account ${businessAccountId}`
           };
         } else {
@@ -106,6 +130,10 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
 
         return {
           success: false,
+          service: FacebookServiceType.PIXEL,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: businessAccountId,
           error: 'Facebook Pixel access requires manual intervention through Business Manager',
           requiresManualApproval: true,
           businessManagerUrl: `https://business.facebook.com/settings/pixels/${request.entityId}`,
@@ -120,6 +148,10 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
       if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.INVALID_TOKEN) {
         return {
           success: false,
+          service: FacebookServiceType.PIXEL,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: request.agencyIdentifier,
           error: 'Access token is invalid or expired'
         };
       }
@@ -127,6 +159,10 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
       if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
         return {
           success: false,
+          service: FacebookServiceType.PIXEL,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: request.agencyIdentifier,
           error: 'Insufficient permissions to manage pixel sharing. You must be an admin of this pixel.',
           requiresManualApproval: true,
           businessManagerUrl: `https://business.facebook.com/settings/pixels/${request.entityId}`
@@ -135,6 +171,10 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
 
       return {
         success: false,
+        service: FacebookServiceType.PIXEL,
+        accessType: this.determineAccessType(request.permissions),
+        entityId: request.entityId,
+        agencyIdentifier: request.agencyIdentifier,
         error: `Failed to grant access: ${error.message}`,
         requiresManualApproval: true,
         businessManagerUrl: `https://business.facebook.com/settings/pixels/${request.entityId}`
@@ -142,7 +182,7 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
     }
   }
 
-  async checkExistingUserAccess(entityId: string, email: string): Promise<TFacebookUserInfo | null> {
+  async checkExistingUserAccess(entityId: string, email: string): Promise<IBaseUserInfo | null> {
     try {
       if (!this.accessToken) {
         return null;
@@ -151,7 +191,6 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
       // Note: The 'email' parameter actually contains a Facebook business account ID
       const businessAccountId = email;
 
-      // Try to get assigned users for this pixel
       // Note: This requires a business parameter which we're using the same businessAccountId for
       const { data: response } = await facebookHttpClient.get(
         `/${entityId}/assigned_users`,
@@ -182,9 +221,7 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
         linkId: existingUser.id || `${entityId}_${businessAccountId}`,
         email: businessAccountId, // Storing business account ID in email field
         permissions: existingUser.tasks || [FacebookPixelPermission.ADVERTISER],
-        kind: 'facebook#pixelUser',
-        status: 'ACTIVE',
-        roleType: existingUser.tasks?.[0] || FacebookPixelPermission.ADVERTISER
+        kind: 'facebook#pixelUser'
       };
 
     } catch (error: any) {
@@ -194,7 +231,7 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
     }
   }
 
-  async getEntityUsers(entityId: string): Promise<TFacebookUserInfo[]> {
+  async getEntityUsers(entityId: string): Promise<IBaseUserInfo[]> {
     try {
       if (!this.accessToken) {
         return [];
@@ -224,15 +261,12 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
         return [];
       }
 
-      // Map the response to our user info format
       // Note: These are business account IDs, not email addresses
       return response.data.map((user: any) => ({
         linkId: user.id || `${entityId}_${user.business?.id}`,
         email: user.business?.id || user.id || '', // Storing business account ID in email field
         permissions: user.tasks || [FacebookPixelPermission.ADVERTISER],
-        kind: 'facebook#pixelUser',
-        status: 'ACTIVE',
-        roleType: user.tasks?.[0] || FacebookPixelPermission.ADVERTISER
+        kind: 'facebook#pixelUser'
       }));
 
     } catch (error: any) {
@@ -242,7 +276,7 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
     }
   }
 
-  async revokeUserAccess(entityId: string, linkId: string): Promise<TFacebookAccessResponse> {
+  async revokeUserAccess(entityId: string, linkId: string): Promise<IRevokeAccessResponse> {
     try {
       if (!this.accessToken) {
         throw new Error('Access token must be set before revoking access');
@@ -267,6 +301,7 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
 
       return {
         success: true,
+        service: FacebookServiceType.PIXEL,
         message: 'Facebook Pixel access revoked successfully'
       };
 
@@ -277,14 +312,14 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
       if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
         return {
           success: false,
-          error: 'Insufficient permissions to remove pixel sharing. Manual removal may be required.',
-          requiresManualApproval: true,
-          businessManagerUrl: `https://business.facebook.com/settings/pixels/${entityId}`
+          service: FacebookServiceType.PIXEL,
+          error: 'Insufficient permissions to remove pixel sharing. Manual removal may be required.'
         };
       }
 
       return {
         success: false,
+        service: FacebookServiceType.PIXEL,
         error: `Failed to revoke access: ${error.message}`
       };
     }
@@ -322,12 +357,10 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
     }
   }
 
-  private mapPermissionToRole(permission: string): string {
-    const roleMap: Record<string, string> = {
-      [FacebookPixelPermission.ADMIN]: FACEBOOK_PIXEL_ROLES.ADMIN,
-      [FacebookPixelPermission.ADVERTISER]: FACEBOOK_PIXEL_ROLES.ADVERTISER
-    };
-
-    return roleMap[permission] || FACEBOOK_PIXEL_ROLES.ADVERTISER;
+  private determineAccessType(permissions: string[]): TAccessType {
+    if (permissions.includes(FacebookPixelPermission.ADMIN)) {
+      return 'manage';
+    }
+    return 'view';
   }
 }

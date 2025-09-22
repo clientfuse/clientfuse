@@ -1,13 +1,8 @@
-import { IBaseAccessRequest, IBaseAccessResponse, IBaseUserInfo } from './integrations.model';
+import { IBaseAccessRequest, IBaseUserInfo, IGrantAccessResponse, IRevokeAccessResponse } from './integrations.model';
 
-export type TFacebookAccessResponse = IBaseAccessResponse & {
+export type TFacebookAccessResponse = IGrantAccessResponse & {
   requiresManualApproval?: boolean; // Facebook specific
   businessManagerUrl?: string; // Direct link for manual actions
-}
-
-export type TFacebookUserInfo = IBaseUserInfo & {
-  status?: string; // 'PENDING' | 'ACTIVE' | 'DECLINED'
-  roleType?: string;
 }
 
 export interface IFacebookBaseAccessService {
@@ -19,11 +14,11 @@ export interface IFacebookBaseAccessService {
 
   grantAgencyAccess(request: IBaseAccessRequest): Promise<TFacebookAccessResponse>;
 
-  checkExistingUserAccess(entityId: string, email: string): Promise<TFacebookUserInfo | null>;
+  checkExistingUserAccess(entityId: string, email: string): Promise<IBaseUserInfo | null>;
 
-  getEntityUsers(entityId: string): Promise<TFacebookUserInfo[]>;
+  getEntityUsers(entityId: string): Promise<IBaseUserInfo[]>;
 
-  revokeUserAccess(entityId: string, linkId: string): Promise<TFacebookAccessResponse>;
+  revokeUserAccess(entityId: string, linkId: string): Promise<IRevokeAccessResponse>;
 
   validateRequiredScopes(grantedScopes: string[]): boolean;
 

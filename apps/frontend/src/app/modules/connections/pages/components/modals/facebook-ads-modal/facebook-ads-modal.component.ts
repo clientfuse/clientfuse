@@ -74,7 +74,7 @@ export class FacebookAdsModalComponent {
             service: FacebookServiceType.AD_ACCOUNT,
             accessType: this.data.accessType,
             entityId: this.data.adAccountId,
-            agencyEmail: this.data.businessPortfolioId
+            agencyIdentifier: this.data.businessPortfolioId
           });
 
           setTimeout(() => this.dialogRef.close(true), 1500);

@@ -1,12 +1,15 @@
 import {
   ApiEnv,
   GOOGLE_ADWORDS_SCOPE,
+  GoogleServiceType,
   IBaseAccessRequest,
-  IBaseAccessResponse,
+  IGrantAccessResponse,
   IBaseGetEntityUsersParams,
   IBaseUserInfo,
   IGoogleBaseAccessService,
-  ServerErrorCode
+  IRevokeAccessResponse,
+  ServerErrorCode,
+  TAccessType
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -33,30 +36,46 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
     this.accessToken = tokens.access_token;
   }
 
-  async grantManagementAccess(customerId: string, agencyEmail: string): Promise<IBaseAccessResponse> {
+  async grantManagementAccess(customerId: string, agencyEmail: string): Promise<IGrantAccessResponse> {
     this.logger.log(`Granting Google Ads management access to ${agencyEmail} for account ${customerId}`);
 
-    return this.grantAgencyAccess({
+    const result = await this.grantAgencyAccess({
       entityId: customerId,
-      agencyEmail: agencyEmail,
+      agencyIdentifier: agencyEmail,
       permissions: ['ADMIN']
     });
+
+    return {
+      ...result,
+      service: 'ads' as GoogleServiceType,
+      accessType: 'manage' as TAccessType,
+      entityId: customerId,
+      agencyIdentifier: agencyEmail
+    };
   }
 
-  async grantViewAccess(customerId: string, agencyEmail: string): Promise<IBaseAccessResponse> {
+  async grantViewAccess(customerId: string, agencyEmail: string): Promise<IGrantAccessResponse> {
     this.logger.log(`Granting Google Ads view access to ${agencyEmail} for account ${customerId}`);
 
-    return this.grantAgencyAccess({
+    const result = await this.grantAgencyAccess({
       entityId: customerId,
-      agencyEmail: agencyEmail,
+      agencyIdentifier: agencyEmail,
       permissions: ['READ_ONLY']
     });
+
+    return {
+      ...result,
+      service: 'ads' as GoogleServiceType,
+      accessType: 'view' as TAccessType,
+      entityId: customerId,
+      agencyIdentifier: agencyEmail
+    };
   }
 
 
-  async grantAgencyAccess(request: IBaseAccessRequest): Promise<IBaseAccessResponse> {
+  async grantAgencyAccess(request: IBaseAccessRequest): Promise<IGrantAccessResponse> {
     try {
-      this.logger.log(`Granting Google Ads access to account ${request.entityId} for ${request.agencyEmail}`);
+      this.logger.log(`Granting Google Ads access to account ${request.entityId} for ${request.agencyIdentifier}`);
 
       if (!this.accessToken) {
         throw new Error('Credentials must be set before granting access');
@@ -67,12 +86,16 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
         refresh_token: this.accessToken
       });
 
-      const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyEmail);
+      const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyIdentifier);
 
       if (existingAccess) {
-        this.logger.warn(`User ${request.agencyEmail} already has access to account ${request.entityId}`);
+        this.logger.warn(`User ${request.agencyIdentifier} already has access to account ${request.entityId}`);
         return {
           success: false,
+          service: 'ads' as GoogleServiceType,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: request.agencyIdentifier,
           error: ServerErrorCode.USER_ALREADY_EXISTS,
           linkId: existingAccess.linkId
         };
@@ -81,7 +104,7 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
       const accessRole = this.mapPermissionToAccessRole(request.permissions[0]);
 
       const customerUserAccessInvitation = {
-        email_address: request.agencyEmail.toLowerCase().trim(),
+        email_address: request.agencyIdentifier.toLowerCase().trim(),
         access_role: accessRole
       };
 
@@ -89,13 +112,16 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
       const resourceName = response?.result?.resource_name;
 
       if (resourceName) {
-        this.logger.log(`Successfully sent Google Ads invitation to ${request.agencyEmail} for account ${request.entityId}`);
+        this.logger.log(`Successfully sent Google Ads invitation to ${request.agencyIdentifier} for account ${request.entityId}`);
 
         return {
           success: true,
-          linkId: resourceName,
+          service: 'ads' as GoogleServiceType,
+          accessType: this.determineAccessType(request.permissions),
           entityId: request.entityId,
-          message: `Google Ads access invitation sent successfully to ${request.agencyEmail}`
+          agencyIdentifier: request.agencyIdentifier,
+          linkId: resourceName,
+          message: `Google Ads access invitation sent successfully to ${request.agencyIdentifier}`
         };
       } else {
         throw new Error('No results returned from invitation creation');
@@ -108,12 +134,20 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
         const errorMessages = error.errors.map(e => e.message).join(', ');
         return {
           success: false,
+          service: 'ads' as GoogleServiceType,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: request.agencyIdentifier,
           error: `Google Ads API error: ${errorMessages}`
         };
       }
 
       return {
         success: false,
+        service: 'ads' as GoogleServiceType,
+        accessType: this.determineAccessType(request.permissions),
+        entityId: request.entityId,
+        agencyIdentifier: request.agencyIdentifier,
         error: `Failed to grant access: ${error.message}`
       };
     }
@@ -194,7 +228,7 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
     }
   }
 
-  async revokeUserAccess(entityId: string, linkId: string): Promise<IBaseAccessResponse> {
+  async revokeUserAccess(entityId: string, linkId: string): Promise<IRevokeAccessResponse> {
     try {
       if (!this.accessToken) {
         throw new Error('Credentials must be set before revoking access');
@@ -211,6 +245,7 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
 
       return {
         success: true,
+        service: 'ads',
         message: 'Google Ads access revoked successfully'
       };
 
@@ -221,12 +256,14 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
         const errorMessages = error.errors.map(e => e.message).join(', ');
         return {
           success: false,
+          service: 'ads',
           error: `Google Ads API error: ${errorMessages}`
         };
       }
 
       return {
         success: false,
+        service: 'ads',
         error: `Failed to revoke access: ${error.message}`
       };
     }
@@ -252,5 +289,13 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
     };
 
     return permissionMap[permission] || enums.AccessRole.READ_ONLY;
+  }
+
+  private determineAccessType(permissions: string[]): TAccessType {
+    const firstPermission = permissions[0];
+    if (firstPermission === 'ADMIN' || firstPermission === 'STANDARD') {
+      return 'manage';
+    }
+    return 'view';
   }
 }

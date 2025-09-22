@@ -1,11 +1,14 @@
 import {
   ApiEnv,
   GOOGLE_SEARCH_CONSOLE_READONLY_SCOPE,
+  GoogleServiceType,
   IBaseAccessRequest,
-  IBaseAccessResponse,
+  IGrantAccessResponse,
   IBaseUserInfo,
   IBaseGetEntityUsersParams,
-  IGoogleBaseAccessService
+  IGoogleBaseAccessService,
+  IRevokeAccessResponse,
+  TAccessType
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -31,24 +34,40 @@ export class GoogleSearchConsoleAccessService implements IGoogleBaseAccessServic
   ) {
   }
 
-  async grantManagementAccess(siteUrl: string, agencyEmail: string): Promise<IBaseAccessResponse> {
+  async grantManagementAccess(siteUrl: string, agencyEmail: string): Promise<IGrantAccessResponse> {
     this.logger.log(`Granting Search Console management access to ${agencyEmail} for site ${siteUrl}`);
 
-    return this.grantAgencyAccess({
+    const result = await this.grantAgencyAccess({
       entityId: siteUrl,
-      agencyEmail: agencyEmail,
+      agencyIdentifier: agencyEmail,
       permissions: ['FULL']
     });
+
+    return {
+      ...result,
+      service: 'searchConsole' as GoogleServiceType,
+      accessType: 'manage' as TAccessType,
+      entityId: siteUrl,
+      agencyIdentifier: agencyEmail
+    };
   }
 
-  async grantViewAccess(siteUrl: string, agencyEmail: string): Promise<IBaseAccessResponse> {
+  async grantViewAccess(siteUrl: string, agencyEmail: string): Promise<IGrantAccessResponse> {
     this.logger.log(`Granting Search Console view access to ${agencyEmail} for site ${siteUrl}`);
 
-    return this.grantAgencyAccess({
+    const result = await this.grantAgencyAccess({
       entityId: siteUrl,
-      agencyEmail: agencyEmail,
+      agencyIdentifier: agencyEmail,
       permissions: ['RESTRICTED']
     });
+
+    return {
+      ...result,
+      service: 'searchConsole' as GoogleServiceType,
+      accessType: 'view' as TAccessType,
+      entityId: siteUrl,
+      agencyIdentifier: agencyEmail
+    };
   }
 
 
@@ -59,9 +78,13 @@ export class GoogleSearchConsoleAccessService implements IGoogleBaseAccessServic
     this.oauth2Client.setCredentials(tokens);
   }
 
-  async grantAgencyAccess(request: IBaseAccessRequest): Promise<IBaseAccessResponse> {
+  async grantAgencyAccess(request: IBaseAccessRequest): Promise<IGrantAccessResponse> {
     return {
       success: false,
+      service: 'searchConsole' as GoogleServiceType,
+      accessType: this.determineAccessType(request.permissions),
+      entityId: request.entityId,
+      agencyIdentifier: request.agencyIdentifier,
       error: 'Google Search Console API does not support direct user management for URL-prefix properties. Users must be added through the web interface.'
     };
   }
@@ -143,10 +166,11 @@ export class GoogleSearchConsoleAccessService implements IGoogleBaseAccessServic
     }
   }
 
-  async revokeUserAccess(entityId: string, linkId: string): Promise<IBaseAccessResponse> {
+  async revokeUserAccess(entityId: string, linkId: string): Promise<IRevokeAccessResponse> {
     this.logger.warn('Google Search Console API does not support user removal');
     return {
       success: false,
+      service: 'searchConsole',
       error: 'Google Search Console API does not support user removal. Changes must be made through the web interface.'
     };
   }
@@ -160,5 +184,10 @@ export class GoogleSearchConsoleAccessService implements IGoogleBaseAccessServic
 
   getRequiredScopes(): string[] {
     return [GOOGLE_SEARCH_CONSOLE_READONLY_SCOPE];
+  }
+
+  private determineAccessType(permissions: string[]): TAccessType {
+    const firstPermission = permissions[0];
+    return firstPermission === 'FULL' || firstPermission === 'siteOwner' || firstPermission === 'siteFullUser' ? 'manage' : 'view';
   }
 }

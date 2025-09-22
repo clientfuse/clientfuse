@@ -1,12 +1,15 @@
 import {
   ApiEnv,
   GOOGLE_ANALYTICS_MANAGE_USERS_SCOPE,
+  GoogleServiceType,
   IBaseAccessRequest,
-  IBaseAccessResponse,
+  IGrantAccessResponse,
   IBaseGetEntityUsersParams,
   IBaseUserInfo,
   IGoogleBaseAccessService,
-  ServerErrorCode
+  IRevokeAccessResponse,
+  ServerErrorCode,
+  TAccessType
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -34,18 +37,22 @@ export class GoogleAnalyticsAccessService implements IGoogleBaseAccessService {
     this.oauth2Client.setCredentials(tokens);
   }
 
-  async grantAgencyAccess(request: IBaseAccessRequest): Promise<IBaseAccessResponse> {
+  async grantAgencyAccess(request: IBaseAccessRequest): Promise<IGrantAccessResponse> {
     try {
-      this.logger.log(`Granting Google Analytics access to account ${request.entityId} for ${request.agencyEmail}`);
+      this.logger.log(`Granting Google Analytics access to account ${request.entityId} for ${request.agencyIdentifier}`);
 
       const analytics = google.analytics({ version: 'v3', auth: this.oauth2Client });
 
-      const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyEmail);
+      const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyIdentifier);
 
       if (existingAccess) {
-        this.logger.warn(`User ${request.agencyEmail} already has access to account ${request.entityId}`);
+        this.logger.warn(`User ${request.agencyIdentifier} already has access to account ${request.entityId}`);
         return {
           success: false,
+          service: 'analytics' as GoogleServiceType,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: request.agencyIdentifier,
           error: ServerErrorCode.USER_ALREADY_EXISTS,
           linkId: existingAccess.linkId
         };
@@ -53,7 +60,7 @@ export class GoogleAnalyticsAccessService implements IGoogleBaseAccessService {
 
       const userLink = {
         userRef: {
-          email: request.agencyEmail
+          email: request.agencyIdentifier
         },
         permissions: {
           local: request.permissions
@@ -65,13 +72,16 @@ export class GoogleAnalyticsAccessService implements IGoogleBaseAccessService {
         requestBody: userLink
       });
 
-      this.logger.log(`Successfully granted Analytics access to ${request.agencyEmail} for account ${request.entityId}`);
+      this.logger.log(`Successfully granted Analytics access to ${request.agencyIdentifier} for account ${request.entityId}`);
 
       return {
         success: true,
-        linkId: response.data.id,
+        service: 'analytics' as GoogleServiceType,
+        accessType: this.determineAccessType(request.permissions),
         entityId: request.entityId,
-        message: `Google Analytics access granted successfully to ${request.agencyEmail}`
+        agencyIdentifier: request.agencyIdentifier,
+        linkId: response.data.id,
+        message: `Google Analytics access granted successfully to ${request.agencyIdentifier}`
       };
 
     } catch (error) {
@@ -79,6 +89,10 @@ export class GoogleAnalyticsAccessService implements IGoogleBaseAccessService {
 
       return {
         success: false,
+        service: 'analytics' as GoogleServiceType,
+        accessType: this.determineAccessType(request.permissions),
+        entityId: request.entityId,
+        agencyIdentifier: request.agencyIdentifier,
         error: `Failed to grant access: ${error.message}`
       };
     }
@@ -143,7 +157,7 @@ export class GoogleAnalyticsAccessService implements IGoogleBaseAccessService {
     }
   }
 
-  async revokeUserAccess(entityId: string, linkId: string): Promise<IBaseAccessResponse> {
+  async revokeUserAccess(entityId: string, linkId: string): Promise<IRevokeAccessResponse> {
     try {
       const analytics = google.analytics({ version: 'v3', auth: this.oauth2Client });
 
@@ -156,6 +170,7 @@ export class GoogleAnalyticsAccessService implements IGoogleBaseAccessService {
 
       return {
         success: true,
+        service: 'analytics',
         message: 'Google Analytics access revoked successfully'
       };
 
@@ -164,6 +179,7 @@ export class GoogleAnalyticsAccessService implements IGoogleBaseAccessService {
 
       return {
         success: false,
+        service: 'analytics',
         error: `Failed to revoke access: ${error.message}`
       };
     }
@@ -180,23 +196,46 @@ export class GoogleAnalyticsAccessService implements IGoogleBaseAccessService {
     return [GOOGLE_ANALYTICS_MANAGE_USERS_SCOPE];
   }
 
-  async grantManagementAccess(accountId: string, agencyEmail: string): Promise<IBaseAccessResponse> {
+  async grantManagementAccess(accountId: string, agencyEmail: string): Promise<IGrantAccessResponse> {
     this.logger.log(`Granting management access to ${agencyEmail} for Analytics account ${accountId}`);
 
-    return this.grantAgencyAccess({
+    const result = await this.grantAgencyAccess({
       entityId: accountId,
-      agencyEmail: agencyEmail,
+      agencyIdentifier: agencyEmail,
       permissions: ['MANAGE_USERS', 'EDIT']
     });
+
+    return {
+      ...result,
+      service: 'analytics' as GoogleServiceType,
+      accessType: 'manage' as TAccessType,
+      entityId: accountId,
+      agencyIdentifier: agencyEmail
+    };
   }
 
-  async grantViewAccess(accountId: string, agencyEmail: string): Promise<IBaseAccessResponse> {
+  async grantViewAccess(accountId: string, agencyEmail: string): Promise<IGrantAccessResponse> {
     this.logger.log(`Granting view access to ${agencyEmail} for Analytics account ${accountId}`);
 
-    return this.grantAgencyAccess({
+    const result = await this.grantAgencyAccess({
       entityId: accountId,
-      agencyEmail: agencyEmail,
+      agencyIdentifier: agencyEmail,
       permissions: ['READ_AND_ANALYZE']
     });
+
+    return {
+      ...result,
+      service: 'analytics' as GoogleServiceType,
+      accessType: 'view' as TAccessType,
+      entityId: accountId,
+      agencyIdentifier: agencyEmail
+    };
+  }
+
+  private determineAccessType(permissions: string[]): TAccessType {
+    const hasManagePermissions = permissions.some(p =>
+      p === 'MANAGE_USERS' || p === 'EDIT' || p === 'COLLABORATE'
+    );
+    return hasManagePermissions ? 'manage' : 'view';
   }
 }

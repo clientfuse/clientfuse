@@ -1,12 +1,15 @@
 import {
   ApiEnv,
   GOOGLE_TAGMANAGER_MANAGE_USERS_SCOPE,
+  GoogleServiceType,
   IBaseAccessRequest,
-  IBaseAccessResponse,
+  IGrantAccessResponse,
   IBaseUserInfo,
   IGoogleBaseAccessService,
   IBaseGetEntityUsersParams,
-  ServerErrorCode
+  IRevokeAccessResponse,
+  ServerErrorCode,
+  TAccessType
 } from '@clientfuse/models';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -35,39 +38,59 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
     this.oauth2Client.setCredentials(tokens);
   }
 
-  async grantManagementAccess(accountId: string, agencyEmail: string): Promise<IBaseAccessResponse> {
+  async grantManagementAccess(accountId: string, agencyEmail: string): Promise<IGrantAccessResponse> {
     this.logger.log(`Granting GTM management access to ${agencyEmail} for account ${accountId}`);
 
-    return this.grantAgencyAccess({
+    const result = await this.grantAgencyAccess({
       entityId: accountId,
-      agencyEmail: agencyEmail,
+      agencyIdentifier: agencyEmail,
       permissions: ['admin']
     });
+
+    return {
+      ...result,
+      service: 'tagManager' as GoogleServiceType,
+      accessType: 'manage' as TAccessType,
+      entityId: accountId,
+      agencyIdentifier: agencyEmail
+    };
   }
 
-  async grantViewAccess(accountId: string, agencyEmail: string): Promise<IBaseAccessResponse> {
+  async grantViewAccess(accountId: string, agencyEmail: string): Promise<IGrantAccessResponse> {
     this.logger.log(`Granting GTM view access to ${agencyEmail} for account ${accountId}`);
 
-    return this.grantAgencyAccess({
+    const result = await this.grantAgencyAccess({
       entityId: accountId,
-      agencyEmail: agencyEmail,
+      agencyIdentifier: agencyEmail,
       permissions: ['user']
     });
+
+    return {
+      ...result,
+      service: 'tagManager' as GoogleServiceType,
+      accessType: 'view' as TAccessType,
+      entityId: accountId,
+      agencyIdentifier: agencyEmail
+    };
   }
 
 
-  async grantAgencyAccess(request: IBaseAccessRequest): Promise<IBaseAccessResponse> {
+  async grantAgencyAccess(request: IBaseAccessRequest): Promise<IGrantAccessResponse> {
     try {
-      this.logger.log(`Granting Google Tag Manager access to account ${request.entityId} for ${request.agencyEmail}`);
+      this.logger.log(`Granting Google Tag Manager access to account ${request.entityId} for ${request.agencyIdentifier}`);
 
       const tagManager = google.tagmanager({ version: 'v2', auth: this.oauth2Client });
 
-      const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyEmail);
+      const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyIdentifier);
 
       if (existingAccess) {
-        this.logger.warn(`User ${request.agencyEmail} already has access to account ${request.entityId}`);
+        this.logger.warn(`User ${request.agencyIdentifier} already has access to account ${request.entityId}`);
         return {
           success: false,
+          service: 'tagManager' as GoogleServiceType,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: request.agencyIdentifier,
           error: ServerErrorCode.USER_ALREADY_EXISTS,
           linkId: existingAccess.linkId
         };
@@ -76,7 +99,7 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
       const accountPermission = this.mapPermissionToAccountPermission(request.permissions[0]);
 
       const userPermission = {
-        emailAddress: request.agencyEmail.toLowerCase().trim(),
+        emailAddress: request.agencyIdentifier.toLowerCase().trim(),
         accountAccess: {
           permission: accountPermission
         }
@@ -87,13 +110,16 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
         requestBody: userPermission
       });
 
-      this.logger.log(`Successfully granted GTM access to ${request.agencyEmail} for account ${request.entityId}`);
+      this.logger.log(`Successfully granted GTM access to ${request.agencyIdentifier} for account ${request.entityId}`);
 
       return {
         success: true,
-        linkId: response.data.path || `accounts/${request.entityId}/user_permissions/${request.agencyEmail}`,
+        service: 'tagManager' as GoogleServiceType,
+        accessType: this.determineAccessType(request.permissions),
         entityId: request.entityId,
-        message: `GTM access granted successfully to ${request.agencyEmail}`
+        agencyIdentifier: request.agencyIdentifier,
+        linkId: response.data.path || `accounts/${request.entityId}/user_permissions/${request.agencyIdentifier}`,
+        message: `GTM access granted successfully to ${request.agencyIdentifier}`
       };
 
     } catch (error) {
@@ -102,17 +128,29 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
       if (error.response?.status === 403) {
         return {
           success: false,
+          service: 'tagManager' as GoogleServiceType,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: request.agencyIdentifier,
           error: 'Insufficient permissions to manage GTM users'
         };
       } else if (error.response?.status === 404) {
         return {
           success: false,
+          service: 'tagManager' as GoogleServiceType,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: request.agencyIdentifier,
           error: 'GTM account not found'
         };
       }
 
       return {
         success: false,
+        service: 'tagManager' as GoogleServiceType,
+        accessType: this.determineAccessType(request.permissions),
+        entityId: request.entityId,
+        agencyIdentifier: request.agencyIdentifier,
         error: `Failed to grant access: ${error.message}`
       };
     }
@@ -178,7 +216,7 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
     }
   }
 
-  async revokeUserAccess(entityId: string, linkId: string): Promise<IBaseAccessResponse> {
+  async revokeUserAccess(entityId: string, linkId: string): Promise<IRevokeAccessResponse> {
     try {
       const tagManager = google.tagmanager({ version: 'v2', auth: this.oauth2Client });
 
@@ -190,6 +228,7 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
 
       return {
         success: true,
+        service: 'tagManager',
         message: 'GTM access revoked successfully'
       };
 
@@ -197,6 +236,7 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
       this.logger.error(`Failed to revoke GTM access: ${error.message}`, error);
       return {
         success: false,
+        service: 'tagManager',
         error: `Failed to revoke access: ${error.message}`
       };
     }
@@ -223,5 +263,10 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
     };
 
     return permissionMap[permission] || 'user';
+  }
+
+  private determineAccessType(permissions: string[]): TAccessType {
+    const firstPermission = permissions[0];
+    return firstPermission === 'admin' || firstPermission === 'manage' || firstPermission === 'publish' ? 'manage' : 'view';
   }
 }

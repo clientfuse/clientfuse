@@ -1,12 +1,15 @@
 import {
   ApiEnv,
   GOOGLE_MY_BUSINESS_MANAGE_SCOPE,
+  GoogleServiceType,
   IBaseAccessRequest,
-  IBaseAccessResponse,
+  IGrantAccessResponse,
   IBaseUserInfo,
   IBaseGetEntityUsersParams,
   IGoogleBaseAccessService,
-  ServerErrorCode
+  IRevokeAccessResponse,
+  ServerErrorCode,
+  TAccessType
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -27,24 +30,40 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
     );
   }
 
-  async grantManagementAccess(accountName: string, agencyEmail: string): Promise<IBaseAccessResponse> {
+  async grantManagementAccess(accountName: string, agencyEmail: string): Promise<IGrantAccessResponse> {
     this.logger.log(`Granting My Business management access to ${agencyEmail} for account ${accountName}`);
 
-    return this.grantAgencyAccess({
+    const result = await this.grantAgencyAccess({
       entityId: accountName,
-      agencyEmail: agencyEmail,
+      agencyIdentifier: agencyEmail,
       permissions: ['MANAGER']
     });
+
+    return {
+      ...result,
+      service: 'myBusiness' as GoogleServiceType,
+      accessType: 'manage' as TAccessType,
+      entityId: accountName,
+      agencyIdentifier: agencyEmail
+    };
   }
 
-  async grantViewAccess(accountName: string, agencyEmail: string): Promise<IBaseAccessResponse> {
+  async grantViewAccess(accountName: string, agencyEmail: string): Promise<IGrantAccessResponse> {
     this.logger.log(`Granting My Business view access to ${agencyEmail} for account ${accountName}`);
 
-    return this.grantAgencyAccess({
+    const result = await this.grantAgencyAccess({
       entityId: accountName,
-      agencyEmail: agencyEmail,
+      agencyIdentifier: agencyEmail,
       permissions: ['SITE_MANAGER']
     });
+
+    return {
+      ...result,
+      service: 'myBusiness' as GoogleServiceType,
+      accessType: 'view' as TAccessType,
+      entityId: accountName,
+      agencyIdentifier: agencyEmail
+    };
   }
 
 
@@ -55,21 +74,25 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
     this.oauth2Client.setCredentials(tokens);
   }
 
-  async grantAgencyAccess(request: IBaseAccessRequest): Promise<IBaseAccessResponse> {
+  async grantAgencyAccess(request: IBaseAccessRequest): Promise<IGrantAccessResponse> {
     try {
-      this.logger.log(`Granting Google My Business access to account ${request.entityId} for ${request.agencyEmail}`);
+      this.logger.log(`Granting Google My Business access to account ${request.entityId} for ${request.agencyIdentifier}`);
 
       const myBusinessAccountManagement = google.mybusinessaccountmanagement({
         version: 'v1',
         auth: this.oauth2Client
       });
 
-      const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyEmail);
+      const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyIdentifier);
 
       if (existingAccess) {
-        this.logger.warn(`User ${request.agencyEmail} already has access to account ${request.entityId}`);
+        this.logger.warn(`User ${request.agencyIdentifier} already has access to account ${request.entityId}`);
         return {
           success: false,
+          service: 'myBusiness' as GoogleServiceType,
+          accessType: this.determineAccessType(request.permissions),
+          entityId: request.entityId,
+          agencyIdentifier: request.agencyIdentifier,
           error: ServerErrorCode.USER_ALREADY_EXISTS,
           linkId: existingAccess.linkId
         };
@@ -87,13 +110,16 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
         requestBody: invitation
       });
 
-      this.logger.log(`Successfully created My Business invitation for ${request.agencyEmail} to account ${request.entityId}`);
+      this.logger.log(`Successfully created My Business invitation for ${request.agencyIdentifier} to account ${request.entityId}`);
 
       return {
         success: true,
-        linkId: response.data.name || 'invitation-created',
+        service: 'myBusiness' as GoogleServiceType,
+        accessType: this.determineAccessType(request.permissions),
         entityId: request.entityId,
-        message: `My Business invitation sent successfully to ${request.agencyEmail}`
+        agencyIdentifier: request.agencyIdentifier,
+        linkId: response.data.name || 'invitation-created',
+        message: `My Business invitation sent successfully to ${request.agencyIdentifier}`
       };
 
     } catch (error) {
@@ -101,6 +127,10 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
 
       return {
         success: false,
+        service: 'myBusiness' as GoogleServiceType,
+        accessType: this.determineAccessType(request.permissions),
+        entityId: request.entityId,
+        agencyIdentifier: request.agencyIdentifier,
         error: `Failed to grant access: ${error.message}`
       };
     }
@@ -171,7 +201,7 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
     }
   }
 
-  async revokeUserAccess(entityId: string, linkId: string): Promise<IBaseAccessResponse> {
+  async revokeUserAccess(entityId: string, linkId: string): Promise<IRevokeAccessResponse> {
     try {
       const myBusinessAccountManagement = google.mybusinessaccountmanagement({
         version: 'v1',
@@ -186,6 +216,7 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
 
       return {
         success: true,
+        service: 'myBusiness',
         message: 'My Business access revoked successfully'
       };
 
@@ -194,6 +225,7 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
 
       return {
         success: false,
+        service: 'myBusiness',
         error: `Failed to revoke access: ${error.message}`
       };
     }
@@ -208,5 +240,10 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
 
   getRequiredScopes(): string[] {
     return [GOOGLE_MY_BUSINESS_MANAGE_SCOPE];
+  }
+
+  private determineAccessType(permissions: string[]): TAccessType {
+    const firstPermission = permissions[0];
+    return firstPermission === 'MANAGER' || firstPermission === 'OWNER' || firstPermission === 'PRIMARY_OWNER' ? 'manage' : 'view';
   }
 }
