@@ -511,7 +511,7 @@ export class ConfirmAccessComponent {
     const dto = {
       service: service,
       entityId: panel.selectedAccount,
-      agencyEmail: agencyEmail
+      agencyIdentifier: agencyEmail
     };
 
     try {
@@ -609,7 +609,7 @@ export class ConfirmAccessComponent {
     const dto = {
       service: service,
       entityId: panel.selectedAccount,
-      agencyEmail: agencyEmail
+      agencyIdentifier: agencyEmail
     };
 
     try {

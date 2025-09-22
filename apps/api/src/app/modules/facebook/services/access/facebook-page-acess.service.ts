@@ -32,13 +32,12 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
     this.accessToken = tokens.access_token;
   }
 
-  async grantManagementAccess(pageId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
-    const businessId = agencyEmail; // This actually contains the business ID
-    this.logger.log(`Granting Facebook Page management access to business ${businessId} for page ${pageId}`);
+  async grantManagementAccess(pageId: string, agencyBusinessPortfolioId: string): Promise<TFacebookAccessResponse> {
+    this.logger.log(`Granting Facebook Page management access to business ${agencyBusinessPortfolioId} for page ${pageId}`);
 
     const result = await this.grantAgencyAccess({
       entityId: pageId,
-      agencyIdentifier: businessId, // Passing business ID
+      agencyIdentifier: agencyBusinessPortfolioId,
       permissions: [FacebookPagePermission.ADMIN]
     });
 
@@ -47,17 +46,16 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
       service: FacebookServiceType.PAGE,
       accessType: 'manage' as TAccessType,
       entityId: pageId,
-      agencyIdentifier: businessId
+      agencyIdentifier: agencyBusinessPortfolioId
     };
   }
 
-  async grantViewAccess(pageId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
-    const businessId = agencyEmail; // This actually contains the business ID
-    this.logger.log(`Granting Facebook Page view access to business ${businessId} for page ${pageId}`);
+  async grantViewAccess(pageId: string, agencyBusinessPortfolioId: string): Promise<TFacebookAccessResponse> {
+    this.logger.log(`Granting Facebook Page view access to business ${agencyBusinessPortfolioId} for page ${pageId}`);
 
     const result = await this.grantAgencyAccess({
       entityId: pageId,
-      agencyIdentifier: businessId, // Passing business ID
+      agencyIdentifier: agencyBusinessPortfolioId,
       permissions: [FacebookPagePermission.ANALYST]
     });
 
@@ -66,14 +64,13 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
       service: FacebookServiceType.PAGE,
       accessType: 'view' as TAccessType,
       entityId: pageId,
-      agencyIdentifier: businessId
+      agencyIdentifier: agencyBusinessPortfolioId
     };
   }
 
   async grantAgencyAccess(request: IBaseAccessRequest): Promise<TFacebookAccessResponse> {
     try {
-      const businessId = request.agencyIdentifier; // This actually contains the business ID
-      this.logger.log(`Attempting to grant Facebook Page access to business ${businessId} for page ${request.entityId}`);
+      this.logger.log(`Attempting to grant Facebook Page access to business ${request.agencyIdentifier} for page ${request.entityId}`);
 
       if (!this.accessToken) {
         throw new Error('Access token must be set before granting access');
@@ -87,23 +84,23 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
           service: FacebookServiceType.PAGE,
           accessType: this.determineAccessType(request.permissions),
           entityId: request.entityId,
-          agencyIdentifier: businessId,
+          agencyIdentifier: request.agencyIdentifier,
           error: 'Unable to get page access token. Ensure you have admin access to this page.',
           requiresManualApproval: true,
           businessManagerUrl: `https://business.facebook.com/settings/pages/${request.entityId}`
         };
       }
 
-      const existingAccess = await this.checkExistingUserAccess(request.entityId, businessId);
+      const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyIdentifier);
 
       if (existingAccess) {
-        this.logger.warn(`Business ${businessId} already has access to page ${request.entityId}`);
+        this.logger.warn(`Business ${request.agencyIdentifier} already has access to page ${request.entityId}`);
         return {
           success: false,
           service: FacebookServiceType.PAGE,
           accessType: this.determineAccessType(request.permissions),
           entityId: request.entityId,
-          agencyIdentifier: businessId,
+          agencyIdentifier: request.agencyIdentifier,
           error: 'Business already has access to this page',
           linkId: existingAccess.linkId
         };
@@ -115,7 +112,7 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
         const { data: response } = await facebookHttpClient.post(
           `/${request.entityId}/agencies`,
           {
-            business: businessId,
+            business: request.agencyIdentifier,
             permitted_tasks: tasks
           },
           {
@@ -126,16 +123,16 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
         );
 
         if (response.success !== false) {
-          this.logger.log(`Successfully granted Facebook Page access to business ${businessId} for page ${request.entityId}`);
+          this.logger.log(`Successfully granted Facebook Page access to business ${request.agencyIdentifier} for page ${request.entityId}`);
 
           return {
             success: true,
             service: FacebookServiceType.PAGE,
             accessType: this.determineAccessType(request.permissions),
             entityId: request.entityId,
-            agencyIdentifier: businessId,
-            linkId: `${request.entityId}_${businessId}`,
-            message: `Facebook Page access granted successfully to business ${businessId}`
+            agencyIdentifier: request.agencyIdentifier,
+            linkId: `${request.entityId}_${request.agencyIdentifier}`,
+            message: `Facebook Page access granted successfully to business ${request.agencyIdentifier}`
           };
         } else {
           throw new Error('Failed to add business as agency to page');
@@ -150,11 +147,11 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
           service: FacebookServiceType.PAGE,
           accessType: this.determineAccessType(request.permissions),
           entityId: request.entityId,
-          agencyIdentifier: businessId,
+          agencyIdentifier: request.agencyIdentifier,
           error: 'Facebook Page access assignment requires manual intervention through Business Manager',
           requiresManualApproval: true,
           businessManagerUrl: `https://business.facebook.com/settings/pages/${request.entityId}`,
-          message: `Please manually assign business ${businessId} access through Facebook Business Manager at https://business.facebook.com/settings/pages/${request.entityId}`
+          message: `Please manually assign business ${request.agencyIdentifier} access through Facebook Business Manager at https://business.facebook.com/settings/pages/${request.entityId}`
         };
       }
 

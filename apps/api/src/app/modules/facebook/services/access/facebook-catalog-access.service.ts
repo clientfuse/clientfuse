@@ -31,13 +31,12 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
     this.accessToken = tokens.access_token;
   }
 
-  async grantManagementAccess(catalogId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
-    const businessId = agencyEmail; // This actually contains the business ID
-    this.logger.log(`Granting Facebook Catalog management access to business ${businessId} for catalog ${catalogId}`);
+  async grantManagementAccess(catalogId: string, agencyBusinessPortfolioId: string): Promise<TFacebookAccessResponse> {
+    this.logger.log(`Granting Facebook Catalog management access to business ${agencyBusinessPortfolioId} for catalog ${catalogId}`);
 
     const result = await this.grantAgencyAccess({
       entityId: catalogId,
-      agencyIdentifier: businessId,
+      agencyIdentifier: agencyBusinessPortfolioId,
       permissions: [FacebookCatalogPermission.ADMIN]
     });
 
@@ -46,17 +45,16 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
       service: FacebookServiceType.CATALOG,
       accessType: 'manage' as TAccessType,
       entityId: catalogId,
-      agencyIdentifier: businessId
+      agencyIdentifier: agencyBusinessPortfolioId
     };
   }
 
-  async grantViewAccess(catalogId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
-    const businessId = agencyEmail; // This actually contains the business ID
-    this.logger.log(`Granting Facebook Catalog view access to business ${businessId} for catalog ${catalogId}`);
+  async grantViewAccess(catalogId: string, agencyBusinessPortfolioId: string): Promise<TFacebookAccessResponse> {
+    this.logger.log(`Granting Facebook Catalog view access to business ${agencyBusinessPortfolioId} for catalog ${catalogId}`);
 
     const result = await this.grantAgencyAccess({
       entityId: catalogId,
-      agencyIdentifier: businessId,
+      agencyIdentifier: agencyBusinessPortfolioId,
       permissions: [FacebookCatalogPermission.ADVERTISER]
     });
 
@@ -65,29 +63,28 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
       service: FacebookServiceType.CATALOG,
       accessType: 'view' as TAccessType,
       entityId: catalogId,
-      agencyIdentifier: businessId
+      agencyIdentifier: agencyBusinessPortfolioId
     };
   }
 
   async grantAgencyAccess(request: IBaseAccessRequest): Promise<TFacebookAccessResponse> {
     try {
-      const businessId = request.agencyIdentifier; // This actually contains the business ID
-      this.logger.log(`Attempting to grant Facebook Catalog access to business ${businessId} for catalog ${request.entityId}`);
+      this.logger.log(`Attempting to grant Facebook Catalog access to business ${request.agencyIdentifier} for catalog ${request.entityId}`);
 
       if (!this.accessToken) {
         throw new Error('Access token must be set before granting access');
       }
 
-      const existingAccess = await this.checkExistingUserAccess(request.entityId, businessId);
+      const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyIdentifier);
 
       if (existingAccess) {
-        this.logger.warn(`Business ${businessId} already has access to catalog ${request.entityId}`);
+        this.logger.warn(`Business ${request.agencyIdentifier} already has access to catalog ${request.entityId}`);
         return {
           success: false,
           service: FacebookServiceType.CATALOG,
           accessType: this.determineAccessType(request.permissions),
           entityId: request.entityId,
-          agencyIdentifier: businessId,
+          agencyIdentifier: request.agencyIdentifier,
           error: 'Business already has access to this catalog',
           linkId: existingAccess.linkId
         };
@@ -100,7 +97,7 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
         const { data: response } = await facebookHttpClient.post(
           `/${request.entityId}/agencies`,
           {
-            business: businessId,
+            business: request.agencyIdentifier,
             permitted_tasks: tasks
           },
           {
@@ -111,16 +108,16 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
         );
 
         if (response.success !== false) {
-          this.logger.log(`Successfully granted Facebook Catalog access to business ${businessId} for catalog ${request.entityId}`);
+          this.logger.log(`Successfully granted Facebook Catalog access to business ${request.agencyIdentifier} for catalog ${request.entityId}`);
 
           return {
             success: true,
             service: FacebookServiceType.CATALOG,
             accessType: this.determineAccessType(request.permissions),
             entityId: request.entityId,
-            agencyIdentifier: businessId,
-            linkId: `${request.entityId}_${businessId}`,
-            message: `Facebook Catalog access granted successfully to business ${businessId}`
+            agencyIdentifier: request.agencyIdentifier,
+            linkId: `${request.entityId}_${request.agencyIdentifier}`,
+            message: `Facebook Catalog access granted successfully to business ${request.agencyIdentifier}`
           };
         } else {
           throw new Error('Failed to add business to catalog');
@@ -135,11 +132,11 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
           service: FacebookServiceType.CATALOG,
           accessType: this.determineAccessType(request.permissions),
           entityId: request.entityId,
-          agencyIdentifier: businessId,
+          agencyIdentifier: request.agencyIdentifier,
           error: 'Unable to grant access via API. Manual intervention required.',
           requiresManualApproval: true,
           businessManagerUrl: `https://business.facebook.com/commerce/catalogs/${request.entityId}/collaborators`,
-          message: `Please manually add business ${businessId} as a collaborator through Business Manager`
+          message: `Please manually add business ${request.agencyIdentifier} as a collaborator through Business Manager`
         };
       }
 
@@ -299,9 +296,6 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
           error: 'Insufficient permissions to remove catalog agencies. Manual removal may be required.'
         };
       }
-
-      // Extract business ID from linkId
-      const businessId = linkId.includes('_') ? linkId.split('_')[1] : linkId;
 
       return {
         success: false,

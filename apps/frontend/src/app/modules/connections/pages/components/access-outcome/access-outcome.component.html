@@ -51,12 +51,12 @@
                                    [density]="'compact'"
                                    class="access-badge" />
                       </div>
-                      @if (access.agencyEmail || access.linkId) {
+                      @if (access.agencyIdentifier || access.linkId) {
                         <div class="access-footer">
-                          @if (access.agencyEmail) {
+                          @if (access.agencyIdentifier) {
                             <div class="access-meta-item">
                               <mat-icon class="meta-icon">mail_outline</mat-icon>
-                              <span class="body-very-small">{{ access.agencyEmail }}</span>
+                              <span class="body-very-small">{{ access.agencyIdentifier }}</span>
                             </div>
                           }
                           @if (access.linkId) {

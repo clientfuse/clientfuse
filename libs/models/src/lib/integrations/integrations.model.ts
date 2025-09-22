@@ -28,7 +28,7 @@ export interface IGrantAgencyAccessDto {
   accessToken: string;
   service: string;
   entityId: string;
-  agencyEmail: string;
+  agencyIdentifier: string; // google email or facebook business ID etc.
 }
 
 export interface IRevokeAgencyAccessDto {

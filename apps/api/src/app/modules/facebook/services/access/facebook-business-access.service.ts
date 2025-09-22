@@ -30,22 +30,22 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
     this.accessToken = tokens.access_token;
   }
 
-  async grantManagementAccess(businessId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
-    this.logger.log(`Granting Facebook Business management access to ${agencyEmail} for business ${businessId}`);
+  async grantManagementAccess(businessId: string, agencyBusinessPortfolioId: string): Promise<TFacebookAccessResponse> {
+    this.logger.log(`Granting Facebook Business management access to ${agencyBusinessPortfolioId} for business ${businessId}`);
 
     return this.grantAgencyAccess({
       entityId: businessId,
-      agencyIdentifier: agencyEmail,
+      agencyIdentifier: agencyBusinessPortfolioId,
       permissions: [FacebookBusinessPermission.ADMIN]
     });
   }
 
-  async grantViewAccess(businessId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
-    this.logger.log(`Granting Facebook Business view access to ${agencyEmail} for business ${businessId}`);
+  async grantViewAccess(businessId: string, agencyBusinessPortfolioId: string): Promise<TFacebookAccessResponse> {
+    this.logger.log(`Granting Facebook Business view access to ${agencyBusinessPortfolioId} for business ${businessId}`);
 
     return this.grantAgencyAccess({
       entityId: businessId,
-      agencyIdentifier: agencyEmail,
+      agencyIdentifier: agencyBusinessPortfolioId,
       permissions: [FacebookBusinessPermission.EMPLOYEE]
     });
   }

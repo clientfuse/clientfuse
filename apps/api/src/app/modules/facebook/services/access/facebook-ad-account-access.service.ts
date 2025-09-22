@@ -32,41 +32,39 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
     this.accessToken = tokens.access_token;
   }
 
-  async grantManagementAccess(adAccountId: string, businessPortfolioId: string): Promise<TFacebookAccessResponse> {
-    this.logger.log(`Granting Facebook Ad Account management access to business ${businessPortfolioId} for account ${adAccountId}`);
+  async grantManagementAccess(adAccountId: string, agencyBusinessPortfolioId: string): Promise<TFacebookAccessResponse> {
+    this.logger.log(`Granting Facebook Ad Account management access to business ${agencyBusinessPortfolioId} for account ${adAccountId}`);
 
     return this.grantAgencyAccess({
       entityId: adAccountId,
-      agencyIdentifier: businessPortfolioId, // Passing business ID
+      agencyIdentifier: agencyBusinessPortfolioId,
       permissions: [FacebookAdAccountPermission.ADMIN]
     });
   }
 
-  async grantViewAccess(adAccountId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
-    const businessId = agencyEmail; // This actually contains the business ID
-    this.logger.log(`Granting Facebook Ad Account view access to business ${businessId} for account ${adAccountId}`);
+  async grantViewAccess(adAccountId: string, agencyBusinessPortfolioId: string): Promise<TFacebookAccessResponse> {
+    this.logger.log(`Granting Facebook Ad Account view access to business ${agencyBusinessPortfolioId} for account ${adAccountId}`);
 
     return this.grantAgencyAccess({
       entityId: adAccountId,
-      agencyIdentifier: businessId, // Passing business ID
+      agencyIdentifier: agencyBusinessPortfolioId,
       permissions: [FacebookAdAccountPermission.REPORTS_ONLY]
     });
   }
 
   async grantAgencyAccess(request: IBaseAccessRequest): Promise<TFacebookAccessResponse> {
     try {
-      const businessId = request.agencyIdentifier; // This actually contains the business ID
-      this.logger.log(`Attempting to grant Facebook Ad Account access to business ${businessId} for account ${request.entityId}`);
+      this.logger.log(`Attempting to grant Facebook Ad Account access to business ${request.agencyIdentifier} for account ${request.entityId}`);
 
       if (!this.accessToken) {
         throw new Error('Access token must be set before granting access');
       }
 
       const accessType: 'view' | 'manage' = request.permissions[0] === FacebookAdAccountPermission.REPORTS_ONLY ? 'view' : 'manage';
-      const existingAccess = await this.checkExistingUserAccess(request.entityId, businessId);
+      const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyIdentifier);
 
       if (existingAccess) {
-        this.logger.warn(`Business ${businessId} already has access to ad account ${request.entityId}`);
+        this.logger.warn(`Business ${request.agencyIdentifier} already has access to ad account ${request.entityId}`);
         return {
           success: false,
           error: 'Business already has access to this ad account',
@@ -81,16 +79,16 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
       const cleanAccountId = request.entityId.replace('act_', '');
       const accountId = `act_${cleanAccountId}`;
 
-      const businessScopedUserId = await this.getBusinessScopedUserId(businessId);
+      const businessScopedUserId = await this.getBusinessScopedUserId(request.agencyIdentifier);
 
       if (!businessScopedUserId) {
-        this.logger.error(`Could not retrieve business-scoped user ID for business ${businessId}`);
+        this.logger.error(`Could not retrieve business-scoped user ID for business ${request.agencyIdentifier}`);
         return {
           success: false,
           error: 'Unable to get business user ID. Please ensure the business has users assigned.',
           requiresManualApproval: true,
           businessManagerUrl: `https://business.facebook.com/settings/ad-accounts/${cleanAccountId}`,
-          message: `Please manually assign business ${businessId} access through Facebook Business Manager`,
+          message: `Please manually assign business ${request.agencyIdentifier} access through Facebook Business Manager`,
           service: FacebookServiceType.AD_ACCOUNT,
           accessType: accessType,
           entityId: request.entityId,
@@ -108,20 +106,20 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
             params: {
               user: businessScopedUserId,
               role: role,
-              business: businessId, // Include business parameter
+              business: request.agencyIdentifier, // Include business parameter
               access_token: this.accessToken
             }
           }
         );
 
         if (response.data?.success !== false) {
-          this.logger.log(`Successfully granted Facebook Ad Account access to business ${businessId} (user: ${businessScopedUserId}) for account ${accountId}`);
+          this.logger.log(`Successfully granted Facebook Ad Account access to business ${request.agencyIdentifier} (user: ${businessScopedUserId}) for account ${accountId}`);
 
           return {
             success: true,
-            linkId: `${accountId}_${businessId}`,
+            linkId: `${accountId}_${request.agencyIdentifier}`,
             entityId: request.entityId,
-            message: `Facebook Ad Account access granted successfully to business ${businessId}`,
+            message: `Facebook Ad Account access granted successfully to business ${request.agencyIdentifier}`,
             service: FacebookServiceType.AD_ACCOUNT,
             accessType: accessType,
             agencyIdentifier: request.agencyIdentifier
@@ -139,7 +137,7 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
           error: 'Unable to grant access via API. Manual intervention required.',
           requiresManualApproval: true,
           businessManagerUrl: `https://business.facebook.com/settings/ad-accounts/${cleanAccountId}`,
-          message: `Please manually assign business ${businessId} access through Facebook Business Manager`,
+          message: `Please manually assign business ${request.agencyIdentifier} access through Facebook Business Manager`,
           service: FacebookServiceType.AD_ACCOUNT,
           accessType: accessType,
           entityId: request.entityId,

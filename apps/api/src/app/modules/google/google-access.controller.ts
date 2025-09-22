@@ -51,7 +51,7 @@ export class GoogleAccessController {
     await this.validateAndSetTokenCredentials(dto.accessToken, dto.service);
 
     const service = this.getService(dto.service);
-    const result = await service.grantManagementAccess(dto.entityId, dto.agencyEmail);
+    const result = await service.grantManagementAccess(dto.entityId, dto.agencyIdentifier);
 
     if (!result.success) {
       throw new BadRequestException(result.error || 'Failed to grant management access');
@@ -62,7 +62,7 @@ export class GoogleAccessController {
       service: dto.service,
       accessType: 'manage',
       entityId: dto.entityId,
-      agencyIdentifier: dto.agencyEmail,
+      agencyIdentifier: dto.agencyIdentifier,
       linkId: result.linkId,
       message: result.message
     };
@@ -74,7 +74,7 @@ export class GoogleAccessController {
     await this.validateAndSetTokenCredentials(dto.accessToken, dto.service);
 
     const service = this.getService(dto.service);
-    const result = await service.grantViewAccess(dto.entityId, dto.agencyEmail);
+    const result = await service.grantViewAccess(dto.entityId, dto.agencyIdentifier);
 
     if (!result.success) {
       throw new BadRequestException(result.error || 'Failed to grant view access');
@@ -85,7 +85,7 @@ export class GoogleAccessController {
       service: dto.service,
       accessType: 'view',
       entityId: dto.entityId,
-      agencyIdentifier: dto.agencyEmail,
+      agencyIdentifier: dto.agencyIdentifier,
       linkId: result.linkId,
       message: result.message
     };

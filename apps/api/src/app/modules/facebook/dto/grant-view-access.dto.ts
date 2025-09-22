@@ -16,5 +16,5 @@ export class GrantViewAccessDto implements IGrantAgencyAccessDto {
 
   @IsString()
   @IsNotEmpty()
-  agencyEmail: string;
+  agencyIdentifier: string;
 }

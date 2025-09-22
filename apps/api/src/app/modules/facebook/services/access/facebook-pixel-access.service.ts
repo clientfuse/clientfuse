@@ -30,13 +30,13 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
     this.accessToken = tokens.access_token;
   }
 
-  async grantManagementAccess(pixelId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
-    // Note: agencyEmail parameter actually contains the Facebook business account ID, not an email
-    this.logger.log(`Granting Facebook Pixel management access to business account ${agencyEmail} for pixel ${pixelId}`);
+  async grantManagementAccess(pixelId: string, agencyBusinessPortfolioId: string): Promise<TFacebookAccessResponse> {
+    // Note: agencyBusinessPortfolioId parameter actually contains the Facebook business account ID, not an email
+    this.logger.log(`Granting Facebook Pixel management access to business account ${agencyBusinessPortfolioId} for pixel ${pixelId}`);
 
     const result = await this.grantAgencyAccess({
       entityId: pixelId,
-      agencyIdentifier: agencyEmail, // This is actually a business account ID
+      agencyIdentifier: agencyBusinessPortfolioId, // This is actually a business account ID
       permissions: [FacebookPixelPermission.ADMIN]
     });
 
@@ -45,17 +45,17 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
       service: FacebookServiceType.PIXEL,
       accessType: 'manage' as TAccessType,
       entityId: pixelId,
-      agencyIdentifier: agencyEmail
+      agencyIdentifier: agencyBusinessPortfolioId
     };
   }
 
-  async grantViewAccess(pixelId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
-    // Note: agencyEmail parameter actually contains the Facebook business account ID, not an email
-    this.logger.log(`Granting Facebook Pixel view access to business account ${agencyEmail} for pixel ${pixelId}`);
+  async grantViewAccess(pixelId: string, agencyBusinessPortfolioId: string): Promise<TFacebookAccessResponse> {
+    // Note: agencyBusinessPortfolioId parameter actually contains the Facebook business account ID, not an email
+    this.logger.log(`Granting Facebook Pixel view access to business account ${agencyBusinessPortfolioId} for pixel ${pixelId}`);
 
     const result = await this.grantAgencyAccess({
       entityId: pixelId,
-      agencyIdentifier: agencyEmail, // This is actually a business account ID
+      agencyIdentifier: agencyBusinessPortfolioId, // This is actually a business account ID
       permissions: [FacebookPixelPermission.ADVERTISER]
     });
 
@@ -64,13 +64,13 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
       service: FacebookServiceType.PIXEL,
       accessType: 'view' as TAccessType,
       entityId: pixelId,
-      agencyIdentifier: agencyEmail
+      agencyIdentifier: agencyBusinessPortfolioId
     };
   }
 
   async grantAgencyAccess(request: IBaseAccessRequest): Promise<TFacebookAccessResponse> {
     try {
-      // IMPORTANT: The agencyEmail field actually contains a Facebook business account ID, not an email address
+      // IMPORTANT: The agencyIdentifier field actually contains a Facebook business account ID, not an email address
       // This is because Facebook's API requires account IDs for access management, not email addresses
       const businessAccountId = request.agencyIdentifier; // This is actually a business account ID
 

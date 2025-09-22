@@ -1,17 +1,18 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, output, signal } from '@angular/core';
+import { Component, computed, inject, output } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import {
+  FacebookServiceType,
   GoogleServiceType,
   IGrantAccessResponse,
   ServiceNames,
   TAccessType,
-  TFacebookAccessLinkKeys,
   TGoogleAccessLinkKeys
 } from '@clientfuse/models';
 import { BadgeComponent } from '../../../../../components/badge/badge.component';
 import { IslandComponent } from '../../../../../components/island/island.component';
+import { FacebookStoreService } from '../../../../../services/facebook/facebook-store.service';
 import { GoogleStoreService } from '../../../../../services/google/google-store.service';
 import { GOOGLE_ICON_PATHS } from '../../../../../utils/icon.utils';
 
@@ -44,32 +45,12 @@ interface PlatformSection {
 })
 export class AccessOutcomeComponent {
   private googleStoreService = inject(GoogleStoreService);
+  private facebookStoreService = inject(FacebookStoreService);
 
   resetConnection = output<void>();
 
-  private mockFacebookAccesses = signal<IGrantAccessResponse[]>([
-    {
-      success: true,
-      service: 'ads' as GoogleServiceType,
-      accessType: 'manage',
-      entityId: 'act_123456789',
-      agencyEmail: 'agency@example.com',
-      linkId: 'fb_link_1',
-      message: 'Facebook Ads Manager Account'
-    },
-    {
-      success: true,
-      service: 'analytics' as GoogleServiceType,
-      accessType: 'view',
-      entityId: 'page_987654321',
-      agencyEmail: 'agency@example.com',
-      linkId: 'fb_link_2',
-      message: 'Facebook Page Insights'
-    }
-  ]);
-
   googleAccesses = computed(() => this.googleStoreService.grantedAccesses());
-  facebookAccesses = computed(() => this.mockFacebookAccesses());
+  facebookAccesses = computed(() => this.facebookStoreService.grantedAccesses());
 
   platformSections = computed<PlatformSection[]>(() => {
     const sections: PlatformSection[] = [];
@@ -138,23 +119,35 @@ export class AccessOutcomeComponent {
   }
 
   private mapToFacebookService(access: IGrantAccessResponse): string {
-    if (access.entityId?.startsWith('act_')) return 'facebook_ads';
-    if (access.entityId?.startsWith('page_')) return 'facebook_pages';
-    return 'facebook_business';
+    // Direct service type mapping
+    switch (access.service) {
+      case FacebookServiceType.AD_ACCOUNT:
+        return 'facebook_ads';
+      case FacebookServiceType.PAGE:
+        return 'facebook_pages';
+      case FacebookServiceType.CATALOG:
+        return 'facebook_catalogs';
+      case FacebookServiceType.PIXEL:
+        return 'facebook_pixels';
+      default:
+        return 'facebook_ads';
+    }
   }
 
   private getServiceDisplayName(service: GoogleServiceType): string {
     const serviceName = ServiceNames[service as TGoogleAccessLinkKeys];
-    if (serviceName && service === 'ads') {
-      return `Google ${serviceName}`;
-    }
     return serviceName || service;
   }
 
   private getFacebookServiceDisplayName(service: string): string {
-    const fbServiceKey = service.replace('facebook_', '') as TFacebookAccessLinkKeys;
-    const serviceName = ServiceNames[fbServiceKey];
-    return serviceName ? `Facebook ${serviceName}` : service;
+    const serviceMapping: Record<string, string> = {
+      'facebook_ads': 'Ads',
+      'facebook_pages': 'Pages',
+      'facebook_catalogs': 'Catalogs',
+      'facebook_pixels': 'Pixels'
+    };
+
+    return serviceMapping[service] || service;
   }
 
   private getServiceIcon(service: GoogleServiceType): string {

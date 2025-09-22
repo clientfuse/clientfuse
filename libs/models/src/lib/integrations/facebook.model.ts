@@ -8,9 +8,9 @@ export type TFacebookAccessResponse = IGrantAccessResponse & {
 export interface IFacebookBaseAccessService {
   setCredentials(tokens: { access_token: string }): void;
 
-  grantManagementAccess(entityId: string, agencyEmail: string): Promise<TFacebookAccessResponse>;
+  grantManagementAccess(entityId: string, agencyBusinessPorfolioId: string): Promise<TFacebookAccessResponse>;
 
-  grantViewAccess(entityId: string, agencyEmail: string): Promise<TFacebookAccessResponse>;
+  grantViewAccess(entityId: string, agencyBusinessPorfolioId: string): Promise<TFacebookAccessResponse>;
 
   grantAgencyAccess(request: IBaseAccessRequest): Promise<TFacebookAccessResponse>;
 
