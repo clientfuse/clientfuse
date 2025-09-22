@@ -1,6 +1,7 @@
 import {
   FACEBOOK_CATALOG_MANAGEMENT_SCOPE,
   FACEBOOK_CATALOG_ROLES,
+  FACEBOOK_CATALOG_TASKS,
   FACEBOOK_ERROR_CODES,
   FacebookCatalogPermission,
   IBaseAccessRequest,
@@ -29,81 +30,87 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
   }
 
   async grantManagementAccess(catalogId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
-    this.logger.log(`Granting Facebook Catalog management access to ${agencyEmail} for catalog ${catalogId}`);
+    const businessId = agencyEmail; // This actually contains the business ID
+    this.logger.log(`Granting Facebook Catalog management access to business ${businessId} for catalog ${catalogId}`);
 
     return this.grantAgencyAccess({
       entityId: catalogId,
-      agencyEmail: agencyEmail,
+      agencyEmail: businessId,
       permissions: [FacebookCatalogPermission.ADMIN]
     });
   }
 
   async grantViewAccess(catalogId: string, agencyEmail: string): Promise<TFacebookAccessResponse> {
-    this.logger.log(`Granting Facebook Catalog view access to ${agencyEmail} for catalog ${catalogId}`);
+    const businessId = agencyEmail; // This actually contains the business ID
+    this.logger.log(`Granting Facebook Catalog view access to business ${businessId} for catalog ${catalogId}`);
 
     return this.grantAgencyAccess({
       entityId: catalogId,
-      agencyEmail: agencyEmail,
+      agencyEmail: businessId,
       permissions: [FacebookCatalogPermission.ADVERTISER]
     });
   }
 
   async grantAgencyAccess(request: IBaseAccessRequest): Promise<TFacebookAccessResponse> {
     try {
-      this.logger.log(`Attempting to grant Facebook Catalog access to ${request.agencyEmail} for catalog ${request.entityId}`);
+      const businessId = request.agencyEmail; // This actually contains the business ID
+      this.logger.log(`Attempting to grant Facebook Catalog access to business ${businessId} for catalog ${request.entityId}`);
 
       if (!this.accessToken) {
         throw new Error('Access token must be set before granting access');
       }
 
-      const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyEmail);
+      const existingAccess = await this.checkExistingUserAccess(request.entityId, businessId);
 
       if (existingAccess) {
-        this.logger.warn(`User ${request.agencyEmail} already has access to catalog ${request.entityId}`);
+        this.logger.warn(`Business ${businessId} already has access to catalog ${request.entityId}`);
         return {
           success: false,
-          error: 'User already has access to this catalog',
+          error: 'Business already has access to this catalog',
           linkId: existingAccess.linkId
         };
       }
 
-      const role = this.mapPermissionToRole(request.permissions[0] || FacebookCatalogPermission.ADVERTISER);
+      // Map permission to tasks for catalog
+      const tasks = this.mapPermissionToTasks(request.permissions[0] || FacebookCatalogPermission.ADVERTISER);
 
       try {
         const { data: response } = await facebookHttpClient.post(
-          `/${request.entityId}/collaborators`,
-          {},
+          `/${request.entityId}/agencies`,
+          {
+            business: businessId,
+            permitted_tasks: tasks
+          },
           {
             params: {
-              email: request.agencyEmail,
-              role: role,
               access_token: this.accessToken
             }
           }
         );
 
         if (response.success !== false) {
-          this.logger.log(`Successfully granted Facebook Catalog access to ${request.agencyEmail} for catalog ${request.entityId}`);
+          this.logger.log(`Successfully granted Facebook Catalog access to business ${businessId} for catalog ${request.entityId}`);
 
           return {
             success: true,
-            linkId: `${request.entityId}_${request.agencyEmail}`,
+            linkId: `${request.entityId}_${businessId}`,
             entityId: request.entityId,
-            message: `Facebook Catalog access granted successfully to ${request.agencyEmail}`
+            message: `Facebook Catalog access granted successfully to business ${businessId}`
           };
         } else {
-          throw new Error('Failed to add collaborator to catalog');
+          throw new Error('Failed to add business to catalog');
         }
 
-      } catch (apiError) {
-        this.logger.warn(`API method failed, may require manual catalog collaboration assignment: ${apiError.message}`);
+      } catch (apiError: any) {
+        this.logger.error(`Failed to grant access via agencies endpoint: ${apiError.message}`);
+        console.error('API Error details:', apiError.response?.data);
 
         return {
           success: false,
-          error: 'Facebook Catalog collaboration requires manual intervention through Business Manager',
+          error: 'Unable to grant access via API. Manual intervention required.',
           requiresManualApproval: true,
           businessManagerUrl: `https://business.facebook.com/commerce/catalogs/${request.entityId}/collaborators`,
-          message: `Please manually add ${request.agencyEmail} as a collaborator with ${role} role through Business Manager at https://business.facebook.com/commerce/catalogs/${request.entityId}/collaborators`
+          message: `Please manually add business ${businessId} as a collaborator through Business Manager`
         };
       }
 
@@ -121,7 +128,7 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
       if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
         return {
           success: false,
-          error: 'Insufficient permissions to manage catalog collaborators. You must be an admin of this catalog.',
+          error: 'Insufficient permissions to manage catalog. You must be an admin of this catalog.',
           requiresManualApproval: true,
           businessManagerUrl: `https://business.facebook.com/commerce/catalogs/${request.entityId}/collaborators`
         };
@@ -136,17 +143,16 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
     }
   }
 
-  async checkExistingUserAccess(entityId: string, email: string): Promise<TFacebookUserInfo | null> {
+  async checkExistingUserAccess(entityId: string, businessId: string): Promise<TFacebookUserInfo | null> {
     try {
       if (!this.accessToken) {
         return null;
       }
 
       const { data: response } = await facebookHttpClient.get(
-        `/${entityId}/collaborators`,
+        `/${entityId}/agencies`,
         {
           params: {
-            fields: 'id,email,role,status',
             access_token: this.accessToken
           }
         }
@@ -156,27 +162,28 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
         return null;
       }
 
-      const normalizedEmail = email.toLowerCase().trim();
+      const existingBusiness = response.data.find((agency: any) => {
+        return agency.id === businessId || agency.business === businessId;
+      });
 
-      const existingUser = response.data.find((collaborator: any) =>
-        collaborator.email?.toLowerCase() === normalizedEmail
-      );
-
-      if (!existingUser) {
+      if (!existingBusiness) {
         return null;
       }
 
+      // Map tasks to role
+      const roleType = this.mapTasksToRole(existingBusiness.permitted_tasks);
+
       return {
-        linkId: existingUser.id || `${entityId}_${existingUser.email}`,
-        email: existingUser.email || email,
-        permissions: [existingUser.role || FacebookCatalogPermission.ADVERTISER],
-        kind: 'facebook#catalogCollaborator',
-        status: existingUser.status || 'ACTIVE',
-        roleType: existingUser.role
+        linkId: `${entityId}_${businessId}`,
+        email: businessId, // Using businessId for compatibility
+        permissions: existingBusiness.permitted_tasks || [FacebookCatalogPermission.ADVERTISER],
+        kind: 'facebook#catalogUser',
+        status: 'ACTIVE',
+        roleType: roleType
       };
 
     } catch (error: any) {
-      this.logger.error(`Error checking existing Facebook Catalog user access: ${error.message}`);
+      this.logger.error(`Error checking existing Facebook Catalog business access: ${error.message}`);
       console.error(error);
       return null;
     }
@@ -189,10 +196,9 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
       }
 
       const { data: response } = await facebookHttpClient.get(
-        `/${entityId}/collaborators`,
+        `/${entityId}/agencies`,
         {
           params: {
-            fields: 'id,email,role,status',
             access_token: this.accessToken
           }
         }
@@ -202,17 +208,22 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
         return [];
       }
 
-      return response.data.map((collaborator: any) => ({
-        linkId: collaborator.id || `${entityId}_${collaborator.email}`,
-        email: collaborator.email || '',
-        permissions: [collaborator.role || FacebookCatalogPermission.ADVERTISER],
-        kind: 'facebook#catalogCollaborator',
-        status: collaborator.status || 'ACTIVE',
-        roleType: collaborator.role
-      }));
+      return response.data.map((agency: any) => {
+        const businessId = agency.id || agency.business || '';
+        const roleType = this.mapTasksToRole(agency.permitted_tasks);
+
+        return {
+          linkId: `${entityId}_${businessId}`,
+          email: businessId, // Using business ID as identifier
+          permissions: agency.permitted_tasks || [FacebookCatalogPermission.ADVERTISER],
+          kind: 'facebook#catalogUser',
+          status: 'ACTIVE',
+          roleType: roleType
+        };
+      });
 
     } catch (error: any) {
-      this.logger.error(`Error fetching Facebook Catalog entity users: ${error.message}`);
+      this.logger.error(`Error fetching Facebook Catalog agencies: ${error.message}`);
       console.error(error);
       return [];
     }
@@ -224,19 +235,20 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
         throw new Error('Access token must be set before revoking access');
       }
 
-      const collaboratorId = linkId.includes('_') ? linkId.split('_')[1] : linkId;
+      // Extract business ID from linkId
+      const businessId = linkId.includes('_') ? linkId.split('_')[1] : linkId;
 
       await facebookHttpClient.delete(
-        `/${entityId}/collaborators`,
+        `/${entityId}/agencies`,
         {
           params: {
-            email: collaboratorId,
+            business: businessId,
             access_token: this.accessToken
           }
         }
       );
 
-      this.logger.log(`Successfully revoked Facebook Catalog access for user ${collaboratorId} from catalog ${entityId}`);
+      this.logger.log(`Successfully revoked Facebook Catalog access for business ${businessId} from catalog ${entityId}`);
 
       return {
         success: true,
@@ -250,7 +262,7 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
       if (error.response?.data?.error?.code === FACEBOOK_ERROR_CODES.PERMISSIONS_ERROR) {
         return {
           success: false,
-          error: 'Insufficient permissions to remove catalog collaborators. Manual removal may be required.',
+          error: 'Insufficient permissions to remove catalog agencies. Manual removal may be required.',
           requiresManualApproval: true,
           businessManagerUrl: `https://business.facebook.com/commerce/catalogs/${entityId}/collaborators`
         };
@@ -274,33 +286,23 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
     return [FACEBOOK_CATALOG_MANAGEMENT_SCOPE];
   }
 
-  async getCatalogInfo(catalogId: string): Promise<any> {
-    try {
-      const { data: response } = await facebookHttpClient.get(
-        `/${catalogId}`,
-        {
-          params: {
-            fields: 'id,name,business,product_count,vertical',
-            access_token: this.accessToken
-          }
-        }
-      );
-
-      return response;
-
-    } catch (error: any) {
-      this.logger.error(`Error fetching catalog info: ${error.message}`);
-      console.error(error);
-      return null;
+  private mapPermissionToTasks(permission: string): string[] {
+    if (permission === FacebookCatalogPermission.ADMIN) {
+      return [FACEBOOK_CATALOG_TASKS.MANAGE, FACEBOOK_CATALOG_TASKS.ADVERTISE];
     }
+    return [FACEBOOK_CATALOG_TASKS.ADVERTISE];
   }
 
-  private mapPermissionToRole(permission: string): string {
-    const roleMap: Record<string, string> = {
-      [FacebookCatalogPermission.ADMIN]: FACEBOOK_CATALOG_ROLES.ADMIN,
-      [FacebookCatalogPermission.ADVERTISER]: FACEBOOK_CATALOG_ROLES.ADVERTISER
-    };
+  private mapTasksToRole(tasks: string[] | undefined): string {
+    if (!tasks || tasks.length === 0) {
+      return FacebookCatalogPermission.ADVERTISER;
+    }
 
-    return roleMap[permission] || FACEBOOK_CATALOG_ROLES.ADVERTISER;
+    if (tasks.includes(FACEBOOK_CATALOG_TASKS.MANAGE)) {
+      return FacebookCatalogPermission.ADMIN;
+    }
+
+    return FacebookCatalogPermission.ADVERTISER;
   }
+
 }
