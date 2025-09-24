@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { TAccessType, TConnectionLinkBase, TConnectionLinkResponse } from '@clientfuse/models';
+import { generateConnectionLinkName, TConnectionLinkBase, TConnectionLinkResponse } from '@clientfuse/models';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { BadgeComponent } from '../../../../components/badge/badge.component';
@@ -113,6 +113,7 @@ export class DashboardPageComponent {
     }
 
     const newConnectionLink = await this.connectionLinkStoreService.createConnectionLink({
+      name: generateConnectionLinkName(typeResult.type, true),
       agencyId,
       isDefault: false,
       type: typeResult.type,

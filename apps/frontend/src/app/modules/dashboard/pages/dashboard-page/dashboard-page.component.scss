@@ -85,6 +85,12 @@
           position: relative;
           line-height: 1.5;
 
+          .mat-mdc-icon-button {
+            vertical-align: middle;
+            display: inline-grid;
+            place-content: center;
+          }
+
           ul {
             margin: 0;
             padding: 0;

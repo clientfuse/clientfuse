@@ -1,4 +1,4 @@
-import { TAccessType, TConnectionLinkResponse } from '@clientfuse/models';
+import { TAccessType, TConnectionLinkResponse, generateConnectionLinkName } from '@clientfuse/models';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
@@ -17,6 +17,10 @@ export class ConnectionLinkService {
       await this.unsetDefaultForAgency(dto.agencyId, dto.type);
     }
 
+    if (!dto.name) {
+      dto.name = generateConnectionLinkName(dto.type, true);
+    }
+
     const createdConnectionLink = await this.connectionLinkModel.create(dto);
     return createdConnectionLink.toJSON() as unknown as TConnectionLinkResponse;
   }
@@ -25,6 +29,7 @@ export class ConnectionLinkService {
     await this.unsetDefaultForAgency(agencyId, type);
 
     const connectionLinkData: CreateConnectionLinkDto = {
+      name: generateConnectionLinkName(type, false),
       agencyId,
       isDefault: true,
       type,

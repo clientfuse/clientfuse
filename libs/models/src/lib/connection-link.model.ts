@@ -48,6 +48,7 @@ export type TConnectionLink = {
 }
 
 export type TConnectionLinkBase = TConnectionLink & {
+  name: string;
   isDefault: boolean;
   agencyId: string;
   type: TAccessType;
@@ -80,3 +81,8 @@ export const ServiceNames: Record<AllAccessLinkKeys, string> = {
   catalogs: 'Catalogs',
   pixels: 'Pixels'
 };
+
+export function generateConnectionLinkName(type: TAccessType, includeDate: boolean = false): string {
+  const baseName = `${type === 'view' ? 'View' : 'Manage'} Connection Link`;
+  return includeDate ? `${baseName} ${new Date().toISOString()}` : baseName;
+}

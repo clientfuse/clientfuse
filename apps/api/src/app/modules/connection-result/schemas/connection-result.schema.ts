@@ -59,7 +59,6 @@ ConnectionResultSchema.set('toJSON', {
   versionKey: false
 });
 
-// Create compound indexes for efficient querying
 ConnectionResultSchema.index({ agencyId: 1, connectionLinkId: 1 });
 ConnectionResultSchema.index({ agencyId: 1, googleUserId: 1 });
 ConnectionResultSchema.index({ agencyId: 1, facebookUserId: 1 });

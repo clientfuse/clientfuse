@@ -44,7 +44,7 @@ export class RequestDetailsComponent {
       'Pinterest': 'Pinterest Business Account',
       'Snapchat': 'Snapchat Business Account'
     };
-    
+
     return platformAccountNames[platformPrefix] || `${platformPrefix} Account`;
   }
 
@@ -56,7 +56,6 @@ export class RequestDetailsComponent {
     const result: IServiceGroup[] = [];
     const groupsArray = Array.from(identifierMap.entries());
 
-    // If only one service or all services have the same identifier
     if (enabledServicesCount === 1 || (groupsArray.length === 1 && groupsArray[0][1].length === enabledServicesCount)) {
       result.push({
         identifier: groupsArray[0][0],
@@ -69,8 +68,8 @@ export class RequestDetailsComponent {
         result.push({
           identifier,
           services,
-          displayName: services.length > 1 
-            ? `${platformPrefix} ${services.join(', ')}` 
+          displayName: services.length > 1
+            ? `${platformPrefix} ${services.join(', ')}`
             : `${platformPrefix} ${services[0]}`
         });
       }

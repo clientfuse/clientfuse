@@ -1,18 +1,20 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleChange, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import {
   AllAccessLinkKeys,
-  IConnectionLinkItemBase,
+  CONNECTION_LINK_VALIDATORS,
   ServiceNames,
-  TConnectionLink,
+  TConnectionLinkBase,
   TConnectionLinkResponse,
   TFacebookAccessLinkKeys,
   TGoogleAccessLinkKeys,
@@ -56,6 +58,7 @@ export interface ICustomizeAccessLinkModalData {
     MatDialogModule,
     MatIconModule,
     MatFormFieldModule,
+    MatInputModule,
     MatSelectModule
   ],
   templateUrl: './customize-access-link-modal.component.html',
@@ -69,10 +72,21 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
   private readonly googleIconPaths = GOOGLE_ICON_PATHS;
 
   form = new FormGroup({});
+  nameControl = new FormControl('', [
+    Validators.required,
+    Validators.minLength(CONNECTION_LINK_VALIDATORS.NAME.MIN_LENGTH),
+    Validators.maxLength(CONNECTION_LINK_VALIDATORS.NAME.MAX_LENGTH)
+  ]);
+  nameControlChanges = toSignal(this.nameControl.valueChanges);
 
   initialConnectionLink = signal<TConnectionLinkResponse | null>(null);
   connectionLink = signal<TConnectionLinkResponse | null>(null);
-  isChanged = computed<boolean>(() => !isEqual(this.initialConnectionLink(), this.connectionLink()));
+  isChanged = computed<boolean>(() => {
+    this.nameControlChanges();
+    const initial = this.initialConnectionLink();
+    const current = this.connectionLink();
+    return !isEqual(initial, current) || this.nameControl.value !== initial?.name;
+  });
 
   selectedBusinessPortfolioId = signal<string | null>(null);
   businessAccounts = computed(() => {
@@ -84,6 +98,7 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
     const link = this.data.connectionLink;
     this.initialConnectionLink.set(cloneDeep(link));
     this.connectionLink.set(cloneDeep(link));
+    this.nameControl.setValue(link.name);
     this.initializeSelectedBusinessPortfolioId(link);
   }
 
@@ -150,9 +165,10 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
 
   async onSubmit(): Promise<void> {
     const updatedConnectionLink = this.connectionLink();
-    if (!updatedConnectionLink) return;
+    if (!updatedConnectionLink || this.nameControl.invalid) return;
 
-    const updateData: Partial<TConnectionLink> = {
+    const updateData: Partial<TConnectionLinkBase> = {
+      name: this.nameControl.value || '',
       google: updatedConnectionLink.google,
       facebook: updatedConnectionLink.facebook
     };

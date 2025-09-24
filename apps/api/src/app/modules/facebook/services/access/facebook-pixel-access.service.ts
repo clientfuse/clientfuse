@@ -31,7 +31,6 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
   }
 
   async grantManagementAccess(pixelId: string, agencyBusinessPortfolioId: string): Promise<TFacebookAccessResponse> {
-    // Note: agencyBusinessPortfolioId parameter actually contains the Facebook business account ID, not an email
     this.logger.log(`Granting Facebook Pixel management access to business account ${agencyBusinessPortfolioId} for pixel ${pixelId}`);
 
     const result = await this.grantAgencyAccess({

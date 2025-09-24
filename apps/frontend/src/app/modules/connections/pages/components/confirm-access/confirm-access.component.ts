@@ -478,7 +478,6 @@ export class ConfirmAccessComponent {
       return;
     }
 
-    // Special handling for Google Ads non-Gmail domains
     if (panel.key === 'googleAds' && agencyEmail && !agencyEmail.toLowerCase().endsWith('@gmail.com')) {
       const domain = agencyEmail.split('@')[1];
       const dialogRef = this.dialogService.open<GoogleAdsDomainModalComponent, IGoogleAdsDomainModalData>(
@@ -489,7 +488,6 @@ export class ConfirmAccessComponent {
       if (!result) return;
     }
 
-    // Special handling for Google Search Console
     if (panel.key === 'googleSearchConsole') {
       const dialogRef = this.dialogService.open<GoogleSearchConsoleModalComponent, IGoogleSearchConsoleModalData>(
         GoogleSearchConsoleModalComponent,
@@ -507,7 +505,6 @@ export class ConfirmAccessComponent {
       return;
     }
 
-    // Standard Google service grant
     const dto = {
       service: service,
       entityId: panel.selectedAccount,
@@ -549,7 +546,6 @@ export class ConfirmAccessComponent {
       return;
     }
 
-    // Special handling for Facebook Ads
     if (panel.key === 'facebookAds') {
       const adAccount = panel.accounts.find((a: FacebookAdAccount) => a.account_id === panel.selectedAccount);
       if (!adAccount) {
@@ -578,7 +574,6 @@ export class ConfirmAccessComponent {
       return;
     }
 
-    // Special handling for Facebook Pixels
     if (panel.key === 'facebookPixels') {
       const pixel = panel.accounts.find((p: FacebookPixel) => p.id === panel.selectedAccount);
       if (!pixel) {

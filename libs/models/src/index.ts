@@ -1,6 +1,5 @@
 export * from './lib/api.model';
 export * from './lib/endpoints.model';
-export * from './lib/endpoints.model';
 export * from './lib/env.model';
 export * from './lib/message.model';
 export * from './lib/storage.model';
@@ -11,3 +10,4 @@ export * from './lib/integrations/integrations.model';
 export * from './lib/agency.model';
 export * from './lib/connection-link.model';
 export * from './lib/connection-result.model';
+export * from './lib/validations.model';
