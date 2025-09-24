@@ -20,7 +20,7 @@
               <mat-hint>Copy the link and share it with your client</mat-hint>
             </mat-form-field>
 
-            <button mat-icon-button matTooltip="Customize this link" (click)="openCustomizeAccessLinkModal('manage')">
+            <button mat-icon-button matTooltip="Customize this link" (click)="openCustomizeAccessLinkModal(defaultManageLink()!)">
               <mat-icon>settings</mat-icon>
             </button>
 
@@ -53,7 +53,7 @@
               <mat-hint>Copy the link and share it with your client</mat-hint>
             </mat-form-field>
 
-            <button mat-icon-button matTooltip="Customize this link" (click)="openCustomizeAccessLinkModal('view')">
+            <button mat-icon-button matTooltip="Customize this link" (click)="openCustomizeAccessLinkModal(defaultViewLink()!)">
               <mat-icon>settings</mat-icon>
             </button>
 
@@ -81,9 +81,9 @@
             <thead>
             <tr>
               <th>ID</th>
+              <th>Type</th>
               <th>Default</th>
-              <th>Manage Link</th>
-              <th>View Link</th>
+              <th>Connection Link</th>
               <th>Actions</th>
             </tr>
             </thead>
@@ -92,6 +92,12 @@
                 <tr>
                   <td>{{ link._id }}</td>
                   <td>
+                    <app-badge
+                      [text]="link.type === 'view' ? 'View' : 'Manage'"
+                      [variant]="link.type === 'view' ? 'info' : 'warning'">
+                    </app-badge>
+                  </td>
+                  <td>
                     @if (link.isDefault) {
                       <mat-icon color="primary">check_circle</mat-icon>
                     } @else {
@@ -99,35 +105,20 @@
                     }
                   </td>
                   <td>
-                    <button mat-icon-button matTooltip="Copy manage link"
-                            [cdkCopyToClipboard]="getManageAccessLink(link._id)"
+                    <button mat-icon-button matTooltip="Copy link"
+                            [cdkCopyToClipboard]="getConnectionLink(link._id)"
                             (cdkCopyToClipboardCopied)="onCopySuccess()">
                       <mat-icon>content_copy</mat-icon>
                     </button>
-                    <button mat-icon-button matTooltip="Open manage link"
-                            (click)="openInNewTab(getManageAccessLink(link._id))">
+                    <button mat-icon-button matTooltip="Open link"
+                            (click)="openInNewTab(getConnectionLink(link._id))">
                       <mat-icon>open_in_new</mat-icon>
                     </button>
                   </td>
                   <td>
-                    <button mat-icon-button matTooltip="Copy view link"
-                            [cdkCopyToClipboard]="getViewAccessLink(link._id)"
-                            (cdkCopyToClipboardCopied)="onCopySuccess()">
-                      <mat-icon>content_copy</mat-icon>
-                    </button>
-                    <button mat-icon-button matTooltip="Open view link"
-                            (click)="openInNewTab(getViewAccessLink(link._id))">
-                      <mat-icon>open_in_new</mat-icon>
-                    </button>
-                  </td>
-                  <td>
-                    <button mat-icon-button matTooltip="Edit manage settings"
-                            (click)="openCustomizeAccessLinkModal('manage', link._id)">
+                    <button mat-icon-button matTooltip="Edit settings"
+                            (click)="openCustomizeAccessLinkModal(link)">
                       <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button matTooltip="Edit view settings"
-                            (click)="openCustomizeAccessLinkModal('view', link._id)">
-                      <mat-icon>visibility</mat-icon>
                     </button>
                     @if (!link.isDefault) {
                       <button mat-icon-button matTooltip="Set as default"

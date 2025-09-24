@@ -1,6 +1,6 @@
 import {
   IGoogleAccessLinkWithEmail,
-  IGoogleAccessLinkWithEmailOrId,
+  IGoogleAccessLinkWithEmailOrId, TAccessType,
   TConnectionLink,
   TConnectionLinkResponse,
   TFacebookAccessLink,
@@ -27,16 +27,39 @@ export class ConnectionLinkMergeService {
   }
 
   async mergeDefaultConnectionLinks(agencyIds: string[], mergedAgencyId: string): Promise<IConnectionLinkMergeResult | null> {
+    const viewResult = await this.mergeDefaultConnectionLinksByType(agencyIds, mergedAgencyId, 'view');
+    const manageResult = await this.mergeDefaultConnectionLinksByType(agencyIds, mergedAgencyId, 'manage');
+
+    await this.transferNonDefaultConnectionLinks(agencyIds, mergedAgencyId);
+
+    if (!viewResult && !manageResult) {
+      return null;
+    }
+
+    const mergedConnectionLinkId = viewResult?.mergedConnectionLinkId || manageResult?.mergedConnectionLinkId;
+    const deletedConnectionLinkIds = [
+      ...(viewResult?.deletedConnectionLinkIds || []),
+      ...(manageResult?.deletedConnectionLinkIds || [])
+    ];
+
+    return {
+      mergedConnectionLinkId,
+      deletedConnectionLinkIds
+    };
+  }
+
+  private async mergeDefaultConnectionLinksByType(agencyIds: string[], mergedAgencyId: string, type: TAccessType): Promise<IConnectionLinkMergeResult | null> {
     const defaultConnectionLinks = await this.connectionLinkModel
       .find({
         agencyId: { $in: agencyIds },
-        isDefault: true
+        isDefault: true,
+        type
       })
       .sort({ createdAt: 1 })
       .exec();
 
     if (defaultConnectionLinks.length <= 1) {
-      this.logger.log(`No duplicate default connection links found for agencies: ${agencyIds.join(', ')}`);
+      this.logger.log(`No duplicate default ${type} connection links found for agencies: ${agencyIds.join(', ')}`);
 
       if (defaultConnectionLinks.length === 1 && agencyIds.length > 0) {
         await this.connectionLinkModel.updateOne(
@@ -45,13 +68,10 @@ export class ConnectionLinkMergeService {
         );
       }
 
-      // Transfer non-default connection links from other agencies to the primary agency
-      await this.transferNonDefaultConnectionLinks(agencyIds, mergedAgencyId);
-
       return null;
     }
 
-    this.logger.log(`Found ${defaultConnectionLinks.length} default connection links to merge`);
+    this.logger.log(`Found ${defaultConnectionLinks.length} default ${type} connection links to merge`);
 
     const session = await this.connectionLinkModel.db.startSession();
 
@@ -249,8 +269,7 @@ export class ConnectionLinkMergeService {
     if (!primary && !secondary) return undefined;
 
     const merged: any = {
-      isViewAccessEnabled: primary.isViewAccessEnabled || secondary.isViewAccessEnabled,
-      isManageAccessEnabled: primary.isManageAccessEnabled || secondary.isManageAccessEnabled
+      isEnabled: primary.isEnabled || secondary.isEnabled
     };
 
     if ('email' in primary || 'email' in secondary) {
@@ -275,8 +294,7 @@ export class ConnectionLinkMergeService {
     if (!primary && !secondary) return undefined;
 
     return {
-      isViewAccessEnabled: primary.isViewAccessEnabled || secondary.isViewAccessEnabled,
-      isManageAccessEnabled: primary.isManageAccessEnabled || secondary.isManageAccessEnabled,
+      isEnabled: primary.isEnabled || secondary.isEnabled,
       businessPortfolioId: primary.businessPortfolioId || secondary.businessPortfolioId
     };
   }

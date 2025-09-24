@@ -7,9 +7,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { TAccessType, TConnectionLinkBase } from '@clientfuse/models';
+import { TAccessType, TConnectionLinkBase, TConnectionLinkResponse } from '@clientfuse/models';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
+import { BadgeComponent } from '../../../../components/badge/badge.component';
 import { AgencyStoreService } from '../../../../services/agency/agency-store.service';
 import { ConnectionLinkStoreService } from '../../../../services/connection-link/connection-link-store.service';
 import { DialogService } from '../../../../services/dialog.service';
@@ -18,6 +19,10 @@ import {
   CustomizeAccessLinkModalComponent,
   ICustomizeAccessLinkModalData
 } from '../../components/modals/customize-access-link-modal/customize-access-link-modal.component';
+import {
+  ISelectLinkTypeModalResult,
+  SelectLinkTypeModalComponent
+} from '../../components/modals/select-link-type-modal/select-link-type-modal.component';
 
 @Component({
   selector: 'app-dashboard-page',
@@ -30,7 +35,8 @@ import {
     MatIconModule,
     MatButtonModule,
     MatTooltipModule,
-    ClipboardModule
+    ClipboardModule,
+    BadgeComponent
   ],
   templateUrl: './dashboard-page.component.html',
   styleUrl: './dashboard-page.component.scss'
@@ -43,15 +49,16 @@ export class DashboardPageComponent {
 
   readonly agency = this.agencyStoreService.agency;
   readonly connectionLinks = this.connectionLinkStoreService.connectionLinks;
-  readonly defaultConnectionLink = this.connectionLinkStoreService.defaultConnectionLink;
+  readonly defaultViewLink = this.connectionLinkStoreService.defaultViewConnectionLink;
+  readonly defaultManageLink = this.connectionLinkStoreService.defaultManageConnectionLink;
 
   readonly manageAccessLink = computed(() => {
-    const defaultLink = this.defaultConnectionLink();
-    return this.getManageAccessLink(defaultLink?._id || '');
+    const link = this.defaultManageLink();
+    return this.getConnectionLink(link?._id || '');
   });
   readonly viewAccessLink = computed(() => {
-    const defaultLink = this.defaultConnectionLink();
-    return this.getViewAccessLink(defaultLink?._id || '');
+    const link = this.defaultViewLink();
+    return this.getConnectionLink(link?._id || '');
   });
 
   onCopySuccess(): void {
@@ -64,17 +71,12 @@ export class DashboardPageComponent {
     }
   }
 
-  getManageAccessLink(connectionLinkId: string): string {
-    return connectionLinkId ? `${environment.CLIENT_APP_URL}/connect/${connectionLinkId}/manage` : '';
+  getConnectionLink(connectionLinkId: string): string {
+    return connectionLinkId ? `${environment.CLIENT_APP_URL}/connect/${connectionLinkId}` : '';
   }
 
-  getViewAccessLink(connectionLinkId: string): string {
-    return connectionLinkId ? `${environment.CLIENT_APP_URL}/connect/${connectionLinkId}/view` : '';
-  }
-
-  async openCustomizeAccessLinkModal(accessType: TAccessType, connectionLinkId?: string): Promise<void> {
-    const linkId = connectionLinkId || this.defaultConnectionLink()?._id;
-    if (!linkId) {
+  async openCustomizeAccessLinkModal(connectionLink: TConnectionLinkResponse): Promise<void> {
+    if (!connectionLink) {
       this.snackbarService.error('No connection link available');
       return;
     }
@@ -82,7 +84,7 @@ export class DashboardPageComponent {
     const result = await firstValueFrom(
       this.dialogService.open<CustomizeAccessLinkModalComponent, ICustomizeAccessLinkModalData>(
         CustomizeAccessLinkModalComponent,
-        { connectionLinkId: linkId, accessType }
+        { connectionLink }
       ).afterClosed()
     );
 
@@ -92,8 +94,18 @@ export class DashboardPageComponent {
   }
 
   async createNewConnectionLink(): Promise<void> {
+    const typeResult = await firstValueFrom(
+      this.dialogService.open<SelectLinkTypeModalComponent, ISelectLinkTypeModalResult>(
+        SelectLinkTypeModalComponent
+      ).afterClosed()
+    );
+
+    if (!typeResult) return;
+
     const agencyId = this.agency()?._id;
-    const defaultLink = this.defaultConnectionLink();
+    const defaultLink = typeResult.type === 'view'
+      ? this.defaultViewLink()
+      : this.defaultManageLink();
 
     if (!agencyId || !defaultLink) {
       this.snackbarService.error('No default connection link available');
@@ -103,11 +115,12 @@ export class DashboardPageComponent {
     const newConnectionLink = await this.connectionLinkStoreService.createConnectionLink({
       agencyId,
       isDefault: false,
+      type: typeResult.type,
       google: defaultLink.google || undefined,
       facebook: defaultLink.facebook || undefined
     } as TConnectionLinkBase);
 
-    await this.openCustomizeAccessLinkModal('manage', newConnectionLink._id);
+    await this.openCustomizeAccessLinkModal(newConnectionLink);
   }
 
   async setAsDefaultConnectionLink(connectionLinkId: string): Promise<void> {

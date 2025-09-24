@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
@@ -9,7 +8,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { ActivatedRoute } from '@angular/router';
 import {
-  getConnectionLinkBaseKey,
   IAgencyResponse,
   PlatformNames,
   TAccessType,
@@ -68,11 +66,9 @@ export class ConnectionsPageComponent implements OnInit {
   agency = signal<IAgencyResponse | null>(null);
 
   agencyEmail = computed(() => this.agency()?.email || '');
-  readonly urlSegments = toSignal(this.route.url, { initialValue: [] });
-  readonly accessType = computed<TAccessType>(() => {
-    const segments = this.urlSegments();
-    return (segments.length > 0 ? segments[segments.length - 1].path : '') as TAccessType;
-  });
+  readonly accessType = computed<TAccessType>(() =>
+    this.connectionLink()?.type || 'view'
+  );
   requestedPlatforms = computed<string[]>(() => {
     const link = this.connectionLink();
     if (!link) return [];
@@ -90,18 +86,18 @@ export class ConnectionsPageComponent implements OnInit {
     const connectionLink = this.connectionLink();
     const googleServices = connectionLink?.google;
     if (!googleServices) return [];
-    const key = getConnectionLinkBaseKey(this.accessType());
-    return Object.keys(googleServices).filter(serviceKey => googleServices[serviceKey as TGoogleAccessLinkKeys][key]) as TGoogleAccessLinkKeys[];
+    return Object.keys(googleServices).filter(serviceKey =>
+      googleServices[serviceKey as TGoogleAccessLinkKeys].isEnabled
+    ) as TGoogleAccessLinkKeys[];
   });
 
   readonly enabledFacebookServicesNames = computed<TFacebookAccessLinkKeys[]>(() => {
     const connectionLink = this.connectionLink();
     const facebookServices = connectionLink?.facebook;
     if (!facebookServices) return [];
-    const key = getConnectionLinkBaseKey(this.accessType());
     return Object.keys(facebookServices).filter(serviceKey => {
       const service = facebookServices[serviceKey as TFacebookAccessLinkKeys];
-      return service[key] && service.businessPortfolioId && service.businessPortfolioId.trim() !== '';
+      return service.isEnabled && service.businessPortfolioId && service.businessPortfolioId.trim() !== '';
     }) as TFacebookAccessLinkKeys[];
   });
 

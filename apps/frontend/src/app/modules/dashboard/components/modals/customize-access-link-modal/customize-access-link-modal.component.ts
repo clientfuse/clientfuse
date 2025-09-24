@@ -10,11 +10,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleChange, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import {
   AllAccessLinkKeys,
-  getConnectionLinkBaseKey,
   IConnectionLinkItemBase,
   ServiceNames,
-  TAccessLinkBaseKey,
-  TAccessType,
   TConnectionLink,
   TConnectionLinkResponse,
   TFacebookAccessLinkKeys,
@@ -34,17 +31,17 @@ interface IPlatformSection {
   iconSrc: string;
 }
 
-type TServiceAccount = IConnectionLinkItemBase & {
+type TServiceAccount = {
   key: string;
   name: string;
   email: string;
   iconSrc?: string;
   platform: TPlatformNamesKeys;
+  isEnabled: boolean;
 }
 
 export interface ICustomizeAccessLinkModalData {
-  connectionLinkId: string;
-  accessType: TAccessType;
+  connectionLink: TConnectionLinkResponse;
 }
 
 @Component({
@@ -84,20 +81,10 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
   });
 
   async ngOnInit() {
-    const link = this.connectionLinkStoreService.connectionLinks()
-      .find(cl => cl._id === this.data.connectionLinkId);
-
-    if (!link) {
-      await this.connectionLinkStoreService.loadConnectionLink(this.data.connectionLinkId);
-      const loadedLink = this.connectionLinkStoreService.currentConnectionLink();
-      this.initialConnectionLink.set(cloneDeep(loadedLink));
-      this.connectionLink.set(cloneDeep(loadedLink));
-      this.initializeSelectedBusinessPortfolioId(loadedLink);
-    } else {
-      this.initialConnectionLink.set(cloneDeep(link));
-      this.connectionLink.set(cloneDeep(link));
-      this.initializeSelectedBusinessPortfolioId(link);
-    }
+    const link = this.data.connectionLink;
+    this.initialConnectionLink.set(cloneDeep(link));
+    this.connectionLink.set(cloneDeep(link));
+    this.initializeSelectedBusinessPortfolioId(link);
   }
 
   sections = computed<IPlatformSection[]>(() => {
@@ -125,8 +112,7 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
               name: ServiceNames[key as AllAccessLinkKeys] || key,
               email: (<any>service)?.email || (<any>service)?.emailOrId || '',
               iconSrc: this.googleIconPaths[key as TGoogleAccessLinkKeys] || '',
-              isViewAccessEnabled: service?.isViewAccessEnabled || false,
-              isManageAccessEnabled: service?.isManageAccessEnabled || false,
+              isEnabled: service?.isEnabled || false,
               platform: 'google' as TPlatformNamesKeys
             };
           })
@@ -150,8 +136,7 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
               key,
               name: ServiceNames[key as AllAccessLinkKeys] || key,
               email: service?.businessPortfolioId || '',
-              isViewAccessEnabled: service?.isViewAccessEnabled || false,
-              isManageAccessEnabled: service?.isManageAccessEnabled || false,
+              isEnabled: service?.isEnabled || false,
               platform: 'facebook' as TPlatformNamesKeys
             };
           })
@@ -173,7 +158,7 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
     };
 
     await this.connectionLinkStoreService.updateConnectionLink(
-      this.data.connectionLinkId,
+      this.data.connectionLink._id,
       updateData
     );
 
@@ -192,8 +177,7 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
       return;
     }
 
-    const fieldToChange: TAccessLinkBaseKey = getConnectionLinkBaseKey(this.data.accessType);
-    const fullPath = `${service.platform}.${service.key}.${fieldToChange}`;
+    const fullPath = `${service.platform}.${service.key}.isEnabled`;
     set(connectionLink, fullPath, value);
     this.connectionLink.set(connectionLink);
   }

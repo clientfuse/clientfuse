@@ -23,8 +23,7 @@ export class RoutesService {
     },
     connections: {
       root: 'connect',
-      viewConnection: ':connectionId/view',
-      manageConnection: ':connectionId/manage'
+      connection: ':connectionId'
     },
     errors: {
       '404': '404'
@@ -69,6 +68,10 @@ export class RoutesService {
 
   settingsWebhooks(): string {
     return `/${RoutesService.routes.settings.root}/${RoutesService.routes.settings.webhooks}`;
+  }
+
+  connection(connectionId: string): string {
+    return `/${RoutesService.routes.connections.root}/${connectionId}`;
   }
 
   error404(): string {

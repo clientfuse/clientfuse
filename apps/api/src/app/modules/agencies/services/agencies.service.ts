@@ -21,7 +21,7 @@ export class AgenciesService {
     const createdAgency = await this.agencyModel.create(newAgency);
     const agencyResponse = createdAgency.toJSON() as unknown as IAgencyResponse;
 
-    await this.connectionLinkService.createDefaultConnectionLink(agencyResponse._id);
+    await this.connectionLinkService.createDefaultConnectionLinks(agencyResponse._id);
 
     return agencyResponse;
   }

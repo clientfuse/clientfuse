@@ -51,7 +51,7 @@
                 <div class="service-item">
                   <div class="service-toggle">
                     <mat-slide-toggle (change)="onToggleChange($event, service)"
-                                      [checked]="data.accessType === 'view' ? service.isViewAccessEnabled : service.isManageAccessEnabled"></mat-slide-toggle>
+                                      [checked]="service.isEnabled"></mat-slide-toggle>
                   </div>
 
                   <div class="service-details">

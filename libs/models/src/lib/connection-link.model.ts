@@ -1,21 +1,8 @@
 export interface IConnectionLinkItemBase {
-  isViewAccessEnabled: boolean;
-  isManageAccessEnabled: boolean;
+  isEnabled: boolean;
 }
 
-export type TAccessLinkBaseKey = keyof IConnectionLinkItemBase;
 export type TAccessType = 'view' | 'manage';
-
-export const getConnectionLinkBaseKey = (accessType: TAccessType): TAccessLinkBaseKey => {
-  switch (accessType) {
-    case 'view':
-      return 'isViewAccessEnabled';
-    case 'manage':
-      return 'isManageAccessEnabled';
-    default:
-      throw new Error(`Invalid access type: ${accessType}`);
-  }
-};
 
 export const AccessTypeNames: Record<TAccessType, string> = {
   view: 'View',
@@ -63,6 +50,7 @@ export type TConnectionLink = {
 export type TConnectionLinkBase = TConnectionLink & {
   isDefault: boolean;
   agencyId: string;
+  type: TAccessType;
 }
 
 export type TConnectionLinkResponse = TConnectionLinkBase & {

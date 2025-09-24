@@ -13,8 +13,13 @@ export class ConnectionLinkStoreService {
 
   connectionLinks = this._connectionLinks.asReadonly();
   currentConnectionLink = this._currentConnectionLink.asReadonly();
-  defaultConnectionLink = computed(() =>
-    this._connectionLinks().find(cl => cl.isDefault) || null
+
+  defaultViewConnectionLink = computed(() =>
+    this._connectionLinks().find(cl => cl.isDefault && cl.type === 'view') || null
+  );
+
+  defaultManageConnectionLink = computed(() =>
+    this._connectionLinks().find(cl => cl.isDefault && cl.type === 'manage') || null
   );
 
   async loadConnectionLinksForAgency(agencyId: string): Promise<TConnectionLinkResponse[]> {

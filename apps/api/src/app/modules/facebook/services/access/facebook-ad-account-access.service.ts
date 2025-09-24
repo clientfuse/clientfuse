@@ -60,7 +60,7 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
         throw new Error('Access token must be set before granting access');
       }
 
-      const accessType: 'view' | 'manage' = request.permissions[0] === FacebookAdAccountPermission.REPORTS_ONLY ? 'view' : 'manage';
+      const accessType: TAccessType = request.permissions[0] === FacebookAdAccountPermission.REPORTS_ONLY ? 'view' : 'manage';
       const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyIdentifier);
 
       if (existingAccess) {

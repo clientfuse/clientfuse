@@ -261,7 +261,7 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
     return [FACEBOOK_BUSINESS_MANAGEMENT_SCOPE];
   }
 
-  private determineAccessType(permissions: string[]): 'view' | 'manage' {
+  private determineAccessType(permissions: string[]): TAccessType {
     const firstPermission = permissions[0];
     return firstPermission === FacebookBusinessPermission.EMPLOYEE ? 'view' : 'manage';
   }

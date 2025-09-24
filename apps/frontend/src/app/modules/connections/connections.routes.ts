@@ -7,11 +7,7 @@ export const CONNECTIONS_ROUTES: Routes = [
     path: '',
     children: [
       {
-        path: RoutesService.routes.connections.viewConnection,
-        component: ConnectionsPageComponent
-      },
-      {
-        path: RoutesService.routes.connections.manageConnection,
+        path: RoutesService.routes.connections.connection,
         component: ConnectionsPageComponent
       }
     ]

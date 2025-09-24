@@ -1,0 +1,28 @@
+<div class="connectly-modal">
+  <div class="connectly-modal-header">
+    <div class="subtitle-medium">Select Connection Link Type</div>
+    <button mat-icon-button (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="connectly-modal-description">
+    <p>Choose the type of connection link you want to create. This determines the level of access clients will grant.</p>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onConfirm()" class="connectly-modal-content">
+    <mat-form-field appearance="outline">
+      <mat-label>Connection Type</mat-label>
+      <mat-select formControlName="type">
+        <mat-option value="view">View Access</mat-option>
+        <mat-option value="manage">Manage Access</mat-option>
+      </mat-select>
+      <mat-hint>View access allows read-only permissions, Manage access allows full control</mat-hint>
+    </mat-form-field>
+
+    <div class="connectly-modal-actions">
+      <button mat-button type="button" (click)="onCancel()">Cancel</button>
+      <button mat-flat-button color="primary" type="submit">Create</button>
+    </div>
+  </form>
+</div>

@@ -29,40 +29,26 @@ export class AgenciesListenerService {
       const foundUser = await this.usersService.findUser({ _id: event.payload.userId });
       const user = new User(foundUser);
       const email = user.email;
-      const googleAccessLink: TGoogleConnectionLink = {
-        ads: {
-          email,
-          method: 'email',
-          isManageAccessEnabled: user.isGoogleAdsAccessGranted,
-          isViewAccessEnabled: user.isGoogleAdsAccessGranted
-        },
-        analytics: {
-          email,
-          isViewAccessEnabled: user.isGoogleAnalyticsReadOnlyAccessGranted,
-          isManageAccessEnabled: user.isGoogleAnalyticsManageUsersAccessGranted
-        },
-        merchantCenter: {
-          email,
-          isViewAccessEnabled: user.isGoogleMerchantCenterAccessGranted,
-          isManageAccessEnabled: user.isGoogleMerchantCenterAccessGranted
-        },
-        myBusiness: {
-          emailOrId: email,
-          isViewAccessEnabled: user.isGoogleMyBusinessManageAccessGranted,
-          isManageAccessEnabled: user.isGoogleMyBusinessManageAccessGranted
-        },
-        searchConsole: {
-          email,
-          isViewAccessEnabled: user.isGoogleSearchConsoleReadOnlyAccessGranted,
-          isManageAccessEnabled: user.isGoogleSearchConsoleReadOnlyAccessGranted
-        },
-        tagManager: {
-          email,
-          isViewAccessEnabled: user.isGoogleTagManagerReadOnlyAccessGranted,
-          isManageAccessEnabled: user.isGoogleTagManagerManageUsersAccessGranted
-        }
+
+      const googleViewLink: TGoogleConnectionLink = {
+        ads: { email, method: 'email', isEnabled: user.isGoogleAdsAccessGranted },
+        analytics: { email, isEnabled: user.isGoogleAnalyticsReadOnlyAccessGranted },
+        merchantCenter: { email, isEnabled: user.isGoogleMerchantCenterAccessGranted },
+        myBusiness: { emailOrId: email, isEnabled: user.isGoogleMyBusinessManageAccessGranted },
+        searchConsole: { email, isEnabled: user.isGoogleSearchConsoleReadOnlyAccessGranted },
+        tagManager: { email, isEnabled: user.isGoogleTagManagerReadOnlyAccessGranted }
       };
 
+      const googleManageLink: TGoogleConnectionLink = {
+        ads: { email, method: 'email', isEnabled: user.isGoogleAdsAccessGranted },
+        analytics: { email, isEnabled: user.isGoogleAnalyticsManageUsersAccessGranted },
+        merchantCenter: { email, isEnabled: user.isGoogleMerchantCenterAccessGranted },
+        myBusiness: { emailOrId: email, isEnabled: user.isGoogleMyBusinessManageAccessGranted },
+        searchConsole: { email, isEnabled: user.isGoogleSearchConsoleReadOnlyAccessGranted },
+        tagManager: {
+          email, isEnabled: user.isGoogleTagManagerManageUsersAccessGranted
+        }
+      };
 
       if (!foundAgency) {
         const agency: IAgencyBase = {
@@ -71,23 +57,45 @@ export class AgenciesListenerService {
         };
         const createdAgency = await this.agenciesService.createAgency(agency);
 
-        const defaultConnectionLink = await this.connectionLinkService.findDefaultConnectionLink(createdAgency._id);
-        if (defaultConnectionLink) {
-          await this.connectionLinkService.updateConnectionLink(defaultConnectionLink._id, {
-            google: googleAccessLink
+        const viewLink = await this.connectionLinkService.findDefaultConnectionLink(createdAgency._id, 'view');
+        const manageLink = await this.connectionLinkService.findDefaultConnectionLink(createdAgency._id, 'manage');
+
+        if (viewLink) {
+          await this.connectionLinkService.updateConnectionLink(viewLink._id, {
+            google: googleViewLink
+          });
+        }
+
+        if (manageLink) {
+          await this.connectionLinkService.updateConnectionLink(manageLink._id, {
+            google: googleManageLink
           });
         }
       } else {
-        const defaultConnectionLink = await this.connectionLinkService.findDefaultConnectionLink(foundAgency._id);
-        if (defaultConnectionLink) {
-          if (defaultConnectionLink.google) return;
+        const viewLink = await this.connectionLinkService.findDefaultConnectionLink(foundAgency._id, 'view');
+        const manageLink = await this.connectionLinkService.findDefaultConnectionLink(foundAgency._id, 'manage');
 
-          await this.connectionLinkService.updateConnectionLink(defaultConnectionLink._id, {
-            google: googleAccessLink
-          });
+        if (viewLink) {
+          if (!viewLink.google) {
+            await this.connectionLinkService.updateConnectionLink(viewLink._id, {
+              google: googleViewLink
+            });
+          }
         } else {
-          await this.connectionLinkService.createDefaultConnectionLink(foundAgency._id, {
-            google: googleAccessLink
+          await this.connectionLinkService.createDefaultConnectionLink(foundAgency._id, 'view', {
+            google: googleViewLink
+          });
+        }
+
+        if (manageLink) {
+          if (!manageLink.google) {
+            await this.connectionLinkService.updateConnectionLink(manageLink._id, {
+              google: googleManageLink
+            });
+          }
+        } else {
+          await this.connectionLinkService.createDefaultConnectionLink(foundAgency._id, 'manage', {
+            google: googleManageLink
           });
         }
       }
@@ -106,29 +114,24 @@ export class AgenciesListenerService {
       const facebookAccessLink: TFacebookAccessLink = {
         ads: {
           businessPortfolioId: user.facebook.businessAccounts[0]?.id || '',
-          isViewAccessEnabled: user.isFacebookAdsManagementGranted,
-          isManageAccessEnabled: user.isFacebookAdsManagementGranted
+          isEnabled: user.isFacebookAdsManagementGranted
         },
         business: {
           businessPortfolioId: user.facebook.businessAccounts[0]?.id || '',
-          isViewAccessEnabled: user.isFacebookBusinessManagementGranted,
-          isManageAccessEnabled: user.isFacebookBusinessManagementGranted
+          isEnabled: user.isFacebookBusinessManagementGranted
         },
         pages: {
           businessPortfolioId: user.facebook.businessAccounts[0]?.id || '',
-          isViewAccessEnabled: user.isFacebookPagesManageMetadataGranted,
-          isManageAccessEnabled: user.isFacebookPagesManageMetadataGranted
+          isEnabled: user.isFacebookPagesManageMetadataGranted
         },
         catalogs: {
           businessPortfolioId: user.facebook.businessAccounts[0]?.id || '',
-          isViewAccessEnabled: user.isFacebookCatalogManagementGranted,
-          isManageAccessEnabled: user.isFacebookCatalogManagementGranted
+          isEnabled: user.isFacebookCatalogManagementGranted
         },
         pixels: {
           businessPortfolioId: user.facebook.businessAccounts[0]?.id || '',
-          isViewAccessEnabled: user.isFacebookAdsManagementGranted,
-          isManageAccessEnabled: user.isFacebookAdsManagementGranted
-        },
+          isEnabled: user.isFacebookAdsManagementGranted
+        }
       };
 
       if (!foundAgency) {
@@ -138,22 +141,44 @@ export class AgenciesListenerService {
         };
         const createdAgency = await this.agenciesService.createAgency(agency);
 
-        const defaultConnectionLink = await this.connectionLinkService.findDefaultConnectionLink(createdAgency._id);
-        if (defaultConnectionLink) {
-          await this.connectionLinkService.updateConnectionLink(defaultConnectionLink._id, {
+        const viewLink = await this.connectionLinkService.findDefaultConnectionLink(createdAgency._id, 'view');
+        const manageLink = await this.connectionLinkService.findDefaultConnectionLink(createdAgency._id, 'manage');
+
+        if (viewLink) {
+          await this.connectionLinkService.updateConnectionLink(viewLink._id, {
+            facebook: facebookAccessLink
+          });
+        }
+
+        if (manageLink) {
+          await this.connectionLinkService.updateConnectionLink(manageLink._id, {
             facebook: facebookAccessLink
           });
         }
       } else {
-        const defaultConnectionLink = await this.connectionLinkService.findDefaultConnectionLink(foundAgency._id);
-        if (defaultConnectionLink) {
-          if (defaultConnectionLink.facebook) return;
+        const viewLink = await this.connectionLinkService.findDefaultConnectionLink(foundAgency._id, 'view');
+        const manageLink = await this.connectionLinkService.findDefaultConnectionLink(foundAgency._id, 'manage');
 
-          await this.connectionLinkService.updateConnectionLink(defaultConnectionLink._id, {
+        if (viewLink) {
+          if (!viewLink.facebook) {
+            await this.connectionLinkService.updateConnectionLink(viewLink._id, {
+              facebook: facebookAccessLink
+            });
+          }
+        } else {
+          await this.connectionLinkService.createDefaultConnectionLink(foundAgency._id, 'view', {
             facebook: facebookAccessLink
           });
+        }
+
+        if (manageLink) {
+          if (!manageLink.facebook) {
+            await this.connectionLinkService.updateConnectionLink(manageLink._id, {
+              facebook: facebookAccessLink
+            });
+          }
         } else {
-          await this.connectionLinkService.createDefaultConnectionLink(foundAgency._id, {
+          await this.connectionLinkService.createDefaultConnectionLink(foundAgency._id, 'manage', {
             facebook: facebookAccessLink
           });
         }

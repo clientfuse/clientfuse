@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { ENDPOINTS, IResponse, TConnectionLinkBase, TConnectionLinkResponse } from '@clientfuse/models';
+import { ENDPOINTS, IResponse, TAccessType, TConnectionLinkBase, TConnectionLinkResponse } from '@clientfuse/models';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -37,12 +37,20 @@ export class ConnectionLinkApiService {
     );
   }
 
-  findDefaultConnectionLink(agencyId: string) {
-    return firstValueFrom(
-      this.httpClient.get<IResponse<TConnectionLinkResponse>>(
-        `${this.baseUrl}/${ENDPOINTS.connectionLinks.defaultByAgency.replace(':agencyId', agencyId)}`
+  async findDefaultConnectionLinks(agencyId: string, type?: TAccessType): Promise<IResponse<TConnectionLinkResponse[]>> {
+    const params: any = {};
+    if (type) {
+      params.type = type;
+    }
+    const response = await firstValueFrom(
+      this.httpClient.get<IResponse<TConnectionLinkResponse[]>>(
+        `${this.baseUrl}/${ENDPOINTS.connectionLinks.defaultByAgency.replace(':agencyId', agencyId)}`,
+        { params }
       )
     );
+
+    const payload = Array.isArray(response.payload) ? response.payload : [response.payload];
+    return { ...response, payload };
   }
 
   updateConnectionLink(id: string, updateConnectionLinkDto: Partial<TConnectionLinkBase>) {

@@ -1,4 +1,4 @@
-import { ENDPOINTS, ServerErrorCode, TConnectionLinkResponse } from '@clientfuse/models';
+import { ENDPOINTS, ServerErrorCode, TAccessType, TConnectionLinkResponse } from '@clientfuse/models';
 import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Query } from '@nestjs/common';
 import { Public } from '../auth/decorators/is-public.decorator';
 import { CreateConnectionLinkDto } from './dto/create-connection-link.dto';
@@ -22,12 +22,23 @@ export class ConnectionLinkController {
   }
 
   @Get(ENDPOINTS.connectionLinks.defaultByAgency)
-  async findDefault(@Param('agencyId') agencyId: string): Promise<TConnectionLinkResponse> {
-    const connectionLink = await this.connectionLinkService.findDefaultConnectionLink(agencyId);
-    if (!connectionLink) {
+  async findDefault(
+    @Param('agencyId') agencyId: string,
+    @Query('type') type?: TAccessType
+  ): Promise<TConnectionLinkResponse[]> {
+    if (type) {
+      const connectionLink = await this.connectionLinkService.findDefaultConnectionLink(agencyId, type);
+      if (!connectionLink) {
+        throw new NotFoundException(ServerErrorCode.CONNECTION_LINK_NOT_FOUND);
+      }
+      return [connectionLink];
+    }
+
+    const connectionLinks = await this.connectionLinkService.findDefaultConnectionLinks(agencyId);
+    if (!connectionLinks || connectionLinks.length === 0) {
       throw new NotFoundException(ServerErrorCode.CONNECTION_LINK_NOT_FOUND);
     }
-    return connectionLink;
+    return connectionLinks;
   }
 
   @Public()

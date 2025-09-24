@@ -1,4 +1,4 @@
-import { TConnectionLinkResponse } from '@clientfuse/models';
+import { TAccessType, TConnectionLinkResponse } from '@clientfuse/models';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
@@ -14,25 +14,31 @@ export class ConnectionLinkService {
 
   async createConnectionLink(dto: CreateConnectionLinkDto): Promise<TConnectionLinkResponse> {
     if (dto.isDefault) {
-      await this.unsetDefaultForAgency(dto.agencyId);
+      await this.unsetDefaultForAgency(dto.agencyId, dto.type);
     }
 
     const createdConnectionLink = await this.connectionLinkModel.create(dto);
     return createdConnectionLink.toJSON() as unknown as TConnectionLinkResponse;
   }
 
-  async createDefaultConnectionLink(agencyId: string, data?: Partial<CreateConnectionLinkDto>): Promise<TConnectionLinkResponse> {
-    await this.unsetDefaultForAgency(agencyId);
+  async createDefaultConnectionLink(agencyId: string, type: TAccessType, data?: Partial<CreateConnectionLinkDto>): Promise<TConnectionLinkResponse> {
+    await this.unsetDefaultForAgency(agencyId, type);
 
     const connectionLinkData: CreateConnectionLinkDto = {
       agencyId,
       isDefault: true,
+      type,
       google: data?.google,
       facebook: data?.facebook
     };
 
     const createdConnectionLink = await this.connectionLinkModel.create(connectionLinkData);
     return createdConnectionLink.toJSON() as unknown as TConnectionLinkResponse;
+  }
+
+  async createDefaultConnectionLinks(agencyId: string): Promise<void> {
+    await this.createDefaultConnectionLink(agencyId, 'view');
+    await this.createDefaultConnectionLink(agencyId, 'manage');
   }
 
   async findConnectionLinks(filter: FilterQuery<ConnectionLinkDocument>): Promise<TConnectionLinkResponse[]> {
@@ -46,13 +52,25 @@ export class ConnectionLinkService {
     return connectionLink.toJSON() as unknown as TConnectionLinkResponse;
   }
 
-  async findDefaultConnectionLink(agencyId: string): Promise<TConnectionLinkResponse | null> {
-    return this.findConnectionLink({ agencyId, isDefault: true });
+  async findDefaultConnectionLink(agencyId: string, type: TAccessType): Promise<TConnectionLinkResponse | null> {
+    return this.findConnectionLink({ agencyId, isDefault: true, type });
+  }
+
+  async findDefaultConnectionLinks(agencyId: string): Promise<TConnectionLinkResponse[]> {
+    return this.findConnectionLinks({ agencyId, isDefault: true });
   }
 
   async updateConnectionLink(id: string, dto: UpdateConnectionLinkDto): Promise<TConnectionLinkResponse> {
-    if (dto.isDefault && dto.agencyId) {
-      await this.unsetDefaultForAgency(dto.agencyId);
+    if (dto.isDefault) {
+      const existingLink = await this.findConnectionLink({ _id: id });
+      if (!existingLink) {
+        throw new NotFoundException('Connection link not found');
+      }
+
+      const type = dto.type || existingLink.type;
+      const agencyId = dto.agencyId || existingLink.agencyId;
+
+      await this.unsetDefaultForAgency(agencyId, type);
     }
 
     await this.connectionLinkModel.findOneAndUpdate({ _id: id }, dto);
@@ -86,7 +104,7 @@ export class ConnectionLinkService {
       throw new NotFoundException('Connection link not found');
     }
 
-    await this.unsetDefaultForAgency(connectionLink.agencyId);
+    await this.unsetDefaultForAgency(connectionLink.agencyId, connectionLink.type);
 
     await this.connectionLinkModel.updateOne(
       { _id: id },
@@ -102,9 +120,9 @@ export class ConnectionLinkService {
     return updatedConnectionLink;
   }
 
-  private async unsetDefaultForAgency(agencyId: string): Promise<void> {
+  private async unsetDefaultForAgency(agencyId: string, type: TAccessType): Promise<void> {
     await this.connectionLinkModel.updateMany(
-      { agencyId, isDefault: true },
+      { agencyId, type, isDefault: true },
       { $set: { isDefault: false } }
     );
   }
