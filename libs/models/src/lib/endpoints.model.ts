@@ -7,6 +7,14 @@ export const ENDPOINTS = {
     defaultByAgency: 'default/:agencyId',
     setDefault: ':id/set-default'
   },
+  connectionResults: {
+    root: 'connection-results',
+    one: 'one',
+    getOne: ':id',
+    editOne: ':id',
+    deleteOne: ':id',
+    byAgency: 'agency/:agencyId'
+  },
   auth: {
     root: 'auth',
     login: 'login',
