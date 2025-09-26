@@ -1,14 +1,11 @@
-import { IAgencyResponse, IFacebookInfo, IGoogleInfo, IGrantAccessResponse } from '@clientfuse/models';
+import { IAgencyResponse, IFacebookInfo, IGoogleInfo, IGrantAccessResponse, TPlatformNamesKeys } from '@clientfuse/models';
 
 export type TBaseConnectionResult = {
   agencyId: IAgencyResponse['_id'];
   connectionLinkId: string;
   googleUserId?: IGoogleInfo['userId'];
   facebookUserId?: IFacebookInfo['userId'];
-  grantedAccesses: {
-    google: IGrantAccessResponse[];
-    facebook: IGrantAccessResponse[];
-  }
+  grantedAccesses: Record<TPlatformNamesKeys, IGrantAccessResponse[]>
 }
 
 export type TConnectionResultResponse = TBaseConnectionResult & {

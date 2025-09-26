@@ -22,12 +22,15 @@ import {
 import { analytics_v3, content_v2_1, mybusinessbusinessinformation_v1, searchconsole_v1, tagmanager_v2 } from 'googleapis';
 import { firstValueFrom } from 'rxjs';
 import { IslandComponent } from '../../../../../components/island/island.component';
+import { ConnectionResultStoreService } from '../../../../../services/connection-result/connection-result-store.service';
 import { DialogService } from '../../../../../services/dialog.service';
 import { FacebookStoreService } from '../../../../../services/facebook/facebook-store.service';
 import { GoogleStoreService } from '../../../../../services/google/google-store.service';
 import { SnackbarService } from '../../../../../services/snackbar.service';
 import { GOOGLE_ICON_PATHS } from '../../../../../utils/icon.utils';
 import { InstructionStepComponent } from '../instruction-step/instruction-step.component';
+import { FacebookAdsModalComponent, IFacebookAdsModalData } from '../modals/facebook-ads-modal/facebook-ads-modal.component';
+import { FacebookPixelModalComponent, IFacebookPixelModalData } from '../modals/facebook-pixel-modal/facebook-pixel-modal.component';
 import {
   GoogleAdsDomainModalComponent,
   IGoogleAdsDomainModalData
@@ -36,14 +39,6 @@ import {
   GoogleSearchConsoleModalComponent,
   IGoogleSearchConsoleModalData
 } from '../modals/google-search-console-modal/google-search-console-modal.component';
-import {
-  FacebookPixelModalComponent,
-  IFacebookPixelModalData
-} from '../modals/facebook-pixel-modal/facebook-pixel-modal.component';
-import {
-  FacebookAdsModalComponent,
-  IFacebookAdsModalData
-} from '../modals/facebook-ads-modal/facebook-ads-modal.component';
 import { RequestDetailsComponent } from '../request-details/request-details.component';
 
 interface ServicePanel {
@@ -84,6 +79,7 @@ interface ServicePanel {
 export class ConfirmAccessComponent {
   private readonly googleStoreService = inject(GoogleStoreService);
   private readonly facebookStoreService = inject(FacebookStoreService);
+  private readonly connectionResultStore = inject(ConnectionResultStoreService);
   private readonly snackbarService = inject(SnackbarService);
   private readonly dialogService = inject(DialogService);
 

@@ -7,6 +7,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
 import { generateConnectionLinkName, TConnectionLinkBase, TConnectionLinkResponse } from '@clientfuse/models';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
@@ -36,7 +38,9 @@ import {
     MatButtonModule,
     MatTooltipModule,
     ClipboardModule,
-    BadgeComponent
+    BadgeComponent,
+    MatCardModule,
+    MatChipsModule
   ],
   templateUrl: './dashboard-page.component.html',
   styleUrl: './dashboard-page.component.scss'

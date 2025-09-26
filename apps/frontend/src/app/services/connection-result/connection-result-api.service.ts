@@ -1,12 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import {
-  ENDPOINTS,
-  TConnectionResultResponse,
-  TConnectionResultFilter,
-  IResponse,
-  TBaseConnectionResult
-} from '@clientfuse/models';
+import { ENDPOINTS, IResponse, TBaseConnectionResult, TConnectionResultFilter, TConnectionResultResponse } from '@clientfuse/models';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -71,12 +65,19 @@ export class ConnectionResultApiService {
       params.facebookUserId = filter.facebookUserId;
     }
 
-    return firstValueFrom(
-      this.httpClient.get<IResponse<TConnectionResultResponse>>(
-        `${environment.API_URL}/${ENDPOINTS.connectionResults.root}/${ENDPOINTS.connectionResults.one}`,
-        { params }
-      )
-    );
+    try {
+      return await firstValueFrom(
+        this.httpClient.get<IResponse<TConnectionResultResponse>>(
+          `${environment.API_URL}/${ENDPOINTS.connectionResults.root}/${ENDPOINTS.connectionResults.one}`,
+          { params }
+        )
+      );
+    } catch (error: any) {
+      if (error?.status === 404) {
+        return { payload: null as any, statusCode: 404 };
+      }
+      throw error;
+    }
   }
 
   async findById(id: string): Promise<IResponse<TConnectionResultResponse>> {

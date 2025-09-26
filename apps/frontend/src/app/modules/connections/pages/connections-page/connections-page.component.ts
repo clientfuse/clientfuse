@@ -19,6 +19,7 @@ import { AgencyApiService } from '../../../../services/agency/agency-api.service
 import { ConnectionLinkStoreService } from '../../../../services/connection-link/connection-link-store.service';
 import { FacebookStoreService } from '../../../../services/facebook/facebook-store.service';
 import { GoogleStoreService } from '../../../../services/google/google-store.service';
+import { ConnectionResultStoreService } from '../../../../services/connection-result/connection-result-store.service';
 import { AccessOutcomeComponent } from '../components/access-outcome/access-outcome.component';
 import { ConfirmAccessComponent } from '../components/confirm-access/confirm-access.component';
 import { ConnectAccountsComponent } from '../components/connect-accounts/connect-accounts.component';
@@ -57,6 +58,7 @@ export class ConnectionsPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly googleStoreService = inject(GoogleStoreService);
   private readonly facebookStoreService = inject(FacebookStoreService);
+  private readonly connectionResultStore = inject(ConnectionResultStoreService);
   private readonly agencyApiService = inject(AgencyApiService);
 
   currentStepIndex = signal(0);
@@ -112,11 +114,8 @@ export class ConnectionsPageComponent implements OnInit {
   });
 
   readonly canProceedToStep2 = computed<boolean>(() => {
-    const googleGrantedAccesses = this.googleStoreService.grantedAccesses();
-    const facebookGrantedAccesses = this.facebookStoreService.grantedAccesses();
-
-    return googleGrantedAccesses.some(access => access.success)
-      || facebookGrantedAccesses.some(access => access.success);
+    const allAccesses = this.connectionResultStore.allGrantedAccesses();
+    return allAccesses.some(access => access.success);
   });
 
   connectionSteps = signal<ConnectionStep[]>([
@@ -215,6 +214,7 @@ export class ConnectionsPageComponent implements OnInit {
   onResetConnection(): void {
     this.googleStoreService.clearAll();
     this.facebookStoreService.clearAll();
+    this.connectionResultStore.clearAll();
     this.currentStepIndex.set(0);
     this.hasValidConnections.set(false);
 

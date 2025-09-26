@@ -22,6 +22,7 @@ import { ListFormatter } from '@clientfuse/utils';
 import { IslandComponent } from '../../../../../components/island/island.component';
 import { FacebookStoreService } from '../../../../../services/facebook/facebook-store.service';
 import { GoogleStoreService } from '../../../../../services/google/google-store.service';
+import { ConnectionResultStoreService } from '../../../../../services/connection-result/connection-result-store.service';
 import { InstructionStepComponent } from '../instruction-step/instruction-step.component';
 import { RequestDetailsComponent } from '../request-details/request-details.component';
 
@@ -47,6 +48,7 @@ export class ConnectAccountsComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private googleStoreService = inject(GoogleStoreService);
   private facebookStoreService = inject(FacebookStoreService);
+  private connectionResultStore = inject(ConnectionResultStoreService);
 
   constructor() {
     effect(() => {
@@ -135,6 +137,20 @@ export class ConnectAccountsComponent implements OnInit {
 
       await this.googleStoreService.connectGoogle(connectionDto);
       this.googleConnectionStatus.set('connected');
+
+      // Initialize or load connection result
+      const connectionLink = this.connectionLink();
+      if (connectionLink) {
+        const googleConnectionData = this.googleStoreService.connectionData();
+        if (googleConnectionData?.user?.sub) {
+          await this.connectionResultStore.loadOrCreateResult(
+            'google',
+            googleConnectionData.user.sub,
+            connectionLink._id,
+            connectionLink.agencyId
+          );
+        }
+      }
     } catch (error) {
       console.error('Failed to connect Google account:', error);
       this.googleConnectionStatus.set('disconnected');
@@ -149,6 +165,20 @@ export class ConnectAccountsComponent implements OnInit {
 
       await this.facebookStoreService.connectFacebook(connectionDto);
       this.metaConnectionStatus.set('connected');
+
+      // Initialize or load connection result
+      const connectionLink = this.connectionLink();
+      if (connectionLink) {
+        const facebookConnectionData = this.facebookStoreService.connectionData();
+        if (facebookConnectionData?.user?.id) {
+          await this.connectionResultStore.loadOrCreateResult(
+            'facebook',
+            facebookConnectionData.user.id,
+            connectionLink._id,
+            connectionLink.agencyId
+          );
+        }
+      }
     } catch (error) {
       console.error('Failed to connect Facebook account:', error);
       this.metaConnectionStatus.set('disconnected');

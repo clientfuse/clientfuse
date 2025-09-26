@@ -133,3 +133,69 @@
     transform: translateY(6px);
   }
 }
+
+.links-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-6);
+}
+
+.link-card {
+  .mat-mdc-card-header {
+    padding: var(--spacing-4);
+  }
+
+  .mat-mdc-card-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+  }
+
+  .mat-mdc-card-subtitle {
+    margin-top: var(--spacing-1);
+    line-height: 1;
+  }
+
+  .card-icon {
+    &.manage-icon {
+      color: $green-80
+    }
+
+    &.view-icon {
+      color: $blue-80
+    }
+  }
+
+  .mat-mdc-card-content {
+    padding: var(--spacing-4);
+  }
+
+  .link-content {
+    display: grid;
+    gap: var(--spacing-4);
+
+    .link-field-wrapper {
+      display: flex;
+      gap: var(--spacing-2);
+      align-items: flex-start;
+
+      .link-field {
+        flex: 1;
+      }
+
+      .copy-button {
+        margin-top: var(--spacing-2);
+      }
+    }
+
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-2);
+
+      button {
+        justify-content: center;
+      }
+    }
+  }
+}

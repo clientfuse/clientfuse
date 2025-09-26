@@ -14,6 +14,7 @@ import { BadgeComponent } from '../../../../../components/badge/badge.component'
 import { IslandComponent } from '../../../../../components/island/island.component';
 import { FacebookStoreService } from '../../../../../services/facebook/facebook-store.service';
 import { GoogleStoreService } from '../../../../../services/google/google-store.service';
+import { ConnectionResultStoreService } from '../../../../../services/connection-result/connection-result-store.service';
 import { GOOGLE_ICON_PATHS } from '../../../../../utils/icon.utils';
 
 interface ServiceGroup {
@@ -46,11 +47,12 @@ interface PlatformSection {
 export class AccessOutcomeComponent {
   private googleStoreService = inject(GoogleStoreService);
   private facebookStoreService = inject(FacebookStoreService);
+  private connectionResultStore = inject(ConnectionResultStoreService);
 
   resetConnection = output<void>();
 
-  googleAccesses = computed(() => this.googleStoreService.grantedAccesses());
-  facebookAccesses = computed(() => this.facebookStoreService.grantedAccesses());
+  googleAccesses = computed(() => this.connectionResultStore.googleGrantedAccesses());
+  facebookAccesses = computed(() => this.connectionResultStore.facebookGrantedAccesses());
 
   platformSections = computed<PlatformSection[]>(() => {
     const sections: PlatformSection[] = [];
@@ -79,7 +81,8 @@ export class AccessOutcomeComponent {
   });
 
   totalGrantedAccesses = computed(() => {
-    return this.googleAccesses().length + this.facebookAccesses().length;
+    const summary = this.connectionResultStore.getSessionSummary();
+    return summary.totalGranted;
   });
 
   private groupGoogleServices(accesses: IGrantAccessResponse[]): ServiceGroup[] {

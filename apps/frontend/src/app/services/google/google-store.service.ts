@@ -11,12 +11,12 @@ import {
   IRevokeAgencyAccessDto
 } from '@clientfuse/models';
 import { GoogleApiService } from './google-api.service';
+import { ConnectionResultStoreService } from '../connection-result/connection-result-store.service';
 
 export interface GoogleStoreState {
   connectionData: IGoogleConnectionResponse | null;
   entityUsers: IGetEntityUsersResponse | null;
   accessToken: string | null;
-  grantedAccesses: IGrantAccessResponse[];
   isLoading: boolean;
   error: string | null;
 }
@@ -26,12 +26,12 @@ export interface GoogleStoreState {
 })
 export class GoogleStoreService {
   private googleApiService = inject(GoogleApiService);
+  private connectionResultStore = inject(ConnectionResultStoreService);
 
   private state = signal<GoogleStoreState>({
     connectionData: null,
     entityUsers: null,
     accessToken: null,
-    grantedAccesses: [],
     isLoading: false,
     error: null
   });
@@ -39,7 +39,6 @@ export class GoogleStoreService {
   readonly connectionData = computed(() => this.state().connectionData);
   readonly entityUsers = computed(() => this.state().entityUsers);
   readonly accessToken = computed(() => this.state().accessToken);
-  readonly grantedAccesses = computed(() => this.state().grantedAccesses);
   readonly isLoading = computed(() => this.state().isLoading);
   readonly error = computed(() => this.state().error);
 
@@ -86,10 +85,7 @@ export class GoogleStoreService {
 
       const response = await this.googleApiService.grantManagementAccess(fullDto);
       if (response.payload) {
-        this.state.update(state => ({
-          ...state,
-          grantedAccesses: [...state.grantedAccesses, response.payload]
-        }));
+        await this.connectionResultStore.addGrantedAccess('google', response.payload);
         return response.payload;
       } else {
         this.setError('Failed to grant management access');
@@ -123,10 +119,7 @@ export class GoogleStoreService {
 
       const response = await this.googleApiService.grantViewAccess(fullDto);
       if (response.payload) {
-        this.state.update(state => ({
-          ...state,
-          grantedAccesses: [...state.grantedAccesses, response.payload]
-        }));
+        await this.connectionResultStore.addGrantedAccess('google', response.payload);
         return response.payload;
       } else {
         this.setError('Failed to grant view access');
@@ -244,55 +237,11 @@ export class GoogleStoreService {
       connectionData: null,
       entityUsers: null,
       accessToken: null,
-      grantedAccesses: [],
       isLoading: false,
       error: null
     });
   }
 
-  getGrantedAccessByEntity(service: string, entityId: string): IGrantAccessResponse | undefined {
-    return this.state().grantedAccesses.find(
-      access => access.service === service && access.entityId === entityId
-    );
-  }
-
-  getSessionSummary(): { totalGranted: number; services: string[] } {
-    const accesses = this.state().grantedAccesses;
-    const uniqueServices = [...new Set(accesses.map(a => a.service))];
-
-    return {
-      totalGranted: accesses.length,
-      services: uniqueServices
-    };
-  }
-
-  clearGrantedAccesses(): void {
-    this.state.update(state => ({
-      ...state,
-      grantedAccesses: []
-    }));
-  }
-
-  addOrUpdateGrantedAccess(grantedAccess: IGrantAccessResponse): void {
-    this.state.update(state => {
-      const existingIndex = state.grantedAccesses.findIndex(
-        access => access.service === grantedAccess.service && access.entityId === grantedAccess.entityId
-      );
-
-      let updatedAccesses: IGrantAccessResponse[];
-      if (existingIndex !== -1) {
-        updatedAccesses = [...state.grantedAccesses];
-        updatedAccesses[existingIndex] = grantedAccess;
-      } else {
-        updatedAccesses = [...state.grantedAccesses, grantedAccess];
-      }
-
-      return {
-        ...state,
-        grantedAccesses: updatedAccesses
-      };
-    });
-  }
 
   private setLoading(isLoading: boolean): void {
     this.state.update(state => ({

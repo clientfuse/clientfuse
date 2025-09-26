@@ -11,6 +11,7 @@ import { GoogleSearchConsolePermissionLevel, GoogleServiceType, TAccessType } fr
 import { IslandComponent } from '../../../../../../components/island/island.component';
 import { StatusCardComponent } from '../../../../../../components/status-card/status-card.component';
 import { GoogleStoreService } from '../../../../../../services/google/google-store.service';
+import { ConnectionResultStoreService } from '../../../../../../services/connection-result/connection-result-store.service';
 import { SnackbarService } from '../../../../../../services/snackbar.service';
 
 export interface IGoogleSearchConsoleModalData {
@@ -42,6 +43,7 @@ export class GoogleSearchConsoleModalComponent {
   private readonly dialogRef = inject(MatDialogRef<GoogleSearchConsoleModalComponent>);
   private readonly snackbarService = inject(SnackbarService);
   private readonly googleStoreService = inject(GoogleStoreService);
+  private readonly connectionResultStore = inject(ConnectionResultStoreService);
   protected readonly data: IGoogleSearchConsoleModalData = inject(MAT_DIALOG_DATA);
 
   readonly copyButtonText = signal<string>('Copy');
@@ -94,7 +96,7 @@ export class GoogleSearchConsoleModalComponent {
             this.accessMessage.set(message);
             this.snackbarService.success(message);
 
-            this.googleStoreService.addOrUpdateGrantedAccess({
+            await this.connectionResultStore.addGrantedAccess('google', {
               success: true,
               service: 'searchConsole' as GoogleServiceType,
               accessType: this.data.accessType,
@@ -111,7 +113,7 @@ export class GoogleSearchConsoleModalComponent {
             this.accessMessage.set(message);
             this.snackbarService.warn(message);
 
-            this.googleStoreService.addOrUpdateGrantedAccess({
+            await this.connectionResultStore.addGrantedAccess('google', {
               success: true,
               service: 'searchConsole' as GoogleServiceType,
               accessType: this.data.accessType,

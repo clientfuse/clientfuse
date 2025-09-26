@@ -8,6 +8,7 @@ import { CommonIssuesComponent } from '../../common-issues/common-issues.compone
 import { IslandComponent } from '../../../../../../components/island/island.component';
 import { StatusCardComponent } from '../../../../../../components/status-card/status-card.component';
 import { FacebookStoreService } from '../../../../../../services/facebook/facebook-store.service';
+import { ConnectionResultStoreService } from '../../../../../../services/connection-result/connection-result-store.service';
 import { SnackbarService } from '../../../../../../services/snackbar.service';
 
 export interface IFacebookAdsModalData {
@@ -38,6 +39,7 @@ export class FacebookAdsModalComponent {
   private readonly dialogRef = inject(MatDialogRef<FacebookAdsModalComponent>);
   private readonly snackbarService = inject(SnackbarService);
   private readonly facebookStoreService = inject(FacebookStoreService);
+  private readonly connectionResultStore = inject(ConnectionResultStoreService);
   protected readonly data: IFacebookAdsModalData = inject(MAT_DIALOG_DATA);
 
   readonly isChecking = signal<boolean>(false);
@@ -69,7 +71,7 @@ export class FacebookAdsModalComponent {
           this.accessMessage.set(message);
           this.snackbarService.success(message);
 
-          this.facebookStoreService.addOrUpdateGrantedAccess({
+          await this.connectionResultStore.addGrantedAccess('facebook', {
             success: true,
             service: FacebookServiceType.AD_ACCOUNT,
             accessType: this.data.accessType,

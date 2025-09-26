@@ -3,81 +3,118 @@
 
   <div class="dashboard-content">
     <mat-tab-group>
-      <mat-tab label="'Manage Access' Link">
-        <div class="tab-content">
-          <div>
-            <div class="subtitle-medium">'Manage Access' Link</div>
-            <div class="body-smaller-text">To onboard new clients</div>
-          </div>
-
-          <div>🔗 Share request via link</div>
-
-
-          <div class="connect-link-row">
-            <mat-form-field appearance="outline">
-              <mat-label>'Manage Access' Link</mat-label>
-              <input readonly matInput placeholder="Placeholder" [value]="manageAccessLink()" />
-              <mat-hint>Copy the link and share it with your client</mat-hint>
-            </mat-form-field>
-
-            <button mat-icon-button matTooltip="Customize this link" (click)="openCustomizeAccessLinkModal(defaultManageLink()!)">
-              <mat-icon>settings</mat-icon>
-            </button>
-
-            <button mat-icon-button matTooltip="Copy link"
-                    [cdkCopyToClipboard]="manageAccessLink()"
-                    (cdkCopyToClipboardCopied)="onCopySuccess()">
-              <mat-icon>content_copy</mat-icon>
-            </button>
-
-            <button mat-icon-button matTooltip="Open this link in a new tab" (click)="openInNewTab(manageAccessLink())">
-              <mat-icon>open_in_new</mat-icon>
-            </button>
-          </div>
-        </div>
-      </mat-tab>
-      <mat-tab label="'View Access' Link">
-        <div class="tab-content">
-          <div>
-            <div class="subtitle-medium">'View Access' Link</div>
-            <div class="body-smaller-text">To onboard new clients</div>
-          </div>
-
-          <div>🔗 Share request via link</div>
-
-
-          <div class="connect-link-row">
-            <mat-form-field appearance="outline">
-              <mat-label>'View Access' Link</mat-label>
-              <input readonly matInput placeholder="Placeholder" [value]="viewAccessLink()" />
-              <mat-hint>Copy the link and share it with your client</mat-hint>
-            </mat-form-field>
-
-            <button mat-icon-button matTooltip="Customize this link" (click)="openCustomizeAccessLinkModal(defaultViewLink()!)">
-              <mat-icon>settings</mat-icon>
-            </button>
-
-            <button mat-icon-button matTooltip="Copy link"
-                    [cdkCopyToClipboard]="viewAccessLink()"
-                    (cdkCopyToClipboardCopied)="onCopySuccess()">
-              <mat-icon>content_copy</mat-icon>
-            </button>
-
-            <button mat-icon-button matTooltip="Open this link in a new tab" (click)="openInNewTab(viewAccessLink())">
-              <mat-icon>open_in_new</mat-icon>
-            </button>
-          </div>
-        </div>
-      </mat-tab>
-      <mat-tab label="Connection Links Management">
+      <mat-tab label="Default Connection Links">
         <div class="tab-content w-100">
-          <div class="subtitle-medium">Connection Links</div>
-          <button mat-raised-button color="primary" (click)="createNewConnectionLink()">
-            <mat-icon>add</mat-icon>
-            Create New Connection Link
-          </button>
+          <div class="header-section">
+            <div>
+              <div class="subtitle-medium">Default Connection Links</div>
+              <div class="body-smaller-text">Use these pre-configured links to quickly share access requests with your clients</div>
+            </div>
+          </div>
 
-          <table style="margin-top: 20px;">
+          <div class="links-container">
+            <mat-card class="link-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon class="card-icon manage-icon">admin_panel_settings</mat-icon>
+                  Manage Access Link
+                </mat-card-title>
+                <mat-card-subtitle>
+                  Grant full control to manage campaigns, budgets and assets
+                </mat-card-subtitle>
+              </mat-card-header>
+
+              <mat-card-content>
+                <div class="link-content">
+                  <div class="link-field-wrapper">
+                    <mat-form-field appearance="outline" class="link-field">
+                      <mat-label>Connection Link</mat-label>
+                      <input readonly matInput [value]="manageAccessLink()" />
+                      <mat-hint>Share this link with clients to grant manage access</mat-hint>
+                    </mat-form-field>
+                    <button mat-icon-button color="primary"
+                            matTooltip="Copy link"
+                            class="copy-button"
+                            [cdkCopyToClipboard]="manageAccessLink()"
+                            (cdkCopyToClipboardCopied)="onCopySuccess()">
+                      <mat-icon>content_copy</mat-icon>
+                    </button>
+                  </div>
+
+                  <div class="action-buttons">
+                    <button mat-stroked-button
+                            (click)="openCustomizeAccessLinkModal(defaultManageLink()!)">
+                      <mat-icon>settings</mat-icon>
+                      Customize Link
+                    </button>
+
+                    <button mat-stroked-button
+                            (click)="openInNewTab(manageAccessLink())">
+                      <mat-icon>open_in_new</mat-icon>
+                      Open in New Tab
+                    </button>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <mat-card class="link-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon class="card-icon view-icon">visibility</mat-icon>
+                  View Access Link
+                </mat-card-title>
+                <mat-card-subtitle>
+                  View-only access to analytics and reports without editing rights
+                </mat-card-subtitle>
+              </mat-card-header>
+
+              <mat-card-content>
+                <div class="link-content">
+                  <div class="link-field-wrapper">
+                    <mat-form-field appearance="outline" class="link-field">
+                      <mat-label>Connection Link</mat-label>
+                      <input readonly matInput [value]="viewAccessLink()" />
+                      <mat-hint>Share this link with clients to grant view-only access</mat-hint>
+                    </mat-form-field>
+                    <button mat-icon-button color="primary"
+                            matTooltip="Copy link"
+                            class="copy-button"
+                            [cdkCopyToClipboard]="viewAccessLink()"
+                            (cdkCopyToClipboardCopied)="onCopySuccess()">
+                      <mat-icon>content_copy</mat-icon>
+                    </button>
+                  </div>
+
+                  <div class="action-buttons">
+                    <button mat-stroked-button
+                            (click)="openCustomizeAccessLinkModal(defaultViewLink()!)">
+                      <mat-icon>settings</mat-icon>
+                      Customize Link
+                    </button>
+
+                    <button mat-stroked-button
+                            (click)="openInNewTab(viewAccessLink())">
+                      <mat-icon>open_in_new</mat-icon>
+                      Open in New Tab
+                    </button>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+      </mat-tab>
+      <mat-tab label="All Connection Links">
+        <div class="tab-content w-100">
+          <div class="header-section">
+            <div>
+              <div class="subtitle-medium">All Connection Links</div>
+              <div class="body-smaller-text">Manage all your connection links including custom configurations for specific clients</div>
+            </div>
+          </div>
+
+          <table>
             <thead>
             <tr>
               <th>Name</th>
@@ -135,6 +172,10 @@
               }
             </tbody>
           </table>
+          <button mat-flat-button color="primary" (click)="createNewConnectionLink()">
+            <mat-icon>add</mat-icon>
+            Create New Connection Link
+          </button>
         </div>
       </mat-tab>
     </mat-tab-group>

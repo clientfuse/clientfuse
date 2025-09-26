@@ -1,18 +1,7 @@
-import { TBaseConnectionResult, IGrantAccessResponse } from '@clientfuse/models';
+import { TBaseConnectionResult, IGrantAccessResponse, TPlatformNamesKeys } from '@clientfuse/models';
 import { Type } from 'class-transformer';
 import { IsDefined, IsOptional, IsString, ValidateNested, IsArray } from 'class-validator';
 
-class GrantedAccessesDto {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => Object)
-  google: IGrantAccessResponse[];
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => Object)
-  facebook: IGrantAccessResponse[];
-}
 
 export class CreateConnectionResultDto implements TBaseConnectionResult {
   @IsString()
@@ -32,7 +21,7 @@ export class CreateConnectionResultDto implements TBaseConnectionResult {
   facebookUserId?: string;
 
   @ValidateNested()
-  @Type(() => GrantedAccessesDto)
+  @Type(() => Object)
   @IsDefined()
-  grantedAccesses: GrantedAccessesDto;
+  grantedAccesses: Record<TPlatformNamesKeys, IGrantAccessResponse[]>;
 }

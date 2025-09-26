@@ -12,6 +12,7 @@ import { CommonIssuesComponent } from '../../common-issues/common-issues.compone
 import { IslandComponent } from '../../../../../../components/island/island.component';
 import { StatusCardComponent } from '../../../../../../components/status-card/status-card.component';
 import { FacebookStoreService } from '../../../../../../services/facebook/facebook-store.service';
+import { ConnectionResultStoreService } from '../../../../../../services/connection-result/connection-result-store.service';
 import { SnackbarService } from '../../../../../../services/snackbar.service';
 
 export interface IFacebookPixelModalData {
@@ -45,6 +46,7 @@ export class FacebookPixelModalComponent {
   private readonly dialogRef = inject(MatDialogRef<FacebookPixelModalComponent>);
   private readonly snackbarService = inject(SnackbarService);
   private readonly facebookStoreService = inject(FacebookStoreService);
+  private readonly connectionResultStore = inject(ConnectionResultStoreService);
   protected readonly data: IFacebookPixelModalData = inject(MAT_DIALOG_DATA);
 
   readonly copyButtonText = signal<string>('Copy');
@@ -63,8 +65,8 @@ export class FacebookPixelModalComponent {
     window.open(url, '_blank', 'noopener,noreferrer');
   }
 
-  onContinue(): void {
-    this.facebookStoreService.addOrUpdateGrantedAccess({
+  async onContinue(): Promise<void> {
+    await this.connectionResultStore.addGrantedAccess('facebook', {
       success: true,
       service: FacebookServiceType.PIXEL,
       accessType: this.data.accessType,

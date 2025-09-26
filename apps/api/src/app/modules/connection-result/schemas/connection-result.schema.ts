@@ -1,4 +1,4 @@
-import { TBaseConnectionResult, IGrantAccessResponse } from '@clientfuse/models';
+import { TBaseConnectionResult, IGrantAccessResponse, TPlatformNamesKeys } from '@clientfuse/models';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 
@@ -19,34 +19,11 @@ export class ConnectionResult implements TBaseConnectionResult {
   facebookUserId?: string;
 
   @Prop({
-    type: {
-      google: [{
-        success: { type: Boolean, required: true },
-        service: { type: String, required: true },
-        accessType: { type: String, required: true },
-        entityId: { type: String, required: true },
-        agencyIdentifier: { type: String, required: true },
-        linkId: { type: String, required: false },
-        message: { type: String, required: false },
-        error: { type: String, required: false }
-      }],
-      facebook: [{
-        success: { type: Boolean, required: true },
-        service: { type: String, required: true },
-        accessType: { type: String, required: true },
-        entityId: { type: String, required: true },
-        agencyIdentifier: { type: String, required: true },
-        linkId: { type: String, required: false },
-        message: { type: String, required: false },
-        error: { type: String, required: false }
-      }]
-    },
-    required: true
+    type: mongoose.Schema.Types.Mixed,
+    required: true,
+    default: {}
   })
-  grantedAccesses: {
-    google: IGrantAccessResponse[];
-    facebook: IGrantAccessResponse[];
-  };
+  grantedAccesses: Record<TPlatformNamesKeys, IGrantAccessResponse[]>;
 
   updatedAt: Date;
   createdAt: Date;
