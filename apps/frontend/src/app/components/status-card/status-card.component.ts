@@ -1,6 +1,7 @@
 import { Component, input, computed } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { IslandComponent, IslandVariant, IslandDensity } from '../island/island.component';
+import { IslandComponent } from '../island/island.component';
+import { UIVariant, UIDensity } from '../../models/ui.model';
 
 @Component({
   selector: 'app-status-card',
@@ -10,12 +11,12 @@ import { IslandComponent, IslandVariant, IslandDensity } from '../island/island.
   styleUrl: './status-card.component.scss',
 })
 export class StatusCardComponent {
-  readonly variant = input<IslandVariant>('neutral');
+  readonly variant = input<UIVariant>('neutral');
   readonly header = input.required<string>();
   readonly showIcon = input<boolean>(true);
-  readonly density = input<IslandDensity>('compact');
+  readonly density = input<UIDensity>('compact');
 
-  private readonly iconMap: Record<IslandVariant, string> = {
+  private readonly iconMap: Record<UIVariant, string> = {
     success: 'check_circle',
     warning: 'warning',
     error: 'error',

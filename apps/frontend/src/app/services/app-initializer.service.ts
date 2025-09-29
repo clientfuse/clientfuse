@@ -6,6 +6,7 @@ import { finalize, Observable, of } from 'rxjs';
 import { AgencyStoreService } from './agency/agency-store.service';
 import { AuthStoreService } from './auth/auth-store.service';
 import { ConnectionLinkStoreService } from './connection-link/connection-link-store.service';
+import { ConnectionResultAgencyStoreService } from './connection-result/connection-result-agency-store.service';
 import { LocalStorageService } from './local-storage.service';
 import { NavigationService } from './navigation.service';
 import { ProfileStoreService } from './profile/profile-store.service';
@@ -18,6 +19,7 @@ export class AppInitializerService {
   private readonly agencyStoreService = inject(AgencyStoreService);
   private readonly authStoreService = inject(AuthStoreService);
   private readonly connectionLinkStoreService = inject(ConnectionLinkStoreService);
+  private readonly connectionResultAgencyStoreService = inject(ConnectionResultAgencyStoreService);
   private readonly navigationService = inject(NavigationService);
   private readonly profileStoreService = inject(ProfileStoreService);
 
@@ -47,11 +49,12 @@ export class AppInitializerService {
   private async initialize(userId: string): Promise<void> {
     try {
       const agency = await this.agencyStoreService.getUserAgency(userId);
-      
+
       if (agency?._id) {
         await this.connectionLinkStoreService.loadConnectionLinksForAgency(agency._id);
+        await this.connectionResultAgencyStoreService.loadConnectionResults(agency._id);
       }
-      
+
       console.log(`Post-login initialization completed for user ${userId}`);
     } catch (error) {
       console.error('Error during post-login initialization:', error);

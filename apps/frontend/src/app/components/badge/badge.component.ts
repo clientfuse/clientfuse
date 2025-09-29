@@ -1,9 +1,7 @@
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-
-export type BadgeVariant = 'neutral' | 'success' | 'error' | 'warning' | 'info';
-export type BadgeDensity = 'compact' | 'default' | 'comfortable';
+import { UIVariant, UIDensity } from '../../models/ui.model';
 
 @Component({
   selector: 'app-badge',
@@ -13,8 +11,8 @@ export type BadgeDensity = 'compact' | 'default' | 'comfortable';
   styleUrl: './badge.component.scss',
 })
 export class BadgeComponent {
-  readonly variant = input<BadgeVariant>('neutral');
-  readonly density = input<BadgeDensity>('default');
+  readonly variant = input<UIVariant>('neutral');
+  readonly density = input<UIDensity>('default');
   readonly icon = input<string | undefined>(undefined);
   readonly text = input<string | undefined>(undefined);
 }

@@ -1,11 +1,12 @@
-import { IAgencyResponse, IFacebookInfo, IGoogleInfo, IGrantAccessResponse, TPlatformNamesKeys } from '@clientfuse/models';
+import { IAgencyResponse, IFacebookInfo, IGoogleInfo, IGrantAccessResponse, TPlatformNamesKeys, TAccessType, IFindOptions } from '@clientfuse/models';
 
 export type TBaseConnectionResult = {
   agencyId: IAgencyResponse['_id'];
   connectionLinkId: string;
   googleUserId?: IGoogleInfo['userId'];
   facebookUserId?: IFacebookInfo['userId'];
-  grantedAccesses: Record<TPlatformNamesKeys, IGrantAccessResponse[]>
+  grantedAccesses: Record<TPlatformNamesKeys, IGrantAccessResponse[]>;
+  accessType: TAccessType;
 }
 
 export type TConnectionResultResponse = TBaseConnectionResult & {
@@ -19,4 +20,13 @@ export type TConnectionResultFilter = {
   connectionLinkId?: TBaseConnectionResult['connectionLinkId'];
   googleUserId?: TBaseConnectionResult['googleUserId'];
   facebookUserId?: TBaseConnectionResult['facebookUserId'];
+}
+
+export interface IConnectionResultFilterDto extends TConnectionResultFilter, IFindOptions {
+  sortBy?: 'createdAt' | 'updatedAt';
+  sortOrder?: 'asc' | 'desc';
+  fromDate?: Date;
+  toDate?: Date;
+  platform?: TPlatformNamesKeys | 'all';
+  accessType?: TAccessType;
 }

@@ -1,0 +1,279 @@
+@import 'variables';
+@import 'mixins';
+
+.connection-results-table {
+  width: 100%;
+  overflow-x: auto;
+
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem;
+  }
+
+  .no-results {
+    text-align: center;
+    padding: 3rem;
+    color: $dark-60;
+  }
+
+  .table {
+    width: 100%;
+    background: white;
+    border-radius: var(--spacing-3);
+    overflow: hidden;
+    border: 1px solid $dark-20;
+    border-collapse: separate;
+    border-spacing: 0;
+
+    thead {
+      background: $blue-80;
+
+      tr {
+        th {
+          padding: var(--spacing-4) var(--spacing-5);
+          font-weight: var(--fw-semi-bold);
+          font-size: var(--fs-13);
+          text-transform: uppercase;
+          letter-spacing: 0.8px;
+          color: white;
+          border: none;
+          text-align: left;
+
+          &:first-child {
+            padding-left: var(--spacing-6);
+          }
+
+          &:last-child {
+            padding-right: var(--spacing-6);
+          }
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        position: relative;
+        cursor: pointer;
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: $cloud;
+
+          td:first-child::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: $blue-80;
+          }
+        }
+
+        &.expanded {
+          background-color: $cloud;
+        }
+
+        td {
+          padding: var(--spacing-4) var(--spacing-5);
+          font-size: var(--fs-14);
+          color: $dark-100;
+          border: none;
+          vertical-align: middle;
+          position: relative;
+          line-height: 1.5;
+
+          &:first-child {
+            padding-left: var(--spacing-6);
+          }
+
+          &:last-child {
+            padding-right: var(--spacing-6);
+          }
+
+          &.expand-icon-cell {
+            width: 48px;
+            padding-right: var(--spacing-4);
+            text-align: center;
+
+            .expand-icon {
+              color: $dark-60;
+              transition: transform 0.2s;
+              cursor: pointer;
+            }
+          }
+        }
+
+        &.expanded-row {
+          background-color: $cloud;
+          cursor: default;
+
+          &:hover {
+            background-color: $cloud;
+          }
+        }
+      }
+    }
+  }
+
+  .connection-info {
+    app-badge {
+      margin-bottom: 0.5rem;
+    }
+
+    .connection-time {
+      font-size: 0.875rem;
+      color: $dark-60;
+    }
+  }
+
+  .client-accounts {
+    .account-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .success-icon {
+        color: $green-80;
+        font-size: 1.2rem;
+        width: 1.2rem;
+        height: 1.2rem;
+      }
+
+      .warning-icon {
+        color: $orange-80;
+        font-size: 1.2rem;
+        width: 1.2rem;
+        height: 1.2rem;
+      }
+
+      .service-icon {
+        width: 16px;
+        height: 16px;
+        object-fit: contain;
+      }
+
+      strong {
+        margin-right: 0.25rem;
+      }
+
+      .entity-name {
+        color: $dark-60;
+        font-size: 0.875rem;
+      }
+
+      .deep-link {
+        margin-left: 0.5rem;
+        color: $blue-80;
+        display: inline-flex;
+        align-items: center;
+
+        mat-icon {
+          font-size: 1rem;
+          width: 1rem;
+          height: 1rem;
+        }
+
+        &:hover {
+          color: $blue-100;
+        }
+      }
+    }
+  }
+
+  .platforms {
+    .platform-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .platform-icon {
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
+      }
+
+      strong {
+        margin-right: 0.25rem;
+      }
+
+      span {
+        color: $dark-60;
+        font-size: 0.875rem;
+      }
+    }
+  }
+
+  .expanded-content {
+    padding: var(--spacing-5);
+    background-color: white;
+    border-radius: var(--spacing-2);
+    margin: var(--spacing-2) 0;
+
+    h4 {
+      margin-top: 0;
+      margin-bottom: var(--spacing-4);
+      color: $dark-80;
+      font-size: var(--fs-16);
+      font-weight: var(--fw-semi-bold);
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--spacing-4);
+      margin-bottom: 0;
+
+      .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-1);
+
+        .label {
+          font-size: var(--fs-13);
+          color: $dark-60;
+          font-weight: var(--fw-medium);
+        }
+
+        .value {
+          font-size: var(--fs-14);
+          color: $dark-80;
+          word-break: break-all;
+        }
+      }
+    }
+  }
+}
+
+@include phonesAndLower {
+  .connection-results-table {
+    .table {
+      font-size: 0.875rem;
+
+      thead tr th,
+      tbody tr td {
+        padding: 0.5rem;
+      }
+    }
+
+    .expanded-content {
+      padding: 1rem;
+
+      .details-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+}

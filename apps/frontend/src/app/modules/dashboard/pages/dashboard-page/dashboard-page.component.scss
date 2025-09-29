@@ -199,3 +199,8 @@
     }
   }
 }
+
+.filters-panel {
+  display: flex;
+  gap: var(--spacing-4);
+}

@@ -1,0 +1,117 @@
+<div class="connection-results-table">
+  @if (isLoading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+    </div>
+  } @else if (tableRows().length === 0) {
+    <div class="no-results">
+      <p class="body-text">No connection results found</p>
+    </div>
+  } @else {
+    <table class="table">
+      <thead>
+      <tr>
+        <th>Connected</th>
+        <th>Client Account(s)</th>
+        <th>Access Requested For</th>
+        <th></th>
+      </tr>
+      </thead>
+      <tbody>
+        @for (row of tableRows(); track row.id) {
+          <tr [class.expanded]="isRowExpanded(row.id)" (click)="toggleRow(row.id)">
+            <td>
+              <div class="connection-info">
+                <app-badge
+                  [text]="getAccessBadgeText(row.accessType)"
+                  [variant]="getAccessBadgeVariant(row.accessType)">
+                </app-badge>
+                <br>
+                <span class="connection-time">{{ formatTime(row.connectionTime) }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="client-accounts">
+                @for (access of row.grantedAccesses; track access.entityId) {
+                  <div class="account-item">
+                    @if (access.success) {
+                      <mat-icon class="success-icon">check_circle</mat-icon>
+                    } @else {
+                      <mat-icon class="warning-icon">warning</mat-icon>
+                    }
+                    @if (getServiceIcon(access.service)) {
+                      <img [src]="getServiceIcon(access.service)"
+                           [alt]="access.service"
+                           class="service-icon">
+                    }
+                    <strong>{{ getServiceDisplayName(access.service) }}</strong>
+                    <span class="entity-name">{{ access.entityId }}</span>
+                    @if (access.linkId) {
+                      <a
+                        [href]="getDeepLink('facebook', access.service, access.entityId, access.agencyIdentifier)"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="deep-link"
+                        (click)="$event.stopPropagation()">
+                        <mat-icon>open_in_new</mat-icon>
+                      </a>
+                    }
+                  </div>
+                }
+              </div>
+            </td>
+            <td>
+              <div class="platforms">
+                @for (platform of row.platforms; track platform) {
+                  @for (result of results(); track result._id) {
+                    @if (result._id === row.id) {
+                      <div class="platform-info">
+                        <img
+                          [src]="getPlatformIcon(platform)"
+                          [alt]="platform"
+                          class="platform-icon">
+                        <strong>{{ getPlatformDisplayName(platform) }}</strong>
+                        <span>{{ getPlatformBusinessName(result, platform) }}</span>
+                      </div>
+                    }
+                  }
+                }
+              </div>
+            </td>
+            <td class="expand-icon-cell">
+              <mat-icon class="expand-icon">{{ isRowExpanded(row.id) ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </td>
+          </tr>
+
+          @if (isRowExpanded(row.id)) {
+            <tr class="expanded-row">
+              <td colspan="4">
+                <div class="expanded-content">
+                  <h4 class="subtitle-small">Connection Details</h4>
+                  <div class="details-grid">
+                    <div class="detail-item">
+                      <span class="label">Connection ID:</span>
+                      <span class="value">{{ row.id }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="label">Connection Link:</span>
+                      <span class="value">{{ row.connectionLink }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="label">Access Type:</span>
+                      <span class="value">{{ row.accessType }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="label">Total Granted Accesses:</span>
+                      <span class="value">{{ row.grantedAccesses.length }}</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  }
+</div>

@@ -147,7 +147,8 @@ export class ConnectAccountsComponent implements OnInit {
             'google',
             googleConnectionData.user.sub,
             connectionLink._id,
-            connectionLink.agencyId
+            connectionLink.agencyId,
+            this.accessType()
           );
         }
       }
@@ -175,7 +176,8 @@ export class ConnectAccountsComponent implements OnInit {
             'facebook',
             facebookConnectionData.user.id,
             connectionLink._id,
-            connectionLink.agencyId
+            connectionLink.agencyId,
+            this.accessType()
           );
         }
       }

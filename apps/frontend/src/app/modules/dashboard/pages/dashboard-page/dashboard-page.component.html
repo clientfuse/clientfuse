@@ -6,10 +6,8 @@
       <mat-tab label="Default Connection Links">
         <div class="tab-content w-100">
           <div class="header-section">
-            <div>
-              <div class="subtitle-medium">Default Connection Links</div>
-              <div class="body-smaller-text">Use these pre-configured links to quickly share access requests with your clients</div>
-            </div>
+            <div class="subtitle-medium">Default Connection Links</div>
+            <div class="body-smaller-text">Use these pre-configured links to quickly share access requests with your clients</div>
           </div>
 
           <div class="links-container">
@@ -108,10 +106,8 @@
       <mat-tab label="All Connection Links">
         <div class="tab-content w-100">
           <div class="header-section">
-            <div>
-              <div class="subtitle-medium">All Connection Links</div>
-              <div class="body-smaller-text">Manage all your connection links including custom configurations for specific clients</div>
-            </div>
+            <div class="subtitle-medium">All Connection Links</div>
+            <div class="body-smaller-text">Manage all your connection links including custom configurations for specific clients</div>
           </div>
 
           <table>
@@ -181,124 +177,55 @@
     </mat-tab-group>
 
     <mat-tab-group>
-      <mat-tab label="Client Summary">
+      <mat-tab label="Connections History">
         <div class="tab-content w-100">
-          <table>
-            <thead>
-            <tr>
-              <th>#</th>
-              <th>Client</th>
-              <th>Assets</th>
-              <th>Requested Partners</th>
-              <th>Connections</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-              <td>1</td>
-              <td><a href="#" class="link link-blue">Teach Fast</a></td>
-              <td>
-                <ul>
-                  <li>✅ Google Analytics Account: styles.com.ua (188251058)</li>
-                  <li>⚠️ Meta Ad Account: Main (9068114896565705)</li>
-                  <li>✅ Facebook Page: Teach Fast (481084805089953)</li>
-                </ul>
-              </td>
-              <td>
-                <ul>
-                  <li>Facebook: Old Business (191843779016692)</li>
-                  <li>Google: olegbespalko12gmail.com</li>
-                </ul>
-              </td>
-              <td>
-                <ul>
-                  <li>Tue, Nov 19, 2024 5:48 PM (<a href="#" class="link link-blue">Manage link</a>)</li>
-                  <li>Tue, Nov 19, 2024 5:47 PM (<a href="#" class="link link-blue">Manage link</a>)</li>
-                </ul>
-              </td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-      </mat-tab>
-      <mat-tab label="Connections">
-        <div class="tab-content w-100">
-          <table>
-            <thead>
-            <tr>
-              <th>#</th>
-              <th>Summary</th>
-              <th>Request Details</th>
-              <th>Date</th>
-              <th>Assets</th>
-              <th>Access Level</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-              <td>1</td>
-              <td><a href="#" class="link link-blue">Summary Details</a></td>
-              <td>
-                Facebook: Old Business (191843779016692), Google Accounts:
-                <a href="#" class="link link-blue">olegbespalko12gmail.com</a>
-              </td>
-              <td>Tue, Nov 19, 2024 5:48 PM</td>
-              <td>
-                <ul>
-                  <li>✅ Google Analytics Account: styles.com.ua (188251058)</li>
-                  <li>⚠️ Meta Ad Account: Main (9068114896565705)</li>
-                </ul>
-              </td>
-              <td>Manage</td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td><a href="#" class="link link-blue">Summary Details</a></td>
-              <td>
-                Facebook: Old Business (191843779016692)
-                <a href="#" class="link link-blue">link</a>
-              </td>
-              <td>Tue, Nov 19, 2024 5:47 PM</td>
-              <td>
-                <ul>
-                  <li>⚠️ Meta Ad Account: Main (9068114896565705)</li>
-                  <li>✅ Facebook Page: Teach Fast (481084805089953)</li>
-                </ul>
-              </td>
-              <td>Manage</td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-      </mat-tab>
-      <mat-tab label="Custom Requests">
-        <div class="tab-content w-100">
-          <table>
-            <thead>
-            <tr>
-              <th>#</th>
-              <th>Link</th>
-              <th>Request Email</th>
-              <th>Assets (Requesting Partner)</th>
-              <th>Access Level</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-              <td>1</td>
-              <td><a href="#" class="link link-blue">View 🔗</a></td>
-              <td>olegbespalko12gmail.com</td>
-              <td>
-                <ul>
-                  <li>Meta Ad Account (Old Business)</li>
-                  <li>Facebook Page (Old Business)</li>
-                </ul>
-              </td>
-              <td>Manage</td>
-            </tr>
-            </tbody>
-          </table>
+          <div class="header-section">
+            <div class="subtitle-medium">Connections History</div>
+            <div class="body-smaller-text">Review past connection attempts and access grants</div>
+          </div>
+          <div class="filters-panel">
+            <mat-form-field appearance="outline">
+              <mat-label>Date Range</mat-label>
+              <mat-select [value]="selectedDateRange()" (selectionChange)="selectedDateRange.set($event.value); onFilterChange()">
+                <mat-option value="all">All Time</mat-option>
+                <mat-option value="7days">Last 7 Days</mat-option>
+                <mat-option value="30days">Last 30 Days</mat-option>
+              </mat-select>
+            </mat-form-field>
 
+            <mat-form-field appearance="outline">
+              <mat-label>Access Type</mat-label>
+              <mat-select [value]="selectedAccessType()" (selectionChange)="selectedAccessType.set($event.value); onFilterChange()">
+                <mat-option value="all">All</mat-option>
+                <mat-option value="view">View Only</mat-option>
+                <mat-option value="manage">Manage</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Platform</mat-label>
+              <mat-select [value]="selectedPlatform()" (selectionChange)="selectedPlatform.set($event.value); onFilterChange()">
+                <mat-option value="all">All Platforms</mat-option>
+                <mat-option value="google">Google</mat-option>
+                <mat-option value="facebook">Facebook</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <app-connection-results-table
+            [results]="connectionResults()"
+            [isLoading]="isLoadingResults()"
+            (viewDetails)="onViewConnectionDetails($event)">
+          </app-connection-results-table>
+
+          <mat-paginator
+            [length]="totalResults()"
+            [pageSize]="pageSize()"
+            [pageIndex]="currentPage() - 1"
+            [pageSizeOptions]="[15]"
+            (page)="onPageChange($event)"
+            aria-label="Select page of connection results">
+          </mat-paginator>
         </div>
       </mat-tab>
     </mat-tab-group>

@@ -1,6 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { ENDPOINTS, IResponse, TBaseConnectionResult, TConnectionResultFilter, TConnectionResultResponse } from '@clientfuse/models';
+import {
+  ENDPOINTS,
+  IResponse,
+  TBaseConnectionResult,
+  TConnectionResultFilter,
+  TConnectionResultResponse,
+  IConnectionResultFilterDto,
+  IPaginatedResponse
+} from '@clientfuse/models';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -19,9 +27,10 @@ export class ConnectionResultApiService {
     );
   }
 
-  async findAll(filter?: TConnectionResultFilter): Promise<IResponse<TConnectionResultResponse[]>> {
+  async findAll(filter?: IConnectionResultFilterDto): Promise<IResponse<IPaginatedResponse<TConnectionResultResponse>>> {
     const params: any = {};
 
+    // Base filters
     if (filter?.agencyId) {
       params.agencyId = filter.agencyId;
     }
@@ -38,8 +47,45 @@ export class ConnectionResultApiService {
       params.facebookUserId = filter.facebookUserId;
     }
 
+    // Pagination
+    if (filter?.skip !== undefined) {
+      params.skip = filter.skip.toString();
+    }
+
+    if (filter?.limit !== undefined) {
+      params.limit = filter.limit.toString();
+    }
+
+    // Sorting
+    if (filter?.sortBy) {
+      params.sortBy = filter.sortBy;
+    }
+
+    if (filter?.sortOrder) {
+      params.sortOrder = filter.sortOrder;
+    }
+
+    // Date filtering
+    if (filter?.fromDate) {
+      params.fromDate = filter.fromDate.toISOString();
+    }
+
+    if (filter?.toDate) {
+      params.toDate = filter.toDate.toISOString();
+    }
+
+    // Platform filtering
+    if (filter?.platform && filter.platform !== 'all') {
+      params.platform = filter.platform;
+    }
+
+    // Access type filtering
+    if (filter?.accessType) {
+      params.accessType = filter.accessType;
+    }
+
     return firstValueFrom(
-      this.httpClient.get<IResponse<TConnectionResultResponse[]>>(
+      this.httpClient.get<IResponse<IPaginatedResponse<TConnectionResultResponse>>>(
         `${environment.API_URL}/${ENDPOINTS.connectionResults.root}`,
         { params }
       )
@@ -88,14 +134,6 @@ export class ConnectionResultApiService {
     );
   }
 
-  async findByAgency(agencyId: string): Promise<IResponse<TConnectionResultResponse[]>> {
-    return firstValueFrom(
-      this.httpClient.get<IResponse<TConnectionResultResponse[]>>(
-        `${environment.API_URL}/${ENDPOINTS.connectionResults.root}/${ENDPOINTS.connectionResults.byAgency}`
-          .replace(':agencyId', agencyId)
-      )
-    );
-  }
 
   async update(id: string, dto: Partial<TBaseConnectionResult>): Promise<IResponse<TConnectionResultResponse>> {
     return firstValueFrom(

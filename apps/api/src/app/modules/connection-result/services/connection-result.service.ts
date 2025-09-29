@@ -1,8 +1,8 @@
-import { TConnectionResultFilter, TConnectionResultResponse } from '@clientfuse/models';
+import { TConnectionResultResponse } from '@clientfuse/models';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
-import { CreateConnectionResultDto, UpdateConnectionResultDto } from '../dto';
+import { FilterQuery, Model, SortOrder } from 'mongoose';
+import { CreateConnectionResultDto, FilterConnectionResultDto, UpdateConnectionResultDto } from '../dto';
 import { ConnectionResult, ConnectionResultDocument } from '../schemas/connection-result.schema';
 
 @Injectable()
@@ -17,13 +17,41 @@ export class ConnectionResultService {
     return createdResult.toJSON() as unknown as TConnectionResultResponse;
   }
 
-  async findAll(filter: TConnectionResultFilter): Promise<TConnectionResultResponse[]> {
+  async findAll(filter: FilterConnectionResultDto): Promise<{
+    data: TConnectionResultResponse[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
     const query = this.buildMongoQuery(filter);
-    const results = await this.connectionResultModel.find(query).exec();
-    return results.map((doc) => doc.toJSON() as unknown as TConnectionResultResponse);
+    const skip = filter.skip || 0;
+    const limit = filter.limit || 15;
+    const sortBy = filter.sortBy || 'createdAt';
+    const sortOrder = filter.sortOrder || 'desc';
+
+    const sortOptions: Record<string, SortOrder> = {
+      [sortBy]: sortOrder === 'asc' ? 1 : -1
+    };
+
+    const [results, total] = await Promise.all([
+      this.connectionResultModel
+        .find(query)
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this.connectionResultModel.countDocuments(query).exec()
+    ]);
+
+    return {
+      data: results.map((doc) => doc.toJSON() as unknown as TConnectionResultResponse),
+      total,
+      page: Math.floor(skip / limit) + 1,
+      limit
+    };
   }
 
-  async findOne(filter: TConnectionResultFilter & { _id?: string }): Promise<TConnectionResultResponse | null> {
+  async findOne(filter: FilterConnectionResultDto & { _id?: string }): Promise<TConnectionResultResponse | null> {
     const query = this.buildMongoQuery(filter);
     const result = await this.connectionResultModel.findOne(query).exec();
     return result ? result.toJSON() as unknown as TConnectionResultResponse : null;
@@ -32,11 +60,6 @@ export class ConnectionResultService {
   async findById(id: string): Promise<TConnectionResultResponse | null> {
     const result = await this.connectionResultModel.findById(id).exec();
     return result ? result.toJSON() as unknown as TConnectionResultResponse : null;
-  }
-
-  async findByAgency(agencyId: string): Promise<TConnectionResultResponse[]> {
-    const results = await this.connectionResultModel.find({ agencyId }).exec();
-    return results.map((doc) => doc.toJSON() as unknown as TConnectionResultResponse);
   }
 
   async update(id: string, dto: UpdateConnectionResultDto): Promise<TConnectionResultResponse> {
@@ -59,7 +82,7 @@ export class ConnectionResultService {
     }
   }
 
-  private buildMongoQuery(filter: TConnectionResultFilter & { _id?: string }): FilterQuery<ConnectionResultDocument> {
+  private buildMongoQuery(filter: FilterConnectionResultDto & { _id?: string }): FilterQuery<ConnectionResultDocument> {
     const query: FilterQuery<ConnectionResultDocument> = {};
 
     if (filter._id) {
@@ -80,6 +103,31 @@ export class ConnectionResultService {
 
     if (filter.facebookUserId) {
       query.facebookUserId = filter.facebookUserId;
+    }
+
+    // Date filtering
+    if (filter.fromDate || filter.toDate) {
+      query.createdAt = {};
+      if (filter.fromDate) {
+        query.createdAt.$gte = filter.fromDate;
+      }
+      if (filter.toDate) {
+        query.createdAt.$lte = filter.toDate;
+      }
+    }
+
+    // Platform filtering
+    if (filter.platform && filter.platform !== 'all') {
+      if (filter.platform === 'google') {
+        query.googleUserId = { $exists: true, $ne: null };
+      } else if (filter.platform === 'facebook') {
+        query.facebookUserId = { $exists: true, $ne: null };
+      }
+    }
+
+    // Access type filtering
+    if (filter.accessType) {
+      query.accessType = filter.accessType;
     }
 
     return query;

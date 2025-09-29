@@ -17,9 +17,15 @@ export interface IErrorResponse {
 }
 
 export interface IFindOptions {
-  limit: string;
-  skip: string;
-  reported?: 'true' | 'false' | boolean;
+  limit?: string;
+  skip?: string;
+}
+
+export interface IPaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 export enum AppHeaders {

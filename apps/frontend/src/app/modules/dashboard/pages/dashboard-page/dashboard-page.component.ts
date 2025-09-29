@@ -1,6 +1,6 @@
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,14 +9,26 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
-import { generateConnectionLinkName, TConnectionLinkBase, TConnectionLinkResponse } from '@clientfuse/models';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import {
+  generateConnectionLinkName,
+  TConnectionLinkBase,
+  TConnectionLinkResponse,
+  TPlatformNamesKeys,
+  TAccessType
+} from '@clientfuse/models';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { BadgeComponent } from '../../../../components/badge/badge.component';
 import { AgencyStoreService } from '../../../../services/agency/agency-store.service';
 import { ConnectionLinkStoreService } from '../../../../services/connection-link/connection-link-store.service';
+import { ConnectionResultAgencyStoreService } from '../../../../services/connection-result/connection-result-agency-store.service';
 import { DialogService } from '../../../../services/dialog.service';
 import { SnackbarService } from '../../../../services/snackbar.service';
+import { ConnectionResultsTableComponent } from '../../components/connection-results-table/connection-results-table.component';
 import {
   CustomizeAccessLinkModalComponent,
   ICustomizeAccessLinkModalData
@@ -40,15 +52,21 @@ import {
     ClipboardModule,
     BadgeComponent,
     MatCardModule,
-    MatChipsModule
+    MatChipsModule,
+    MatPaginatorModule,
+    MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    ConnectionResultsTableComponent
   ],
   templateUrl: './dashboard-page.component.html',
   styleUrl: './dashboard-page.component.scss'
 })
-export class DashboardPageComponent {
+export class DashboardPageComponent implements OnInit {
   private readonly dialogService = inject(DialogService);
   private readonly agencyStoreService = inject(AgencyStoreService);
   private readonly connectionLinkStoreService = inject(ConnectionLinkStoreService);
+  private readonly connectionResultAgencyStoreService = inject(ConnectionResultAgencyStoreService);
   private readonly snackbarService = inject(SnackbarService);
 
   readonly agency = this.agencyStoreService.agency;
@@ -64,6 +82,58 @@ export class DashboardPageComponent {
     const link = this.defaultViewLink();
     return this.getConnectionLink(link?._id || '');
   });
+
+  readonly connectionResults = this.connectionResultAgencyStoreService.results;
+  readonly totalResults = this.connectionResultAgencyStoreService.total;
+  readonly currentPage = this.connectionResultAgencyStoreService.currentPage;
+  readonly pageSize = this.connectionResultAgencyStoreService.pageSize;
+  readonly isLoadingResults = this.connectionResultAgencyStoreService.isLoading;
+  readonly totalPages = this.connectionResultAgencyStoreService.totalPages;
+
+  readonly selectedPlatform = signal<TPlatformNamesKeys | 'all'>('all');
+  readonly selectedAccessType = signal<TAccessType | 'all'>('all');
+  readonly selectedDateRange = signal<'7days' | '30days' | 'all'>('all');
+
+  async ngOnInit(): Promise<void> {
+    const agencyId = this.agency()?._id;
+    if (agencyId) {
+      await this.connectionResultAgencyStoreService.loadConnectionResults(agencyId);
+    }
+  }
+
+  async onFilterChange(): Promise<void> {
+    const filters: any = {};
+    filters.platform = this.selectedPlatform();
+    filters.accessType = this.selectedAccessType() === 'all' ? undefined : this.selectedAccessType();
+
+    if (this.selectedDateRange() !== 'all') {
+      const now = new Date();
+      const fromDate = new Date();
+
+      if (this.selectedDateRange() === '7days') {
+        fromDate.setDate(now.getDate() - 7);
+      } else if (this.selectedDateRange() === '30days') {
+        fromDate.setDate(now.getDate() - 30);
+      }
+
+      filters.fromDate = fromDate;
+      filters.toDate = now;
+    } else {
+      filters.fromDate = undefined;
+      filters.toDate = undefined;
+    }
+
+    await this.connectionResultAgencyStoreService.applyFilters(filters);
+  }
+
+  async onPageChange(event: PageEvent): Promise<void> {
+    await this.connectionResultAgencyStoreService.changePage(event.pageIndex + 1);
+  }
+
+  onViewConnectionDetails(resultId: string): void {
+    // TODO: Navigate to details page or open modal
+    console.log('View details for:', resultId);
+  }
 
   onCopySuccess(): void {
     this.snackbarService.success('Link copied to clipboard');

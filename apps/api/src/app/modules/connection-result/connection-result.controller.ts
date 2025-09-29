@@ -31,7 +31,12 @@ export class ConnectionResultController {
   @Get()
   async findAll(
     @Query() filterDto: FilterConnectionResultDto
-  ): Promise<TConnectionResultResponse[]> {
+  ): Promise<{
+    data: TConnectionResultResponse[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
     return this.connectionResultService.findAll(filterDto);
   }
 
@@ -53,11 +58,6 @@ export class ConnectionResultController {
       throw new NotFoundException('Connection result not found');
     }
     return result;
-  }
-
-  @Get(ENDPOINTS.connectionResults.byAgency)
-  async findByAgency(@Param('agencyId') agencyId: string): Promise<TConnectionResultResponse[]> {
-    return this.connectionResultService.findByAgency(agencyId);
   }
 
   @Put(ENDPOINTS.connectionResults.editOne)

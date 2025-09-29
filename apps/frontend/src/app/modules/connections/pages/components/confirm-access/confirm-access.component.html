@@ -117,8 +117,7 @@
 
               <div class="account-content">
                 @if (panel.accounts.length > 0) {
-                  @for (
-                    account of panel.accounts; track account.id || account.account_id || $index) {
+                  @for (account of panel.accounts; track account.id || account.account_id || $index) {
                     @let accountValue = getAccountValue(account, panel);
                     @let isDisabled = isAccountDisabled(panel, accountValue);
                     @let isLoading = isLoadingUsers(panel, accountValue);

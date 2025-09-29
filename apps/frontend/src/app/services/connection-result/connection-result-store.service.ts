@@ -4,7 +4,8 @@ import {
   TBaseConnectionResult,
   IGrantAccessResponse,
   TConnectionResultFilter,
-  TPlatformNamesKeys
+  TPlatformNamesKeys,
+  TAccessType
 } from '@clientfuse/models';
 import { ConnectionResultApiService } from './connection-result-api.service';
 
@@ -71,7 +72,8 @@ export class ConnectionResultStoreService {
     platform: TPlatformNamesKeys,
     userId: string,
     connectionLinkId: string,
-    agencyId: string
+    agencyId: string,
+    accessType: TAccessType
   ): Promise<TConnectionResultResponse | null> {
     this.setLoading(true);
     this.clearError();
@@ -107,10 +109,12 @@ export class ConnectionResultStoreService {
       }
 
       console.log('No existing connection result found, creating new one...');
+
       const newResult: TBaseConnectionResult = {
         agencyId,
         connectionLinkId,
         [this.getPlatformUserIdKey(platform)]: userId,
+        accessType,
         grantedAccesses: {
           google: [],
           facebook: []

@@ -52,7 +52,7 @@ interface ServicePanel {
   noAccountsMessage: string;
   existingUsers?: Map<string, string[]>;
   loadingUsers?: Set<string>;
-  serviceEmail?: string; // Email for this specific service
+  agencyIdentifier?: string; // Email for this specific service
 }
 
 @Component({
@@ -129,7 +129,7 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Ads Account found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        serviceEmail: this.connectionLink()?.google?.ads?.email
+        agencyIdentifier: this.connectionLink()?.google?.ads?.email
       });
     }
 
@@ -145,7 +145,7 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Analytics Account found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        serviceEmail: this.connectionLink()?.google?.analytics?.email
+        agencyIdentifier: this.connectionLink()?.google?.analytics?.email
       });
     }
 
@@ -161,7 +161,7 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Search Console found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        serviceEmail: this.connectionLink()?.google?.searchConsole?.email
+        agencyIdentifier: this.connectionLink()?.google?.searchConsole?.email
       });
     }
 
@@ -177,7 +177,7 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Tag Manager found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        serviceEmail: this.connectionLink()?.google?.tagManager?.email
+        agencyIdentifier: this.connectionLink()?.google?.tagManager?.email
       });
     }
 
@@ -193,7 +193,7 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Merchant Center found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        serviceEmail: this.connectionLink()?.google?.merchantCenter?.email
+        agencyIdentifier: this.connectionLink()?.google?.merchantCenter?.email
       });
     }
 
@@ -209,7 +209,7 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Business Profile found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        serviceEmail: this.connectionLink()?.google?.myBusiness?.emailOrId
+        agencyIdentifier: this.connectionLink()?.google?.myBusiness?.emailOrId
       });
     }
 
@@ -225,7 +225,7 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Meta Ads Account found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        serviceEmail: this.connectionLink()?.facebook?.ads?.businessPortfolioId
+        agencyIdentifier: this.connectionLink()?.facebook?.ads?.businessPortfolioId
       });
     }
 
@@ -240,7 +240,7 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Meta Pages found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        serviceEmail: this.connectionLink()?.facebook?.pages?.businessPortfolioId
+        agencyIdentifier: this.connectionLink()?.facebook?.pages?.businessPortfolioId
       });
     }
 
@@ -255,7 +255,7 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Meta Catalogs found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        serviceEmail: this.connectionLink()?.facebook?.catalogs?.businessPortfolioId
+        agencyIdentifier: this.connectionLink()?.facebook?.catalogs?.businessPortfolioId
       });
     }
 
@@ -270,7 +270,7 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Meta Pixels found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        serviceEmail: this.connectionLink()?.facebook?.pixels?.businessPortfolioId
+        agencyIdentifier: this.connectionLink()?.facebook?.pixels?.businessPortfolioId
       });
     }
 
@@ -441,7 +441,7 @@ export class ConfirmAccessComponent {
   }
 
   isLoading(): boolean {
-    return this.googleStoreService.isLoading();
+    return this.googleStoreService.isLoading() || this.facebookStoreService.isLoading();
   }
 
   getGrantButtonText(): string {
@@ -466,7 +466,7 @@ export class ConfirmAccessComponent {
 
   private async grantGoogleAccess(panel: ServicePanel): Promise<void> {
     const accessType = this.accessType();
-    const agencyEmail = panel.serviceEmail || this.agencyEmail() || '';
+    const agencyEmail = panel.agencyIdentifier || this.agencyEmail() || '';
 
     const service = this.mapPanelKeyToGoogleServiceType(panel.key);
     if (!service) {
@@ -534,7 +534,7 @@ export class ConfirmAccessComponent {
 
   private async grantFacebookAccess(panel: ServicePanel): Promise<void> {
     const accessType = this.accessType();
-    const agencyEmail = panel.serviceEmail || this.agencyEmail() || '';
+    const agencyEmail = panel.agencyIdentifier || this.agencyEmail() || '';
 
     const service = this.mapPanelKeyToFacebookServiceType(panel.key);
     if (!service) {
@@ -752,13 +752,13 @@ export class ConfirmAccessComponent {
   }
 
   isAccountDisabled(panel: ServicePanel, accountValue: string): boolean {
-    const agencyEmail = (panel.serviceEmail || this.agencyEmail() || '').toLowerCase();
+    const agencyEmail = (panel.agencyIdentifier || this.agencyEmail() || '').toLowerCase();
     const existingUsers = panel.existingUsers?.get(accountValue) || [];
     return existingUsers.some(email => email.toLowerCase() === agencyEmail);
   }
 
   getAlreadyConnectedText(panel?: ServicePanel): string {
-    const agencyEmail = panel?.serviceEmail || this.agencyEmail() || '';
+    const agencyEmail = panel?.agencyIdentifier || this.agencyEmail() || '';
     return `The agency ${agencyEmail} already has access to this account`;
   }
 
