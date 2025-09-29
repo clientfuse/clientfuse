@@ -37,12 +37,12 @@ export class GoogleAccessController {
     private readonly googleMyBusinessAccessService: GoogleMyBusinessAccessService
   ) {
     this.serviceMap = new Map<GoogleServiceType, IGoogleBaseAccessService>();
-    this.serviceMap.set('analytics', this.googleAnalyticsAccessService);
-    this.serviceMap.set('ads', this.googleAdsAccessService);
-    this.serviceMap.set('tagManager', this.googleTagManagerAccessService);
-    this.serviceMap.set('searchConsole', this.googleSearchConsoleAccessService);
-    this.serviceMap.set('merchantCenter', this.googleMerchantCenterAccessService);
-    this.serviceMap.set('myBusiness', this.googleMyBusinessAccessService);
+    this.serviceMap.set(GoogleServiceType.ANALYTICS, this.googleAnalyticsAccessService);
+    this.serviceMap.set(GoogleServiceType.ADS, this.googleAdsAccessService);
+    this.serviceMap.set(GoogleServiceType.TAG_MANAGER, this.googleTagManagerAccessService);
+    this.serviceMap.set(GoogleServiceType.SEARCH_CONSOLE, this.googleSearchConsoleAccessService);
+    this.serviceMap.set(GoogleServiceType.MERCHANT_CENTER, this.googleMerchantCenterAccessService);
+    this.serviceMap.set(GoogleServiceType.MY_BUSINESS, this.googleMyBusinessAccessService);
   }
 
   @Public()

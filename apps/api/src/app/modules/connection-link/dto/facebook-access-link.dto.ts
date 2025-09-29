@@ -16,25 +16,25 @@ export class FacebookAccessDto implements TFacebookAccessLink {
   @ValidateNested()
   @Type(() => FacebookAccessLinkWithId)
   @IsDefined()
-  ads: FacebookAccessLinkWithId;
+  facebookAds: FacebookAccessLinkWithId;
 
   @ValidateNested()
   @Type(() => FacebookAccessLinkWithId)
   @IsDefined()
-  business: FacebookAccessLinkWithId;
+  facebookBusiness: FacebookAccessLinkWithId;
 
   @ValidateNested()
   @Type(() => FacebookAccessLinkWithId)
   @IsDefined()
-  pages: FacebookAccessLinkWithId;
+  facebookPages: FacebookAccessLinkWithId;
 
   @ValidateNested()
   @Type(() => FacebookAccessLinkWithId)
   @IsDefined()
-  catalogs: FacebookAccessLinkWithId;
+  facebookCatalogs: FacebookAccessLinkWithId;
 
   @ValidateNested()
   @Type(() => FacebookAccessLinkWithId)
   @IsDefined()
-  pixels: FacebookAccessLinkWithId;
+  facebookPixels: FacebookAccessLinkWithId;
 }

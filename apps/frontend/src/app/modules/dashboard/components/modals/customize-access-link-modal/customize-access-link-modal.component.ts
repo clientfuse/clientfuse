@@ -206,7 +206,7 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
 
     this.selectedBusinessPortfolioId.set(portfolioId);
 
-    const facebookServices: TFacebookAccessLinkKeys[] = ['ads', 'business', 'pages', 'catalogs', 'pixels'];
+    const facebookServices: TFacebookAccessLinkKeys[] = ['facebookAds', 'facebookBusiness', 'facebookPages', 'facebookCatalogs', 'facebookPixels'];
 
     facebookServices.forEach(serviceKey => {
       if (connectionLink.facebook && connectionLink.facebook[serviceKey]) {
@@ -218,10 +218,10 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
   }
 
   private initializeSelectedBusinessPortfolioId(link: TConnectionLinkResponse | null) {
-    if (link?.facebook?.ads?.businessPortfolioId) {
-      this.selectedBusinessPortfolioId.set(link.facebook.ads.businessPortfolioId);
-    } else if (link?.facebook?.business?.businessPortfolioId) {
-      this.selectedBusinessPortfolioId.set(link.facebook.business.businessPortfolioId);
+    if (link?.facebook?.facebookAds?.businessPortfolioId) {
+      this.selectedBusinessPortfolioId.set(link.facebook.facebookAds.businessPortfolioId);
+    } else if (link?.facebook?.facebookBusiness?.businessPortfolioId) {
+      this.selectedBusinessPortfolioId.set(link.facebook.facebookBusiness.businessPortfolioId);
     }
   }
 }

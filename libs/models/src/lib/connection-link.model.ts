@@ -18,12 +18,12 @@ export type IGoogleAccessLinkWithEmailOrId = IConnectionLinkItemBase & {
 }
 
 export type TGoogleConnectionLink = {
-  ads: IGoogleAccessLinkWithEmail & { method: string };
-  analytics: IGoogleAccessLinkWithEmail;
-  merchantCenter: IGoogleAccessLinkWithEmail;
-  myBusiness: IGoogleAccessLinkWithEmailOrId;
-  searchConsole: IGoogleAccessLinkWithEmail;
-  tagManager: IGoogleAccessLinkWithEmail;
+  googleAds: IGoogleAccessLinkWithEmail & { method: string };
+  googleAnalytics: IGoogleAccessLinkWithEmail;
+  googleMerchantCenter: IGoogleAccessLinkWithEmail;
+  googleMyBusiness: IGoogleAccessLinkWithEmailOrId;
+  googleSearchConsole: IGoogleAccessLinkWithEmail;
+  googleTagManager: IGoogleAccessLinkWithEmail;
 }
 
 export type TGoogleAccessLinkKeys = keyof TGoogleConnectionLink;
@@ -33,11 +33,11 @@ export type TFacebookConnectionLinkWithId = IConnectionLinkItemBase & {
 }
 
 export type TFacebookAccessLink = {
-  ads: TFacebookConnectionLinkWithId;
-  business: TFacebookConnectionLinkWithId;
-  pages: TFacebookConnectionLinkWithId;
-  catalogs: TFacebookConnectionLinkWithId;
-  pixels: TFacebookConnectionLinkWithId;
+  facebookAds: TFacebookConnectionLinkWithId;
+  facebookBusiness: TFacebookConnectionLinkWithId;
+  facebookPages: TFacebookConnectionLinkWithId;
+  facebookCatalogs: TFacebookConnectionLinkWithId;
+  facebookPixels: TFacebookConnectionLinkWithId;
 }
 
 export type TFacebookAccessLinkKeys = keyof TFacebookAccessLink;
@@ -70,16 +70,17 @@ export const PlatformNames: Record<TPlatformNamesKeys, string> = {
 export type AllAccessLinkKeys = TGoogleAccessLinkKeys | TFacebookAccessLinkKeys;
 
 export const ServiceNames: Record<AllAccessLinkKeys, string> = {
-  ads: 'Ads',
-  analytics: 'Analytics',
-  merchantCenter: 'Merchant Center',
-  myBusiness: 'My Business',
-  searchConsole: 'Search Console',
-  tagManager: 'Tag Manager',
-  business: 'Business',
-  pages: 'Pages',
-  catalogs: 'Catalogs',
-  pixels: 'Pixels'
+  googleAds: 'Ads',
+  googleAnalytics: 'Analytics',
+  googleMerchantCenter: 'Merchant Center',
+  googleMyBusiness: 'My Business',
+  googleSearchConsole: 'Search Console',
+  googleTagManager: 'Tag Manager',
+  facebookAds: 'Ads',
+  facebookBusiness: 'Business',
+  facebookPages: 'Pages',
+  facebookCatalogs: 'Catalogs',
+  facebookPixels: 'Pixels'
 };
 
 export function generateConnectionLinkName(type: TAccessType, includeDate: boolean = false): string {

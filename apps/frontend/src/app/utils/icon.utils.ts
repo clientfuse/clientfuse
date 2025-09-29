@@ -1,10 +1,10 @@
 import { TGoogleAccessLinkKeys } from '@clientfuse/models';
 
 export const GOOGLE_ICON_PATHS: Record<TGoogleAccessLinkKeys, string> = {
-  ads: './assets/icons/google-ads.svg',
-  analytics: './assets/icons/google-analytics.svg',
-  merchantCenter: './assets/icons/google-merchant-center.svg',
-  myBusiness: './assets/icons/google-my-business.svg',
-  searchConsole: './assets/icons/google-search-console.svg',
-  tagManager: './assets/icons/google-tag-manager.svg'
+  googleAds: './assets/icons/google-ads.svg',
+  googleAnalytics: './assets/icons/google-analytics.svg',
+  googleMerchantCenter: './assets/icons/google-merchant-center.svg',
+  googleMyBusiness: './assets/icons/google-my-business.svg',
+  googleSearchConsole: './assets/icons/google-search-console.svg',
+  googleTagManager: './assets/icons/google-tag-manager.svg'
 };

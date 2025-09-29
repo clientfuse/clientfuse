@@ -30,30 +30,30 @@ export class GoogleAccessDto implements TGoogleConnectionLink {
   @ValidateNested()
   @Type(() => GoogleAdsAccessDto)
   @IsDefined()
-  ads: GoogleAdsAccessDto;
+  googleAds: GoogleAdsAccessDto;
 
   @ValidateNested()
   @Type(() => GoogleAccessLinkWithEmailDto)
   @IsDefined()
-  analytics: GoogleAccessLinkWithEmailDto;
+  googleAnalytics: GoogleAccessLinkWithEmailDto;
 
   @ValidateNested()
   @Type(() => GoogleAccessLinkWithEmailDto)
   @IsDefined()
-  merchantCenter: GoogleAccessLinkWithEmailDto;
+  googleMerchantCenter: GoogleAccessLinkWithEmailDto;
 
   @ValidateNested()
   @Type(() => GoogleAccessLinkWithEmailOrIdDto)
   @IsDefined()
-  myBusiness: GoogleAccessLinkWithEmailOrIdDto;
+  googleMyBusiness: GoogleAccessLinkWithEmailOrIdDto;
 
   @ValidateNested()
   @Type(() => GoogleAccessLinkWithEmailDto)
   @IsDefined()
-  searchConsole: GoogleAccessLinkWithEmailDto;
+  googleSearchConsole: GoogleAccessLinkWithEmailDto;
 
   @ValidateNested()
   @Type(() => GoogleAccessLinkWithEmailDto)
   @IsDefined()
-  tagManager: GoogleAccessLinkWithEmailDto;
+  googleTagManager: GoogleAccessLinkWithEmailDto;
 }

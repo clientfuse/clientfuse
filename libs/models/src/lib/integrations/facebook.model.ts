@@ -65,14 +65,6 @@ export enum FacebookCatalogRole {
   ADVERTISER = 'ADVERTISER'
 }
 
-export enum FacebookService {
-  ADS = 'ads',
-  PAGES = 'pages',
-  INSTAGRAM = 'instagram',
-  CATALOGS = 'catalogs',
-  PIXELS = 'pixels'
-}
-
 export const FACEBOOK_ADS_MANAGEMENT_SCOPE = 'ads_management';
 export const FACEBOOK_BUSINESS_MANAGEMENT_SCOPE = 'business_management';
 export const FACEBOOK_CATALOG_MANAGEMENT_SCOPE = 'catalog_management';
@@ -179,11 +171,11 @@ export enum FacebookPixelPermission {
 }
 
 export enum FacebookServiceType {
-  BUSINESS = 'business',
-  AD_ACCOUNT = 'adAccount',
-  PAGE = 'page',
-  CATALOG = 'catalog',
-  PIXEL = 'pixel'
+  BUSINESS = 'facebookBusiness',
+  AD_ACCOUNT = 'facebookAds',
+  PAGE = 'facebookPages',
+  CATALOG = 'facebookCatalogs',
+  PIXEL = 'facebookPixels'
 }
 
 export const FACEBOOK_BUSINESS_ROLES = {

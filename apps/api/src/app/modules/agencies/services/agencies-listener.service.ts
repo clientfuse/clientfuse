@@ -31,21 +31,21 @@ export class AgenciesListenerService {
       const email = user.email;
 
       const googleViewLink: TGoogleConnectionLink = {
-        ads: { email, method: 'email', isEnabled: user.isGoogleAdsAccessGranted },
-        analytics: { email, isEnabled: user.isGoogleAnalyticsReadOnlyAccessGranted },
-        merchantCenter: { email, isEnabled: user.isGoogleMerchantCenterAccessGranted },
-        myBusiness: { emailOrId: email, isEnabled: user.isGoogleMyBusinessManageAccessGranted },
-        searchConsole: { email, isEnabled: user.isGoogleSearchConsoleReadOnlyAccessGranted },
-        tagManager: { email, isEnabled: user.isGoogleTagManagerReadOnlyAccessGranted }
+        googleAds: { email, method: 'email', isEnabled: user.isGoogleAdsAccessGranted },
+        googleAnalytics: { email, isEnabled: user.isGoogleAnalyticsReadOnlyAccessGranted },
+        googleMerchantCenter: { email, isEnabled: user.isGoogleMerchantCenterAccessGranted },
+        googleMyBusiness: { emailOrId: email, isEnabled: user.isGoogleMyBusinessManageAccessGranted },
+        googleSearchConsole: { email, isEnabled: user.isGoogleSearchConsoleReadOnlyAccessGranted },
+        googleTagManager: { email, isEnabled: user.isGoogleTagManagerReadOnlyAccessGranted }
       };
 
       const googleManageLink: TGoogleConnectionLink = {
-        ads: { email, method: 'email', isEnabled: user.isGoogleAdsAccessGranted },
-        analytics: { email, isEnabled: user.isGoogleAnalyticsManageUsersAccessGranted },
-        merchantCenter: { email, isEnabled: user.isGoogleMerchantCenterAccessGranted },
-        myBusiness: { emailOrId: email, isEnabled: user.isGoogleMyBusinessManageAccessGranted },
-        searchConsole: { email, isEnabled: user.isGoogleSearchConsoleReadOnlyAccessGranted },
-        tagManager: {
+        googleAds: { email, method: 'email', isEnabled: user.isGoogleAdsAccessGranted },
+        googleAnalytics: { email, isEnabled: user.isGoogleAnalyticsManageUsersAccessGranted },
+        googleMerchantCenter: { email, isEnabled: user.isGoogleMerchantCenterAccessGranted },
+        googleMyBusiness: { emailOrId: email, isEnabled: user.isGoogleMyBusinessManageAccessGranted },
+        googleSearchConsole: { email, isEnabled: user.isGoogleSearchConsoleReadOnlyAccessGranted },
+        googleTagManager: {
           email, isEnabled: user.isGoogleTagManagerManageUsersAccessGranted
         }
       };
@@ -112,23 +112,23 @@ export class AgenciesListenerService {
       const user = new User(foundUser);
 
       const facebookAccessLink: TFacebookAccessLink = {
-        ads: {
+        facebookAds: {
           businessPortfolioId: user.facebook.businessAccounts[0]?.id || '',
           isEnabled: user.isFacebookAdsManagementGranted
         },
-        business: {
+        facebookBusiness: {
           businessPortfolioId: user.facebook.businessAccounts[0]?.id || '',
           isEnabled: user.isFacebookBusinessManagementGranted
         },
-        pages: {
+        facebookPages: {
           businessPortfolioId: user.facebook.businessAccounts[0]?.id || '',
           isEnabled: user.isFacebookPagesManageMetadataGranted
         },
-        catalogs: {
+        facebookCatalogs: {
           businessPortfolioId: user.facebook.businessAccounts[0]?.id || '',
           isEnabled: user.isFacebookCatalogManagementGranted
         },
-        pixels: {
+        facebookPixels: {
           businessPortfolioId: user.facebook.businessAccounts[0]?.id || '',
           isEnabled: user.isFacebookAdsManagementGranted
         }

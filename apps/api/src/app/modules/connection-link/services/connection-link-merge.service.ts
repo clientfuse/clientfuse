@@ -222,7 +222,7 @@ export class ConnectionLinkMergeService {
     const merged: TGoogleConnectionLink = { ...primary };
 
     const services: (keyof TGoogleConnectionLink)[] = [
-      'ads', 'analytics', 'merchantCenter', 'myBusiness', 'searchConsole', 'tagManager'
+      'googleAds', 'googleAnalytics', 'googleMerchantCenter', 'googleMyBusiness', 'googleSearchConsole', 'googleTagManager'
     ];
 
     for (const service of services) {
@@ -245,7 +245,7 @@ export class ConnectionLinkMergeService {
     const merged: TFacebookAccessLink = { ...primary };
 
     const services: (keyof TFacebookAccessLink)[] = [
-      'ads', 'business', 'pages', 'catalogs'
+      'facebookAds', 'facebookBusiness', 'facebookPages', 'facebookCatalogs', 'facebookPixels'
     ];
 
     for (const service of services) {

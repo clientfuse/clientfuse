@@ -6,7 +6,7 @@ export class RevokeAgencyAccessDto implements IRevokeAgencyAccessDto {
   @IsNotEmpty()
   accessToken: string;
 
-  @IsEnum(['business', 'adAccount', 'page', 'catalog'])
+  @IsEnum(FacebookServiceType)
   @IsNotEmpty()
   service: FacebookServiceType;
 

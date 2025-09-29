@@ -6,7 +6,7 @@ export class RevokeAgencyAccessDto implements IRevokeAgencyAccessDto {
   @IsNotEmpty()
   accessToken: string;
 
-  @IsEnum(['analytics', 'ads', 'tagManager', 'searchConsole', 'merchantCenter', 'myBusiness'])
+  @IsEnum(GoogleServiceType)
   @IsNotEmpty()
   service: GoogleServiceType;
 

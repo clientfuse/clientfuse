@@ -21,28 +21,28 @@ export class ConnectionLink implements TConnectionLinkBase {
 
   @Prop({
     type: {
-      ads: {
+      googleAds: {
         isEnabled: { type: Boolean, required: true },
         email: { type: String, required: false },
         method: { type: String, required: true }
       },
-      analytics: {
+      googleAnalytics: {
         isEnabled: { type: Boolean, required: true },
         email: { type: String, required: false }
       },
-      merchantCenter: {
+      googleMerchantCenter: {
         isEnabled: { type: Boolean, required: true },
         email: { type: String, required: false }
       },
-      myBusiness: {
+      googleMyBusiness: {
         isEnabled: { type: Boolean, required: true },
         emailOrId: { type: String, required: false }
       },
-      searchConsole: {
+      googleSearchConsole: {
         isEnabled: { type: Boolean, required: true },
         email: { type: String, required: false }
       },
-      tagManager: {
+      googleTagManager: {
         isEnabled: { type: Boolean, required: true },
         email: { type: String, required: false }
       }
@@ -53,23 +53,23 @@ export class ConnectionLink implements TConnectionLinkBase {
 
   @Prop({
     type: {
-      ads: {
+      facebookAds: {
         isEnabled: { type: Boolean, required: true },
         businessPortfolioId: { type: String, required: false }
       },
-      business: {
+      facebookBusiness: {
         isEnabled: { type: Boolean, required: true },
         businessPortfolioId: { type: String, required: false }
       },
-      pages: {
+      facebookPages: {
         isEnabled: { type: Boolean, required: true },
         businessPortfolioId: { type: String, required: false }
       },
-      catalogs: {
+      facebookCatalogs: {
         isEnabled: { type: Boolean, required: true },
         businessPortfolioId: { type: String, required: false }
       },
-      pixels: {
+      facebookPixels: {
         isEnabled: { type: Boolean, required: true },
         businessPortfolioId: { type: String, required: false }
       }

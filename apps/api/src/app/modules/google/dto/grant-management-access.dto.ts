@@ -6,7 +6,7 @@ export class GrantManagementAccessDto implements IGrantAgencyAccessDto {
   @IsNotEmpty()
   accessToken: string;
 
-  @IsEnum(['analytics', 'ads', 'tagManager', 'searchConsole', 'merchantCenter', 'myBusiness'])
+  @IsEnum(GoogleServiceType)
   @IsNotEmpty()
   service: GoogleServiceType;
 

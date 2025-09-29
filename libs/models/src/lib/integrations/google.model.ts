@@ -73,7 +73,14 @@ export enum GoogleMyBusinessRole {
   SITE_MANAGER = 'SITE_MANAGER'
 }
 
-export type GoogleServiceType = 'analytics' | 'ads' | 'tagManager' | 'searchConsole' | 'merchantCenter' | 'myBusiness';
+export enum GoogleServiceType {
+  ANALYTICS = 'googleAnalytics',
+  ADS = 'googleAds',
+  TAG_MANAGER = 'googleTagManager',
+  SEARCH_CONSOLE = 'googleSearchConsole',
+  MERCHANT_CENTER = 'googleMerchantCenter',
+  MY_BUSINESS = 'googleMyBusiness'
+}
 
 export interface IGoogleAdsAccount {
   id: string;
