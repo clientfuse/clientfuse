@@ -17,6 +17,7 @@ import {
   TConnectionLinkResponse,
   TPlatformNamesKeys
 } from '@clientfuse/models';
+import { minToMs } from '@clientfuse/utils';
 import { analytics_v3, content_v2_1, mybusinessbusinessinformation_v1, searchconsole_v1, tagmanager_v2 } from 'googleapis';
 import { firstValueFrom } from 'rxjs';
 import { IslandComponent } from '../../../../../components/island/island.component';
@@ -659,7 +660,7 @@ export class ConfirmAccessComponent {
     const cached = this.entityUsersCache();
     const cachedEntry = cached.get(cacheKey);
 
-    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+    const CACHE_DURATION = minToMs(5);
     if (cachedEntry && (Date.now() - cachedEntry.timestamp) < CACHE_DURATION) {
       panel.existingUsers?.set(accountValue, cachedEntry.users);
       return;

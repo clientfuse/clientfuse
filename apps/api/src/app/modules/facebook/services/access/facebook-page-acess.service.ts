@@ -11,6 +11,7 @@ import {
   IRevokeAccessResponse,
   TFacebookAccessResponse
 } from '@clientfuse/models';
+import { minToMs } from '@clientfuse/utils';
 import { Injectable, Logger } from '@nestjs/common';
 import { isEmpty, isNil } from 'lodash';
 import { facebookHttpClient } from '../../../../core/utils/http';
@@ -19,7 +20,8 @@ import { facebookHttpClient } from '../../../../core/utils/http';
 export class FacebookPageAccessService implements IFacebookBaseAccessService {
   private readonly logger = new Logger(FacebookPageAccessService.name);
   private accessToken: string;
-  private pageAccessTokens: Map<string, string> = new Map();
+  private pageAccessTokens: Map<string, { token: string; timestamp: number }> = new Map();
+  private readonly TOKEN_EXPIRY_MS = minToMs(15);
 
   constructor() {
   }
@@ -396,7 +398,15 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
   private async getPageAccessToken(pageId: string): Promise<string | null> {
     try {
       if (this.pageAccessTokens.has(pageId)) {
-        return this.pageAccessTokens.get(pageId);
+        const cachedToken = this.pageAccessTokens.get(pageId);
+        const now = Date.now();
+
+        if (now - cachedToken.timestamp < this.TOKEN_EXPIRY_MS) {
+          return cachedToken.token;
+        }
+
+        this.logger.log(`Page access token expired for page ${pageId}, fetching new one`);
+        this.pageAccessTokens.delete(pageId);
       }
 
       const { data: response } = await facebookHttpClient.get(
@@ -410,7 +420,10 @@ export class FacebookPageAccessService implements IFacebookBaseAccessService {
       );
 
       if (response.access_token) {
-        this.pageAccessTokens.set(pageId, response.access_token);
+        this.pageAccessTokens.set(pageId, {
+          token: response.access_token,
+          timestamp: Date.now()
+        });
         return response.access_token;
       }
 
