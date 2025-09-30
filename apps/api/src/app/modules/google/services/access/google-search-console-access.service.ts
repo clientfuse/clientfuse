@@ -1,4 +1,5 @@
 import {
+  AccessType,
   ApiEnv,
   GOOGLE_SEARCH_CONSOLE_READONLY_SCOPE,
   GoogleServiceType,
@@ -7,8 +8,7 @@ import {
   IBaseUserInfo,
   IBaseGetEntityUsersParams,
   IGoogleBaseAccessService,
-  IRevokeAccessResponse,
-  TAccessType
+  IRevokeAccessResponse
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -46,7 +46,7 @@ export class GoogleSearchConsoleAccessService implements IGoogleBaseAccessServic
     return {
       ...result,
       service: GoogleServiceType.SEARCH_CONSOLE,
-      accessType: 'manage' as TAccessType,
+      accessType: AccessType.MANAGE,
       entityId: siteUrl,
       agencyIdentifier: agencyEmail
     };
@@ -64,7 +64,7 @@ export class GoogleSearchConsoleAccessService implements IGoogleBaseAccessServic
     return {
       ...result,
       service: GoogleServiceType.SEARCH_CONSOLE,
-      accessType: 'view' as TAccessType,
+      accessType: AccessType.VIEW,
       entityId: siteUrl,
       agencyIdentifier: agencyEmail
     };
@@ -186,8 +186,8 @@ export class GoogleSearchConsoleAccessService implements IGoogleBaseAccessServic
     return [GOOGLE_SEARCH_CONSOLE_READONLY_SCOPE];
   }
 
-  private determineAccessType(permissions: string[]): TAccessType {
+  private determineAccessType(permissions: string[]): AccessType {
     const firstPermission = permissions[0];
-    return firstPermission === 'FULL' || firstPermission === 'siteOwner' || firstPermission === 'siteFullUser' ? 'manage' : 'view';
+    return firstPermission === 'FULL' || firstPermission === 'siteOwner' || firstPermission === 'siteFullUser' ? AccessType.MANAGE : AccessType.VIEW;
   }
 }

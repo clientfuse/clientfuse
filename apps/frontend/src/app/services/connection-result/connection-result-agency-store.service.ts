@@ -2,14 +2,14 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import {
   TConnectionResultResponse,
   TPlatformNamesKeys,
-  TAccessType,
+  AccessType,
   IConnectionResultFilterDto
 } from '@clientfuse/models';
 import { ConnectionResultApiService } from './connection-result-api.service';
 
 export interface ConnectionResultFilters {
   platform?: TPlatformNamesKeys | 'all';
-  accessType?: TAccessType;
+  accessType?: AccessType;
   fromDate?: Date;
   toDate?: Date;
 }

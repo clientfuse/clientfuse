@@ -1,5 +1,5 @@
 import { CONNECTION_LINK_VALIDATORS } from '@clientfuse/models';
-import { TAccessType, TConnectionLinkBase } from '@clientfuse/models';
+import { AccessType, TConnectionLinkBase } from '@clientfuse/models';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsDefined, IsEnum, IsOptional, IsString, MaxLength, MinLength, ValidateNested } from 'class-validator';
 import { FacebookAccessDto } from './facebook-access-link.dto';
@@ -20,9 +20,9 @@ export class CreateConnectionLinkDto implements TConnectionLinkBase {
   @IsDefined()
   isDefault: boolean;
 
-  @IsEnum(['view', 'manage'])
+  @IsEnum(AccessType)
   @IsDefined()
-  type: TAccessType;
+  type: AccessType;
 
   @ValidateNested()
   @Type(() => GoogleAccessDto)

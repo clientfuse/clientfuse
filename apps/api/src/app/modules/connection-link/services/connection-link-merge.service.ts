@@ -1,6 +1,6 @@
 import {
   IGoogleAccessLinkWithEmail,
-  IGoogleAccessLinkWithEmailOrId, TAccessType,
+  IGoogleAccessLinkWithEmailOrId, AccessType,
   TConnectionLink,
   TConnectionLinkResponse,
   TFacebookAccessLink,
@@ -29,8 +29,8 @@ export class ConnectionLinkMergeService {
   }
 
   async mergeDefaultConnectionLinks(agencyIds: string[], mergedAgencyId: string): Promise<IConnectionLinkMergeResult | null> {
-    const viewResult = await this.mergeDefaultConnectionLinksByType(agencyIds, mergedAgencyId, 'view');
-    const manageResult = await this.mergeDefaultConnectionLinksByType(agencyIds, mergedAgencyId, 'manage');
+    const viewResult = await this.mergeDefaultConnectionLinksByType(agencyIds, mergedAgencyId, AccessType.VIEW);
+    const manageResult = await this.mergeDefaultConnectionLinksByType(agencyIds, mergedAgencyId, AccessType.MANAGE);
 
     await this.transferNonDefaultConnectionLinks(agencyIds, mergedAgencyId);
 
@@ -50,7 +50,7 @@ export class ConnectionLinkMergeService {
     };
   }
 
-  private async mergeDefaultConnectionLinksByType(agencyIds: string[], mergedAgencyId: string, type: TAccessType): Promise<IConnectionLinkMergeResult | null> {
+  private async mergeDefaultConnectionLinksByType(agencyIds: string[], mergedAgencyId: string, type: AccessType): Promise<IConnectionLinkMergeResult | null> {
     const defaultConnectionLinks = await this.connectionLinkModel
       .find({
         agencyId: { $in: agencyIds },

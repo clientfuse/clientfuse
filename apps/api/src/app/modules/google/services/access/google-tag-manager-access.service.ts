@@ -1,4 +1,5 @@
 import {
+  AccessType,
   ApiEnv,
   GOOGLE_TAGMANAGER_MANAGE_USERS_SCOPE,
   GoogleServiceType,
@@ -8,8 +9,7 @@ import {
   IGoogleBaseAccessService,
   IBaseGetEntityUsersParams,
   IRevokeAccessResponse,
-  ServerErrorCode,
-  TAccessType
+  ServerErrorCode
 } from '@clientfuse/models';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -50,7 +50,7 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
     return {
       ...result,
       service: GoogleServiceType.TAG_MANAGER,
-      accessType: 'manage' as TAccessType,
+      accessType: AccessType.MANAGE,
       entityId: accountId,
       agencyIdentifier: agencyEmail
     };
@@ -68,7 +68,7 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
     return {
       ...result,
       service: GoogleServiceType.TAG_MANAGER,
-      accessType: 'view' as TAccessType,
+      accessType: AccessType.VIEW,
       entityId: accountId,
       agencyIdentifier: agencyEmail
     };
@@ -265,8 +265,8 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
     return permissionMap[permission] || 'user';
   }
 
-  private determineAccessType(permissions: string[]): TAccessType {
+  private determineAccessType(permissions: string[]): AccessType {
     const firstPermission = permissions[0];
-    return firstPermission === 'admin' || firstPermission === 'manage' || firstPermission === 'publish' ? 'manage' : 'view';
+    return firstPermission === 'admin' || firstPermission === 'manage' || firstPermission === 'publish' ? AccessType.MANAGE : AccessType.VIEW;
   }
 }

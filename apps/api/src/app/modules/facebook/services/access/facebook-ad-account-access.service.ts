@@ -1,4 +1,5 @@
 import {
+  AccessType,
   FACEBOOK_AD_ACCOUNT_ROLES,
   FACEBOOK_ADS_MANAGEMENT_SCOPE,
   FACEBOOK_ERROR_CODES,
@@ -8,7 +9,6 @@ import {
   IBaseUserInfo,
   IFacebookBaseAccessService,
   IRevokeAccessResponse,
-  TAccessType,
   TFacebookAccessResponse
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
@@ -60,7 +60,7 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
         throw new Error('Access token must be set before granting access');
       }
 
-      const accessType: TAccessType = request.permissions[0] === FacebookAdAccountPermission.REPORTS_ONLY ? 'view' : 'manage';
+      const accessType: AccessType = request.permissions[0] === FacebookAdAccountPermission.REPORTS_ONLY ? AccessType.VIEW : AccessType.MANAGE;
       const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyIdentifier);
 
       if (existingAccess) {
@@ -192,7 +192,7 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
         requiresManualApproval: true,
         businessManagerUrl: `https://business.facebook.com/settings/ad-accounts/${request.entityId.replace('act_', '')}/people`,
         service: 'facebook',
-        accessType: 'manage',
+        accessType: AccessType.MANAGE,
         entityId: request.entityId,
         agencyIdentifier: request.agencyIdentifier
       };
@@ -484,8 +484,8 @@ export class FacebookAdAccountAccessService implements IFacebookBaseAccessServic
     return roleMap[permission] || FACEBOOK_AD_ACCOUNT_ROLES.GENERAL_USER;
   }
 
-  private determineAccessType(permissions: string[]): TAccessType {
+  private determineAccessType(permissions: string[]): AccessType {
     const firstPermission = permissions[0];
-    return firstPermission === 'ADMIN' ? 'manage' : 'view';
+    return firstPermission === 'ADMIN' ? AccessType.MANAGE : AccessType.VIEW;
   }
 }

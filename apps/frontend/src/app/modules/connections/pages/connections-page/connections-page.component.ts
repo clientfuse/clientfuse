@@ -9,7 +9,7 @@ import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { ActivatedRoute } from '@angular/router';
 import {
   IAgencyResponse,
-  TAccessType,
+  AccessType,
   GoogleServiceType,
   FacebookServiceType
 } from '@clientfuse/models';
@@ -68,8 +68,8 @@ export class ConnectionsPageComponent implements OnInit {
   agency = signal<IAgencyResponse | null>(null);
 
   agencyEmail = computed(() => this.agency()?.email || '');
-  readonly accessType = computed<TAccessType>(() =>
-    this.connectionLink()?.type || 'view'
+  readonly accessType = computed<AccessType>(() =>
+    this.connectionLink()?.type || AccessType.VIEW
   );
   requestedPlatforms = computed<string[]>(() => {
     const link = this.connectionLink();

@@ -1,4 +1,5 @@
 import {
+  AccessType,
   ApiEnv,
   GOOGLE_ADWORDS_SCOPE,
   GoogleServiceType,
@@ -8,8 +9,7 @@ import {
   IBaseUserInfo,
   IGoogleBaseAccessService,
   IRevokeAccessResponse,
-  ServerErrorCode,
-  TAccessType
+  ServerErrorCode
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -48,7 +48,7 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
     return {
       ...result,
       service: GoogleServiceType.ADS,
-      accessType: 'manage' as TAccessType,
+      accessType: AccessType.MANAGE,
       entityId: customerId,
       agencyIdentifier: agencyEmail
     };
@@ -66,7 +66,7 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
     return {
       ...result,
       service: GoogleServiceType.ADS,
-      accessType: 'view' as TAccessType,
+      accessType: AccessType.VIEW,
       entityId: customerId,
       agencyIdentifier: agencyEmail
     };
@@ -291,11 +291,11 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
     return permissionMap[permission] || enums.AccessRole.READ_ONLY;
   }
 
-  private determineAccessType(permissions: string[]): TAccessType {
+  private determineAccessType(permissions: string[]): AccessType {
     const firstPermission = permissions[0];
     if (firstPermission === 'ADMIN' || firstPermission === 'STANDARD') {
-      return 'manage';
+      return AccessType.MANAGE;
     }
-    return 'view';
+    return AccessType.VIEW;
   }
 }

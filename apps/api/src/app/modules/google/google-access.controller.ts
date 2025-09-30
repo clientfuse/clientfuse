@@ -1,4 +1,5 @@
 import {
+  AccessType,
   ENDPOINTS,
   GoogleServiceType,
   IGetEntityUsersResponse,
@@ -60,7 +61,7 @@ export class GoogleAccessController {
     return {
       success: true,
       service: dto.service,
-      accessType: 'manage',
+      accessType: AccessType.MANAGE,
       entityId: dto.entityId,
       agencyIdentifier: dto.agencyIdentifier,
       linkId: result.linkId,
@@ -83,7 +84,7 @@ export class GoogleAccessController {
     return {
       success: true,
       service: dto.service,
-      accessType: 'view',
+      accessType: AccessType.VIEW,
       entityId: dto.entityId,
       agencyIdentifier: dto.agencyIdentifier,
       linkId: result.linkId,

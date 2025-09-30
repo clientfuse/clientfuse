@@ -6,10 +6,10 @@ import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { TAccessType } from '@clientfuse/models';
+import { AccessType } from '@clientfuse/models';
 
 export interface ISelectLinkTypeModalResult {
-  type: TAccessType;
+  type: AccessType;
 }
 
 @Component({
@@ -35,7 +35,7 @@ export class SelectLinkTypeModalComponent implements OnInit {
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      type: ['view', Validators.required]
+      type: [AccessType.VIEW, Validators.required]
     });
   }
 

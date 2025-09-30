@@ -1,6 +1,6 @@
-import { TConnectionResultFilter, TAccessType, TPlatformNamesKeys } from '@clientfuse/models';
+import { TConnectionResultFilter, AccessType, TPlatformNamesKeys } from '@clientfuse/models';
 import { Type } from 'class-transformer';
-import { IsDate, IsIn, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsDate, IsEnum, IsIn, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class FilterConnectionResultDto implements TConnectionResultFilter {
   @IsString()
@@ -60,8 +60,7 @@ export class FilterConnectionResultDto implements TConnectionResultFilter {
   platform?: TPlatformNamesKeys | 'all';
 
   // Access type filtering
-  @IsString()
+  @IsEnum(AccessType)
   @IsOptional()
-  @IsIn(['view', 'manage'])
-  accessType?: TAccessType;
+  accessType?: AccessType;
 }

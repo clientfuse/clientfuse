@@ -1,5 +1,5 @@
 import { CONNECTION_LINK_VALIDATORS } from '@clientfuse/models';
-import { TAccessType, TConnectionLinkBase, TFacebookAccessLink, TGoogleConnectionLink } from '@clientfuse/models';
+import { AccessType, TConnectionLinkBase, TFacebookAccessLink, TGoogleConnectionLink } from '@clientfuse/models';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 
@@ -17,7 +17,7 @@ export class ConnectionLink implements TConnectionLinkBase {
   isDefault: boolean;
 
   @Prop({ type: String, enum: ['view', 'manage'], required: true })
-  type: TAccessType;
+  type: AccessType;
 
   @Prop({
     type: {

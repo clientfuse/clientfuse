@@ -1,4 +1,4 @@
-import { IAgencyBase, TFacebookAccessLink, TGoogleConnectionLink, User } from '@clientfuse/models';
+import { AccessType, IAgencyBase, TFacebookAccessLink, TGoogleConnectionLink, User } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import {
@@ -57,8 +57,8 @@ export class AgenciesListenerService {
         };
         const createdAgency = await this.agenciesService.createAgency(agency);
 
-        const viewLink = await this.connectionLinkService.findDefaultConnectionLink(createdAgency._id, 'view');
-        const manageLink = await this.connectionLinkService.findDefaultConnectionLink(createdAgency._id, 'manage');
+        const viewLink = await this.connectionLinkService.findDefaultConnectionLink(createdAgency._id, AccessType.VIEW);
+        const manageLink = await this.connectionLinkService.findDefaultConnectionLink(createdAgency._id, AccessType.MANAGE);
 
         if (viewLink) {
           await this.connectionLinkService.updateConnectionLink(viewLink._id, {
@@ -72,8 +72,8 @@ export class AgenciesListenerService {
           });
         }
       } else {
-        const viewLink = await this.connectionLinkService.findDefaultConnectionLink(foundAgency._id, 'view');
-        const manageLink = await this.connectionLinkService.findDefaultConnectionLink(foundAgency._id, 'manage');
+        const viewLink = await this.connectionLinkService.findDefaultConnectionLink(foundAgency._id, AccessType.VIEW);
+        const manageLink = await this.connectionLinkService.findDefaultConnectionLink(foundAgency._id, AccessType.MANAGE);
 
         if (viewLink) {
           if (!viewLink.google) {
@@ -82,7 +82,7 @@ export class AgenciesListenerService {
             });
           }
         } else {
-          await this.connectionLinkService.createDefaultConnectionLink(foundAgency._id, 'view', {
+          await this.connectionLinkService.createDefaultConnectionLink(foundAgency._id, AccessType.VIEW, {
             google: googleViewLink
           });
         }
@@ -94,7 +94,7 @@ export class AgenciesListenerService {
             });
           }
         } else {
-          await this.connectionLinkService.createDefaultConnectionLink(foundAgency._id, 'manage', {
+          await this.connectionLinkService.createDefaultConnectionLink(foundAgency._id, AccessType.MANAGE, {
             google: googleManageLink
           });
         }
@@ -141,8 +141,8 @@ export class AgenciesListenerService {
         };
         const createdAgency = await this.agenciesService.createAgency(agency);
 
-        const viewLink = await this.connectionLinkService.findDefaultConnectionLink(createdAgency._id, 'view');
-        const manageLink = await this.connectionLinkService.findDefaultConnectionLink(createdAgency._id, 'manage');
+        const viewLink = await this.connectionLinkService.findDefaultConnectionLink(createdAgency._id, AccessType.VIEW);
+        const manageLink = await this.connectionLinkService.findDefaultConnectionLink(createdAgency._id, AccessType.MANAGE);
 
         if (viewLink) {
           await this.connectionLinkService.updateConnectionLink(viewLink._id, {
@@ -156,8 +156,8 @@ export class AgenciesListenerService {
           });
         }
       } else {
-        const viewLink = await this.connectionLinkService.findDefaultConnectionLink(foundAgency._id, 'view');
-        const manageLink = await this.connectionLinkService.findDefaultConnectionLink(foundAgency._id, 'manage');
+        const viewLink = await this.connectionLinkService.findDefaultConnectionLink(foundAgency._id, AccessType.VIEW);
+        const manageLink = await this.connectionLinkService.findDefaultConnectionLink(foundAgency._id, AccessType.MANAGE);
 
         if (viewLink) {
           if (!viewLink.facebook) {
@@ -166,7 +166,7 @@ export class AgenciesListenerService {
             });
           }
         } else {
-          await this.connectionLinkService.createDefaultConnectionLink(foundAgency._id, 'view', {
+          await this.connectionLinkService.createDefaultConnectionLink(foundAgency._id, AccessType.VIEW, {
             facebook: facebookAccessLink
           });
         }
@@ -178,7 +178,7 @@ export class AgenciesListenerService {
             });
           }
         } else {
-          await this.connectionLinkService.createDefaultConnectionLink(foundAgency._id, 'manage', {
+          await this.connectionLinkService.createDefaultConnectionLink(foundAgency._id, AccessType.MANAGE, {
             facebook: facebookAccessLink
           });
         }

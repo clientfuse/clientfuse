@@ -1,4 +1,4 @@
-import { TAccessType } from '../connection-link.model';
+import { AccessType } from '../connection-link.model';
 
 export interface IBaseAccessRequest {
   entityId: string; // account/property/site ID etc.
@@ -41,7 +41,7 @@ export interface IRevokeAgencyAccessDto {
 export interface IGrantAccessResponse {
   success: boolean;
   service: string;
-  accessType: TAccessType;
+  accessType: AccessType;
   entityId: string;
   agencyIdentifier: string;
   linkId?: string;

@@ -1,4 +1,4 @@
-import { TBaseConnectionResult, IGrantAccessResponse, TPlatformNamesKeys, TAccessType } from '@clientfuse/models';
+import { TBaseConnectionResult, IGrantAccessResponse, TPlatformNamesKeys, AccessType } from '@clientfuse/models';
 import { Type } from 'class-transformer';
 import { IsDefined, IsIn, IsOptional, IsString, ValidateNested } from 'class-validator';
 
@@ -28,5 +28,5 @@ export class CreateConnectionResultDto implements TBaseConnectionResult {
   @IsString()
   @IsDefined()
   @IsIn(['view', 'manage'])
-  accessType: TAccessType;
+  accessType: AccessType;
 }

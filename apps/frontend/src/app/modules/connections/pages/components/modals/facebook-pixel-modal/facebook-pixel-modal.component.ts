@@ -7,7 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { FacebookServiceType, TAccessType } from '@clientfuse/models';
+import { FacebookServiceType, AccessType } from '@clientfuse/models';
 import { CommonIssuesComponent } from '../../common-issues/common-issues.component';
 import { IslandComponent } from '../../../../../../components/island/island.component';
 import { StatusCardComponent } from '../../../../../../components/status-card/status-card.component';
@@ -19,7 +19,7 @@ export interface IFacebookPixelModalData {
   pixelName: string;
   pixelId: string;
   businessPortfolioId: string;
-  accessType: TAccessType;
+  accessType: AccessType;
   agencyId?: string;
 }
 

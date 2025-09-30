@@ -1,4 +1,5 @@
 import {
+  AccessType,
   ENDPOINTS,
   FacebookServiceType,
   IFacebookBaseAccessService,
@@ -52,7 +53,7 @@ export class FacebookAccessController {
     return {
       success: true,
       service: dto.service,
-      accessType: 'manage',
+      accessType: AccessType.MANAGE,
       entityId: dto.entityId,
       agencyIdentifier: dto.agencyIdentifier,
       linkId: result.linkId,
@@ -75,7 +76,7 @@ export class FacebookAccessController {
     return {
       success: true,
       service: dto.service,
-      accessType: 'view',
+      accessType: AccessType.VIEW,
       entityId: dto.entityId,
       agencyIdentifier: dto.agencyIdentifier,
       linkId: result.linkId,

@@ -14,11 +14,11 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import {
+  AccessType,
   generateConnectionLinkName,
   TConnectionLinkBase,
   TConnectionLinkResponse,
-  TPlatformNamesKeys,
-  TAccessType
+  TPlatformNamesKeys
 } from '@clientfuse/models';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
@@ -91,7 +91,7 @@ export class DashboardPageComponent implements OnInit {
   readonly totalPages = this.connectionResultAgencyStoreService.totalPages;
 
   readonly selectedPlatform = signal<TPlatformNamesKeys | 'all'>('all');
-  readonly selectedAccessType = signal<TAccessType | 'all'>('all');
+  readonly selectedAccessType = signal<AccessType | 'all'>('all');
   readonly selectedDateRange = signal<'7days' | '30days' | 'all'>('all');
 
   async ngOnInit(): Promise<void> {
@@ -172,7 +172,7 @@ export class DashboardPageComponent implements OnInit {
     if (!typeResult) return;
 
     const agencyId = this.agency()?._id;
-    const defaultLink = typeResult.type === 'view'
+    const defaultLink = typeResult.type === AccessType.VIEW
       ? this.defaultViewLink()
       : this.defaultManageLink();
 

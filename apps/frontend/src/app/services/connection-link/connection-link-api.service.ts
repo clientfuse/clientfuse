@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { ENDPOINTS, IResponse, TAccessType, TConnectionLinkBase, TConnectionLinkResponse } from '@clientfuse/models';
+import { ENDPOINTS, IResponse, AccessType, TConnectionLinkBase, TConnectionLinkResponse } from '@clientfuse/models';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -37,7 +37,7 @@ export class ConnectionLinkApiService {
     );
   }
 
-  async findDefaultConnectionLinks(agencyId: string, type?: TAccessType): Promise<IResponse<TConnectionLinkResponse[]>> {
+  async findDefaultConnectionLinks(agencyId: string, type?: AccessType): Promise<IResponse<TConnectionLinkResponse[]>> {
     const params: any = {};
     if (type) {
       params.type = type;

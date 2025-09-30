@@ -3,7 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { FacebookServiceType, TAccessType } from '@clientfuse/models';
+import { FacebookServiceType, AccessType } from '@clientfuse/models';
 import { CommonIssuesComponent } from '../../common-issues/common-issues.component';
 import { IslandComponent } from '../../../../../../components/island/island.component';
 import { StatusCardComponent } from '../../../../../../components/status-card/status-card.component';
@@ -16,7 +16,7 @@ export interface IFacebookAdsModalData {
   adAccountId: string;
   adAccountBusinessId?: string;
   businessPortfolioId: string;
-  accessType: TAccessType;
+  accessType: AccessType;
   agencyId?: string;
 }
 

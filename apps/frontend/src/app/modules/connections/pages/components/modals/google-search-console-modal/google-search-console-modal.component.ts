@@ -7,7 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { GoogleSearchConsolePermissionLevel, GoogleServiceType, TAccessType } from '@clientfuse/models';
+import { GoogleSearchConsolePermissionLevel, GoogleServiceType, AccessType } from '@clientfuse/models';
 import { IslandComponent } from '../../../../../../components/island/island.component';
 import { StatusCardComponent } from '../../../../../../components/status-card/status-card.component';
 import { GoogleStoreService } from '../../../../../../services/google/google-store.service';
@@ -17,7 +17,7 @@ import { SnackbarService } from '../../../../../../services/snackbar.service';
 export interface IGoogleSearchConsoleModalData {
   domain: string;
   agencyEmail: string;
-  accessType: TAccessType;
+  accessType: AccessType;
   agencyId?: string;
 }
 

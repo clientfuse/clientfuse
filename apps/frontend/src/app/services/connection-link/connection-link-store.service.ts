@@ -1,5 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { TConnectionLinkBase, TConnectionLinkResponse } from '@clientfuse/models';
+import { AccessType, TConnectionLinkBase, TConnectionLinkResponse } from '@clientfuse/models';
 import { ConnectionLinkApiService } from './connection-link-api.service';
 
 @Injectable({
@@ -15,11 +15,11 @@ export class ConnectionLinkStoreService {
   currentConnectionLink = this._currentConnectionLink.asReadonly();
 
   defaultViewConnectionLink = computed(() =>
-    this._connectionLinks().find(cl => cl.isDefault && cl.type === 'view') || null
+    this._connectionLinks().find(cl => cl.isDefault && cl.type === AccessType.VIEW) || null
   );
 
   defaultManageConnectionLink = computed(() =>
-    this._connectionLinks().find(cl => cl.isDefault && cl.type === 'manage') || null
+    this._connectionLinks().find(cl => cl.isDefault && cl.type === AccessType.MANAGE) || null
   );
 
   async loadConnectionLinksForAgency(agencyId: string): Promise<TConnectionLinkResponse[]> {

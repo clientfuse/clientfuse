@@ -1,4 +1,5 @@
 import {
+  AccessType,
   FACEBOOK_CATALOG_MANAGEMENT_SCOPE,
   FACEBOOK_CATALOG_TASKS,
   FACEBOOK_ERROR_CODES,
@@ -8,7 +9,6 @@ import {
   IBaseUserInfo,
   IFacebookBaseAccessService,
   IRevokeAccessResponse,
-  TAccessType,
   TFacebookAccessResponse
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
@@ -43,7 +43,7 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
     return {
       ...result,
       service: FacebookServiceType.CATALOG,
-      accessType: 'manage' as TAccessType,
+      accessType: AccessType.MANAGE,
       entityId: catalogId,
       agencyIdentifier: agencyBusinessPortfolioId
     };
@@ -61,7 +61,7 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
     return {
       ...result,
       service: FacebookServiceType.CATALOG,
-      accessType: 'view' as TAccessType,
+      accessType: AccessType.VIEW,
       entityId: catalogId,
       agencyIdentifier: agencyBusinessPortfolioId
     };
@@ -323,11 +323,11 @@ export class FacebookCatalogAccessService implements IFacebookBaseAccessService 
     return [FACEBOOK_CATALOG_TASKS.ADVERTISE];
   }
 
-  private determineAccessType(permissions: string[]): TAccessType {
+  private determineAccessType(permissions: string[]): AccessType {
     if (permissions.includes(FacebookCatalogPermission.ADMIN)) {
-      return 'manage';
+      return AccessType.MANAGE;
     }
-    return 'view';
+    return AccessType.VIEW;
   }
 
 }

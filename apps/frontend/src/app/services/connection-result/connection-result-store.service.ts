@@ -5,7 +5,7 @@ import {
   IGrantAccessResponse,
   TConnectionResultFilter,
   TPlatformNamesKeys,
-  TAccessType
+  AccessType
 } from '@clientfuse/models';
 import { ConnectionResultApiService } from './connection-result-api.service';
 
@@ -73,7 +73,7 @@ export class ConnectionResultStoreService {
     userId: string,
     connectionLinkId: string,
     agencyId: string,
-    accessType: TAccessType
+    accessType: AccessType
   ): Promise<TConnectionResultResponse | null> {
     this.setLoading(true);
     this.clearError();

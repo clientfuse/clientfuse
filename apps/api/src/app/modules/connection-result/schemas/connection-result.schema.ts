@@ -1,4 +1,4 @@
-import { TBaseConnectionResult, IGrantAccessResponse, TPlatformNamesKeys, TAccessType } from '@clientfuse/models';
+import { TBaseConnectionResult, IGrantAccessResponse, TPlatformNamesKeys, AccessType } from '@clientfuse/models';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 
@@ -26,7 +26,7 @@ export class ConnectionResult implements TBaseConnectionResult {
   grantedAccesses: Record<TPlatformNamesKeys, IGrantAccessResponse[]>;
 
   @Prop({ type: String, required: true, enum: ['view', 'manage'], index: true })
-  accessType: TAccessType;
+  accessType: AccessType;
 
   updatedAt: Date;
   createdAt: Date;

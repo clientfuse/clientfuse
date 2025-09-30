@@ -1,4 +1,4 @@
-import { TAccessType, TConnectionLinkResponse, generateConnectionLinkName } from '@clientfuse/models';
+import { AccessType, TConnectionLinkResponse, generateConnectionLinkName } from '@clientfuse/models';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
@@ -25,7 +25,7 @@ export class ConnectionLinkService {
     return createdConnectionLink.toJSON() as unknown as TConnectionLinkResponse;
   }
 
-  async createDefaultConnectionLink(agencyId: string, type: TAccessType, data?: Partial<CreateConnectionLinkDto>): Promise<TConnectionLinkResponse> {
+  async createDefaultConnectionLink(agencyId: string, type: AccessType, data?: Partial<CreateConnectionLinkDto>): Promise<TConnectionLinkResponse> {
     await this.unsetDefaultForAgency(agencyId, type);
 
     const connectionLinkData: CreateConnectionLinkDto = {
@@ -42,8 +42,8 @@ export class ConnectionLinkService {
   }
 
   async createDefaultConnectionLinks(agencyId: string): Promise<void> {
-    await this.createDefaultConnectionLink(agencyId, 'view');
-    await this.createDefaultConnectionLink(agencyId, 'manage');
+    await this.createDefaultConnectionLink(agencyId, AccessType.VIEW);
+    await this.createDefaultConnectionLink(agencyId, AccessType.MANAGE);
   }
 
   async findConnectionLinks(filter: FilterQuery<ConnectionLinkDocument>): Promise<TConnectionLinkResponse[]> {
@@ -57,7 +57,7 @@ export class ConnectionLinkService {
     return connectionLink.toJSON() as unknown as TConnectionLinkResponse;
   }
 
-  async findDefaultConnectionLink(agencyId: string, type: TAccessType): Promise<TConnectionLinkResponse | null> {
+  async findDefaultConnectionLink(agencyId: string, type: AccessType): Promise<TConnectionLinkResponse | null> {
     return this.findConnectionLink({ agencyId, isDefault: true, type });
   }
 
@@ -125,7 +125,7 @@ export class ConnectionLinkService {
     return updatedConnectionLink;
   }
 
-  private async unsetDefaultForAgency(agencyId: string, type: TAccessType): Promise<void> {
+  private async unsetDefaultForAgency(agencyId: string, type: AccessType): Promise<void> {
     await this.connectionLinkModel.updateMany(
       { agencyId, type, isDefault: true },
       { $set: { isDefault: false } }

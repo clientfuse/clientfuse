@@ -1,4 +1,5 @@
 import {
+  AccessType,
   ApiEnv,
   GOOGLE_ANALYTICS_MANAGE_USERS_SCOPE,
   GoogleServiceType,
@@ -8,8 +9,7 @@ import {
   IBaseUserInfo,
   IGoogleBaseAccessService,
   IRevokeAccessResponse,
-  ServerErrorCode,
-  TAccessType
+  ServerErrorCode
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -208,7 +208,7 @@ export class GoogleAnalyticsAccessService implements IGoogleBaseAccessService {
     return {
       ...result,
       service: 'analytics' as GoogleServiceType,
-      accessType: 'manage' as TAccessType,
+      accessType: AccessType.MANAGE,
       entityId: accountId,
       agencyIdentifier: agencyEmail
     };
@@ -226,16 +226,16 @@ export class GoogleAnalyticsAccessService implements IGoogleBaseAccessService {
     return {
       ...result,
       service: 'analytics' as GoogleServiceType,
-      accessType: 'view' as TAccessType,
+      accessType: AccessType.VIEW,
       entityId: accountId,
       agencyIdentifier: agencyEmail
     };
   }
 
-  private determineAccessType(permissions: string[]): TAccessType {
+  private determineAccessType(permissions: string[]): AccessType {
     const hasManagePermissions = permissions.some(p =>
       p === 'MANAGE_USERS' || p === 'EDIT' || p === 'COLLABORATE'
     );
-    return hasManagePermissions ? 'manage' : 'view';
+    return hasManagePermissions ? AccessType.MANAGE : AccessType.VIEW;
   }
 }

@@ -13,7 +13,7 @@ import {
   FacebookServiceType,
   GoogleServiceType,
   IGoogleAdsAccount,
-  TAccessType,
+  AccessType,
   TConnectionLinkResponse,
   TPlatformNamesKeys
 } from '@clientfuse/models';
@@ -83,7 +83,7 @@ export class ConfirmAccessComponent {
 
   readonly connectionLink = input.required<TConnectionLinkResponse | null>();
   readonly agencyEmail = input<string>('');
-  readonly accessType = input.required<TAccessType>();
+  readonly accessType = input.required<AccessType>();
   readonly enabledGoogleServicesNames = input<GoogleServiceType[]>([]);
   readonly enabledFacebookServicesNames = input<FacebookServiceType[]>([]);
 

@@ -1,4 +1,5 @@
 import {
+  AccessType,
   FACEBOOK_ADS_MANAGEMENT_SCOPE,
   FACEBOOK_ERROR_CODES,
   FacebookPixelPermission,
@@ -7,7 +8,6 @@ import {
   IBaseUserInfo,
   IFacebookBaseAccessService,
   IRevokeAccessResponse,
-  TAccessType,
   TFacebookAccessResponse
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
@@ -42,7 +42,7 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
     return {
       ...result,
       service: FacebookServiceType.PIXEL,
-      accessType: 'manage' as TAccessType,
+      accessType: AccessType.MANAGE,
       entityId: pixelId,
       agencyIdentifier: agencyBusinessPortfolioId
     };
@@ -61,7 +61,7 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
     return {
       ...result,
       service: FacebookServiceType.PIXEL,
-      accessType: 'view' as TAccessType,
+      accessType: AccessType.VIEW,
       entityId: pixelId,
       agencyIdentifier: agencyBusinessPortfolioId
     };
@@ -356,10 +356,10 @@ export class FacebookPixelAccessService implements IFacebookBaseAccessService {
     }
   }
 
-  private determineAccessType(permissions: string[]): TAccessType {
+  private determineAccessType(permissions: string[]): AccessType {
     if (permissions.includes(FacebookPixelPermission.ADMIN)) {
-      return 'manage';
+      return AccessType.MANAGE;
     }
-    return 'view';
+    return AccessType.VIEW;
   }
 }

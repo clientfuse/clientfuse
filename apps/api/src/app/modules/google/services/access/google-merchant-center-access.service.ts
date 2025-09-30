@@ -1,4 +1,5 @@
 import {
+  AccessType,
   ApiEnv,
   GOOGLE_MERCHANT_CENTER_SCOPE,
   GoogleServiceType,
@@ -8,8 +9,7 @@ import {
   IGoogleBaseAccessService,
   IBaseGetEntityUsersParams,
   IRevokeAccessResponse,
-  ServerErrorCode,
-  TAccessType
+  ServerErrorCode
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -43,7 +43,7 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
     return {
       ...result,
       service: GoogleServiceType.MERCHANT_CENTER,
-      accessType: 'manage' as TAccessType,
+      accessType: AccessType.MANAGE,
       entityId: merchantId,
       agencyIdentifier: agencyEmail
     };
@@ -61,7 +61,7 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
     return {
       ...result,
       service: GoogleServiceType.MERCHANT_CENTER,
-      accessType: 'view' as TAccessType,
+      accessType: AccessType.VIEW,
       entityId: merchantId,
       agencyIdentifier: agencyEmail
     };
@@ -250,8 +250,8 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
     return parts.length >= 4 ? parts[3] : null;
   }
 
-  private determineAccessType(permissions: string[]): TAccessType {
+  private determineAccessType(permissions: string[]): AccessType {
     const firstPermission = permissions[0];
-    return firstPermission === 'ADMIN' ? 'manage' : 'view';
+    return firstPermission === 'ADMIN' ? AccessType.MANAGE : AccessType.VIEW;
   }
 }

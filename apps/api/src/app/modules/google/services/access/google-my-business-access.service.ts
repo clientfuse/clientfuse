@@ -1,4 +1,5 @@
 import {
+  AccessType,
   ApiEnv,
   GOOGLE_MY_BUSINESS_MANAGE_SCOPE,
   GoogleServiceType,
@@ -8,8 +9,7 @@ import {
   IBaseGetEntityUsersParams,
   IGoogleBaseAccessService,
   IRevokeAccessResponse,
-  ServerErrorCode,
-  TAccessType
+  ServerErrorCode
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -42,7 +42,7 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
     return {
       ...result,
       service: GoogleServiceType.MY_BUSINESS,
-      accessType: 'manage' as TAccessType,
+      accessType: AccessType.MANAGE,
       entityId: accountName,
       agencyIdentifier: agencyEmail
     };
@@ -60,7 +60,7 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
     return {
       ...result,
       service: GoogleServiceType.MY_BUSINESS,
-      accessType: 'view' as TAccessType,
+      accessType: AccessType.VIEW,
       entityId: accountName,
       agencyIdentifier: agencyEmail
     };
@@ -242,8 +242,8 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
     return [GOOGLE_MY_BUSINESS_MANAGE_SCOPE];
   }
 
-  private determineAccessType(permissions: string[]): TAccessType {
+  private determineAccessType(permissions: string[]): AccessType {
     const firstPermission = permissions[0];
-    return firstPermission === 'MANAGER' || firstPermission === 'OWNER' || firstPermission === 'PRIMARY_OWNER' ? 'manage' : 'view';
+    return firstPermission === 'MANAGER' || firstPermission === 'OWNER' || firstPermission === 'PRIMARY_OWNER' ? AccessType.MANAGE : AccessType.VIEW;
   }
 }

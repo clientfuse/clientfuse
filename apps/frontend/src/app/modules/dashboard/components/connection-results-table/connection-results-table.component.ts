@@ -8,7 +8,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   FacebookServiceType,
   IGrantAccessResponse,
-  TAccessType,
+  AccessType,
   TConnectionResultResponse,
   TPlatformNamesKeys
 } from '@clientfuse/models';
@@ -21,7 +21,7 @@ import { getServiceIcon } from '../../../../utils/icon.utils';
 interface ConnectionResultRow {
   id: string;
   connectionTime: Date;
-  accessType: TAccessType;
+  accessType: AccessType;
   connectionLink: string;
   platforms: TPlatformNamesKeys[];
   grantedAccesses: IGrantAccessResponse[];
@@ -92,11 +92,11 @@ export class ConnectionResultsTableComponent {
     }
   }
 
-  getAccessBadgeVariant(accessType: TAccessType): UIVariant {
+  getAccessBadgeVariant(accessType: AccessType): UIVariant {
     return accessType === 'view' ? 'info' : 'success';
   }
 
-  getAccessBadgeText(accessType: TAccessType): string {
+  getAccessBadgeText(accessType: AccessType): string {
     return getAccessTypeDisplayName(accessType);
   }
 

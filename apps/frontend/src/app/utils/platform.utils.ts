@@ -1,4 +1,4 @@
-import { FacebookServiceType, GoogleServiceType, TAccessType, TPlatformNamesKeys } from '@clientfuse/models';
+import { FacebookServiceType, GoogleServiceType, AccessType, TPlatformNamesKeys } from '@clientfuse/models';
 
 export const SERVICE_DISPLAY_NAMES: Record<string, string> = {
   // Google services
@@ -21,7 +21,7 @@ export const PLATFORM_DISPLAY_NAMES: Record<TPlatformNamesKeys, string> = {
   facebook: 'Meta'
 };
 
-export const ACCESS_TYPE_DISPLAY_NAMES: Record<TAccessType, string> = {
+export const ACCESS_TYPE_DISPLAY_NAMES: Record<AccessType, string> = {
   view: 'View-Only',
   manage: 'Manage'
 };
@@ -40,6 +40,6 @@ export function getPlatformDisplayName(platform: TPlatformNamesKeys): string {
   return PLATFORM_DISPLAY_NAMES[platform] || platform;
 }
 
-export function getAccessTypeDisplayName(accessType: TAccessType): string {
+export function getAccessTypeDisplayName(accessType: AccessType): string {
   return ACCESS_TYPE_DISPLAY_NAMES[accessType] || accessType;
 }

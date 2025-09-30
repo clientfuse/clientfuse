@@ -12,7 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import {
   IFacebookConnectionDto,
   IGoogleConnectionDto,
-  TAccessType,
+  AccessType,
   TConnectionLinkResponse,
   GoogleServiceType,
   FacebookServiceType
@@ -59,7 +59,7 @@ export class ConnectAccountsComponent implements OnInit {
 
   readonly connectionLink = input.required<TConnectionLinkResponse | null>();
   readonly agencyEmail = input<string>('');
-  readonly accessType = input.required<TAccessType>();
+  readonly accessType = input.required<AccessType>();
   readonly enabledGoogleServicesNames = input.required<GoogleServiceType[]>();
   readonly enabledFacebookServicesNames = input.required<FacebookServiceType[]>();
   readonly connectionStatusChanged = output<boolean>();

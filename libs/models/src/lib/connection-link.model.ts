@@ -5,7 +5,10 @@ export interface IConnectionLinkItemBase {
   isEnabled: boolean;
 }
 
-export type TAccessType = 'view' | 'manage';
+export enum AccessType {
+  VIEW = 'view',
+  MANAGE = 'manage'
+}
 
 export type IGoogleAccessLinkWithEmail = IConnectionLinkItemBase & {
   email: string;
@@ -45,7 +48,7 @@ export type TConnectionLinkBase = TConnectionLink & {
   name: string;
   isDefault: boolean;
   agencyId: string;
-  type: TAccessType;
+  type: AccessType;
 }
 
 export type TConnectionLinkResponse = TConnectionLinkBase & {
@@ -56,7 +59,7 @@ export type TConnectionLinkResponse = TConnectionLinkBase & {
 
 export type TPlatformNamesKeys = keyof TConnectionLink;
 
-export function generateConnectionLinkName(type: TAccessType, includeDate: boolean = false): string {
-  const baseName = `${type === 'view' ? 'View' : 'Manage'} Connection Link`;
+export function generateConnectionLinkName(type: AccessType, includeDate: boolean = false): string {
+  const baseName = `${type === AccessType.VIEW ? 'View' : 'Manage'} Connection Link`;
   return includeDate ? `${baseName} ${new Date().toISOString()}` : baseName;
 }

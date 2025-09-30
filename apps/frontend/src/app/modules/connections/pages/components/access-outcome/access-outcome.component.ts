@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, output } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
-import { GoogleServiceType, IGrantAccessResponse, TAccessType } from '@clientfuse/models';
+import { GoogleServiceType, IGrantAccessResponse, AccessType } from '@clientfuse/models';
 import { BadgeComponent } from '../../../../../components/badge/badge.component';
 import { IslandComponent } from '../../../../../components/island/island.component';
 import { ConnectionResultStoreService } from '../../../../../services/connection-result/connection-result-store.service';
@@ -115,11 +115,11 @@ export class AccessOutcomeComponent {
     }));
   }
 
-  getAccessTypeLabel(accessType: TAccessType): string {
+  getAccessTypeLabel(accessType: AccessType): string {
     return accessType === 'manage' ? 'Manage Access' : 'View Access';
   }
 
-  getAccessTypeIcon(accessType: TAccessType): string {
+  getAccessTypeIcon(accessType: AccessType): string {
     return accessType === 'manage' ? 'admin_panel_settings' : 'visibility';
   }
 

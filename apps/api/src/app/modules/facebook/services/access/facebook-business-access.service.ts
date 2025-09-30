@@ -1,4 +1,5 @@
 import {
+  AccessType,
   FACEBOOK_BUSINESS_MANAGEMENT_SCOPE,
   FACEBOOK_ERROR_CODES,
   FacebookBusinessPermission,
@@ -7,7 +8,6 @@ import {
   IBaseUserInfo,
   IFacebookBaseAccessService,
   IRevokeAccessResponse,
-  TAccessType,
   TFacebookAccessResponse
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
@@ -58,7 +58,7 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
         throw new Error('Access token must be set before granting access');
       }
 
-      const accessType: TAccessType = this.determineAccessType(request.permissions);
+      const accessType: AccessType = this.determineAccessType(request.permissions);
 
       const existingAccess = await this.checkExistingUserAccess(request.entityId, request.agencyIdentifier);
 
@@ -81,7 +81,7 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
       return {
         success: false,
         service: 'facebook',
-        accessType: 'manage',
+        accessType: AccessType.MANAGE,
         entityId: request.entityId,
         agencyIdentifier: request.agencyIdentifier,
         error: 'Facebook Business Manager requires manual user invitation through Business Manager interface',
@@ -119,7 +119,7 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
       return {
         success: false,
         service: 'facebook',
-        accessType: 'manage',
+        accessType: AccessType.MANAGE,
         entityId: request.entityId,
         agencyIdentifier: request.agencyIdentifier,
         error: `Failed to grant access: ${error.message}`
@@ -261,8 +261,8 @@ export class FacebookBusinessAccessService implements IFacebookBaseAccessService
     return [FACEBOOK_BUSINESS_MANAGEMENT_SCOPE];
   }
 
-  private determineAccessType(permissions: string[]): TAccessType {
+  private determineAccessType(permissions: string[]): AccessType {
     const firstPermission = permissions[0];
-    return firstPermission === FacebookBusinessPermission.EMPLOYEE ? 'view' : 'manage';
+    return firstPermission === FacebookBusinessPermission.EMPLOYEE ? AccessType.VIEW : AccessType.MANAGE;
   }
 }
