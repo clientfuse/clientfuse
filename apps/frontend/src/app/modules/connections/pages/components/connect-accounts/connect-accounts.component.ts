@@ -22,8 +22,7 @@ import { IslandComponent } from '../../../../../components/island/island.compone
 import { ConnectionResultStoreService } from '../../../../../services/connection-result/connection-result-store.service';
 import { FacebookStoreService } from '../../../../../services/facebook/facebook-store.service';
 import { GoogleStoreService } from '../../../../../services/google/google-store.service';
-import { getPlatformIcon } from '../../../../../utils/icon.utils';
-import { getServiceShortDisplayName } from '../../../../../utils/platform.utils';
+import { getPlatformIcon, getServiceShortDisplayName } from '../../../../../utils';
 import { InstructionStepComponent } from '../instruction-step/instruction-step.component';
 import { RequestDetailsComponent } from '../request-details/request-details.component';
 

@@ -6,13 +6,14 @@ import { AccessType, GoogleServiceType, IGrantAccessResponse } from '@clientfuse
 import { BadgeComponent } from '../../../../../components/badge/badge.component';
 import { IslandComponent } from '../../../../../components/island/island.component';
 import { ConnectionResultStoreService } from '../../../../../services/connection-result/connection-result-store.service';
-import { getPlatformIcon, getServiceIcon } from '../../../../../utils/icon.utils';
 import {
   getAccessTypeBadgeVariant,
   getAccessTypeDisplayName,
   getAccessTypeIcon,
-  getServiceDisplayName
-} from '../../../../../utils/platform.utils';
+  getPlatformIcon,
+  getServiceDisplayName,
+  getServiceIcon
+} from '../../../../../utils';
 
 interface ServiceGroup {
   service: GoogleServiceType;

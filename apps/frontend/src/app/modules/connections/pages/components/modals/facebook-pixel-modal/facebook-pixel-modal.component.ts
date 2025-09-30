@@ -11,7 +11,6 @@ import { AccessType, FacebookServiceType } from '@clientfuse/models';
 import { IslandComponent } from '../../../../../../components/island/island.component';
 import { StatusCardComponent } from '../../../../../../components/status-card/status-card.component';
 import { ConnectionResultStoreService } from '../../../../../../services/connection-result/connection-result-store.service';
-import { FacebookStoreService } from '../../../../../../services/facebook/facebook-store.service';
 import { SnackbarService } from '../../../../../../services/snackbar.service';
 import { CommonIssuesComponent } from '../../common-issues/common-issues.component';
 
@@ -45,7 +44,6 @@ export interface IFacebookPixelModalData {
 export class FacebookPixelModalComponent {
   private readonly dialogRef = inject(MatDialogRef<FacebookPixelModalComponent>);
   private readonly snackbarService = inject(SnackbarService);
-  private readonly facebookStoreService = inject(FacebookStoreService);
   private readonly connectionResultStore = inject(ConnectionResultStoreService);
   protected readonly data: IFacebookPixelModalData = inject(MAT_DIALOG_DATA);
 

@@ -9,7 +9,7 @@ import { StatusCardComponent } from '../../../../../../components/status-card/st
 import { ConnectionResultStoreService } from '../../../../../../services/connection-result/connection-result-store.service';
 import { FacebookStoreService } from '../../../../../../services/facebook/facebook-store.service';
 import { SnackbarService } from '../../../../../../services/snackbar.service';
-import { getAccessTypeMessageName } from '../../../../../../utils/platform.utils';
+import { getAccessTypeMessageName } from '../../../../../../utils';
 import { CommonIssuesComponent } from '../../common-issues/common-issues.component';
 
 export interface IFacebookAdsModalData {

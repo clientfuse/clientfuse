@@ -8,13 +8,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { AccessType, FacebookServiceType, IGrantAccessResponse, TConnectionResultResponse, TPlatformNamesKeys } from '@clientfuse/models';
 import { DateTime } from 'luxon';
 import { BadgeComponent } from '../../../../components/badge/badge.component';
-import { getPlatformIcon, getServiceIcon } from '../../../../utils/icon.utils';
 import {
   getAccessTypeBadgeVariant,
   getAccessTypeDisplayName,
   getPlatformDisplayName,
-  getServiceDisplayName
-} from '../../../../utils/platform.utils';
+  getPlatformIcon,
+  getServiceDisplayName,
+  getServiceIcon
+} from '../../../../utils';
 
 interface ConnectionResultRow {
   id: string;

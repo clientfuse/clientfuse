@@ -20,7 +20,6 @@ import {
 import { analytics_v3, content_v2_1, mybusinessbusinessinformation_v1, searchconsole_v1, tagmanager_v2 } from 'googleapis';
 import { firstValueFrom } from 'rxjs';
 import { IslandComponent } from '../../../../../components/island/island.component';
-import { ConnectionResultStoreService } from '../../../../../services/connection-result/connection-result-store.service';
 import { DialogService } from '../../../../../services/dialog.service';
 import { FacebookStoreService } from '../../../../../services/facebook/facebook-store.service';
 import { GoogleStoreService } from '../../../../../services/google/google-store.service';
@@ -77,7 +76,6 @@ interface ServicePanel {
 export class ConfirmAccessComponent {
   private readonly googleStoreService = inject(GoogleStoreService);
   private readonly facebookStoreService = inject(FacebookStoreService);
-  private readonly connectionResultStore = inject(ConnectionResultStoreService);
   private readonly snackbarService = inject(SnackbarService);
   private readonly dialogService = inject(DialogService);
 

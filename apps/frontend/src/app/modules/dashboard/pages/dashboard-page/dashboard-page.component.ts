@@ -28,7 +28,7 @@ import { ConnectionLinkStoreService } from '../../../../services/connection-link
 import { ConnectionResultAgencyStoreService } from '../../../../services/connection-result/connection-result-agency-store.service';
 import { DialogService } from '../../../../services/dialog.service';
 import { SnackbarService } from '../../../../services/snackbar.service';
-import { getAccessTypeBadgeVariant, getAccessTypeDisplayName, getAccessTypeIcon } from '../../../../utils/platform.utils';
+import { getAccessTypeBadgeVariant, getAccessTypeDisplayName, getAccessTypeIcon } from '../../../../utils';
 import { ConnectionResultsTableComponent } from '../../components/connection-results-table/connection-results-table.component';
 import {
   CustomizeAccessLinkModalComponent,

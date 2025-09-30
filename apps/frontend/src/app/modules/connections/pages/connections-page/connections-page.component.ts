@@ -14,7 +14,7 @@ import { ConnectionLinkStoreService } from '../../../../services/connection-link
 import { ConnectionResultStoreService } from '../../../../services/connection-result/connection-result-store.service';
 import { FacebookStoreService } from '../../../../services/facebook/facebook-store.service';
 import { GoogleStoreService } from '../../../../services/google/google-store.service';
-import { getPlatformDisplayName } from '../../../../utils/platform.utils';
+import { getPlatformDisplayName } from '../../../../utils';
 import { AccessOutcomeComponent } from '../components/access-outcome/access-outcome.component';
 import { ConfirmAccessComponent } from '../components/confirm-access/confirm-access.component';
 import { ConnectAccountsComponent } from '../components/connect-accounts/connect-accounts.component';

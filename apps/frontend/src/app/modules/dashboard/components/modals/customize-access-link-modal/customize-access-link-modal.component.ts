@@ -21,8 +21,7 @@ import {
 import { cloneDeep, isEqual, set } from 'lodash';
 import { ConnectionLinkStoreService } from '../../../../../services/connection-link/connection-link-store.service';
 import { ProfileStoreService } from '../../../../../services/profile/profile-store.service';
-import { getPlatformIcon, getServiceIcon } from '../../../../../utils/icon.utils';
-import { getServiceShortDisplayName } from '../../../../../utils/platform.utils';
+import { getPlatformIcon, getServiceIcon, getServiceShortDisplayName } from '../../../../../utils';
 
 interface IPlatformSection {
   name: string;
