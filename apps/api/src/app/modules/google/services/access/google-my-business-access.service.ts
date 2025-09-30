@@ -41,7 +41,7 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
 
     return {
       ...result,
-      service: 'myBusiness' as GoogleServiceType,
+      service: GoogleServiceType.MY_BUSINESS,
       accessType: 'manage' as TAccessType,
       entityId: accountName,
       agencyIdentifier: agencyEmail
@@ -59,7 +59,7 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
 
     return {
       ...result,
-      service: 'myBusiness' as GoogleServiceType,
+      service: GoogleServiceType.MY_BUSINESS,
       accessType: 'view' as TAccessType,
       entityId: accountName,
       agencyIdentifier: agencyEmail
@@ -89,7 +89,7 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
         this.logger.warn(`User ${request.agencyIdentifier} already has access to account ${request.entityId}`);
         return {
           success: false,
-          service: 'myBusiness' as GoogleServiceType,
+          service: GoogleServiceType.MY_BUSINESS,
           accessType: this.determineAccessType(request.permissions),
           entityId: request.entityId,
           agencyIdentifier: request.agencyIdentifier,
@@ -114,7 +114,7 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
 
       return {
         success: true,
-        service: 'myBusiness' as GoogleServiceType,
+        service: GoogleServiceType.MY_BUSINESS,
         accessType: this.determineAccessType(request.permissions),
         entityId: request.entityId,
         agencyIdentifier: request.agencyIdentifier,
@@ -127,7 +127,7 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
 
       return {
         success: false,
-        service: 'myBusiness' as GoogleServiceType,
+        service: GoogleServiceType.MY_BUSINESS,
         accessType: this.determineAccessType(request.permissions),
         entityId: request.entityId,
         agencyIdentifier: request.agencyIdentifier,
@@ -216,7 +216,7 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
 
       return {
         success: true,
-        service: 'myBusiness',
+        service: GoogleServiceType.MY_BUSINESS,
         message: 'My Business access revoked successfully'
       };
 
@@ -225,7 +225,7 @@ export class GoogleMyBusinessAccessService implements IGoogleBaseAccessService {
 
       return {
         success: false,
-        service: 'myBusiness',
+        service: GoogleServiceType.MY_BUSINESS,
         error: `Failed to revoke access: ${error.message}`
       };
     }

@@ -49,7 +49,7 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
 
     return {
       ...result,
-      service: 'tagManager' as GoogleServiceType,
+      service: GoogleServiceType.TAG_MANAGER,
       accessType: 'manage' as TAccessType,
       entityId: accountId,
       agencyIdentifier: agencyEmail
@@ -67,7 +67,7 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
 
     return {
       ...result,
-      service: 'tagManager' as GoogleServiceType,
+      service: GoogleServiceType.TAG_MANAGER,
       accessType: 'view' as TAccessType,
       entityId: accountId,
       agencyIdentifier: agencyEmail
@@ -87,7 +87,7 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
         this.logger.warn(`User ${request.agencyIdentifier} already has access to account ${request.entityId}`);
         return {
           success: false,
-          service: 'tagManager' as GoogleServiceType,
+          service: GoogleServiceType.TAG_MANAGER,
           accessType: this.determineAccessType(request.permissions),
           entityId: request.entityId,
           agencyIdentifier: request.agencyIdentifier,
@@ -114,7 +114,7 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
 
       return {
         success: true,
-        service: 'tagManager' as GoogleServiceType,
+        service: GoogleServiceType.TAG_MANAGER,
         accessType: this.determineAccessType(request.permissions),
         entityId: request.entityId,
         agencyIdentifier: request.agencyIdentifier,
@@ -128,7 +128,7 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
       if (error.response?.status === 403) {
         return {
           success: false,
-          service: 'tagManager' as GoogleServiceType,
+          service: GoogleServiceType.TAG_MANAGER,
           accessType: this.determineAccessType(request.permissions),
           entityId: request.entityId,
           agencyIdentifier: request.agencyIdentifier,
@@ -137,7 +137,7 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
       } else if (error.response?.status === 404) {
         return {
           success: false,
-          service: 'tagManager' as GoogleServiceType,
+          service: GoogleServiceType.TAG_MANAGER,
           accessType: this.determineAccessType(request.permissions),
           entityId: request.entityId,
           agencyIdentifier: request.agencyIdentifier,
@@ -147,7 +147,7 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
 
       return {
         success: false,
-        service: 'tagManager' as GoogleServiceType,
+        service: GoogleServiceType.TAG_MANAGER,
         accessType: this.determineAccessType(request.permissions),
         entityId: request.entityId,
         agencyIdentifier: request.agencyIdentifier,
@@ -228,7 +228,7 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
 
       return {
         success: true,
-        service: 'tagManager',
+        service: GoogleServiceType.TAG_MANAGER,
         message: 'GTM access revoked successfully'
       };
 
@@ -236,7 +236,7 @@ export class GoogleTagManagerAccessService implements IGoogleBaseAccessService {
       this.logger.error(`Failed to revoke GTM access: ${error.message}`, error);
       return {
         success: false,
-        service: 'tagManager',
+        service: GoogleServiceType.TAG_MANAGER,
         error: `Failed to revoke access: ${error.message}`
       };
     }

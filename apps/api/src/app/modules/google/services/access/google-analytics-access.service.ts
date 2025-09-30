@@ -49,7 +49,7 @@ export class GoogleAnalyticsAccessService implements IGoogleBaseAccessService {
         this.logger.warn(`User ${request.agencyIdentifier} already has access to account ${request.entityId}`);
         return {
           success: false,
-          service: 'analytics' as GoogleServiceType,
+          service: GoogleServiceType.ANALYTICS,
           accessType: this.determineAccessType(request.permissions),
           entityId: request.entityId,
           agencyIdentifier: request.agencyIdentifier,
@@ -170,7 +170,7 @@ export class GoogleAnalyticsAccessService implements IGoogleBaseAccessService {
 
       return {
         success: true,
-        service: 'analytics',
+        service: GoogleServiceType.ANALYTICS,
         message: 'Google Analytics access revoked successfully'
       };
 
@@ -179,7 +179,7 @@ export class GoogleAnalyticsAccessService implements IGoogleBaseAccessService {
 
       return {
         success: false,
-        service: 'analytics',
+        service: GoogleServiceType.ANALYTICS,
         error: `Failed to revoke access: ${error.message}`
       };
     }

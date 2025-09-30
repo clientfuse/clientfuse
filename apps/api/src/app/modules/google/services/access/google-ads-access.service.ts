@@ -47,7 +47,7 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
 
     return {
       ...result,
-      service: 'ads' as GoogleServiceType,
+      service: GoogleServiceType.ADS,
       accessType: 'manage' as TAccessType,
       entityId: customerId,
       agencyIdentifier: agencyEmail
@@ -65,7 +65,7 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
 
     return {
       ...result,
-      service: 'ads' as GoogleServiceType,
+      service: GoogleServiceType.ADS,
       accessType: 'view' as TAccessType,
       entityId: customerId,
       agencyIdentifier: agencyEmail
@@ -92,7 +92,7 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
         this.logger.warn(`User ${request.agencyIdentifier} already has access to account ${request.entityId}`);
         return {
           success: false,
-          service: 'ads' as GoogleServiceType,
+          service: GoogleServiceType.ADS,
           accessType: this.determineAccessType(request.permissions),
           entityId: request.entityId,
           agencyIdentifier: request.agencyIdentifier,
@@ -116,7 +116,7 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
 
         return {
           success: true,
-          service: 'ads' as GoogleServiceType,
+          service: GoogleServiceType.ADS,
           accessType: this.determineAccessType(request.permissions),
           entityId: request.entityId,
           agencyIdentifier: request.agencyIdentifier,
@@ -134,7 +134,7 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
         const errorMessages = error.errors.map(e => e.message).join(', ');
         return {
           success: false,
-          service: 'ads' as GoogleServiceType,
+          service: GoogleServiceType.ADS,
           accessType: this.determineAccessType(request.permissions),
           entityId: request.entityId,
           agencyIdentifier: request.agencyIdentifier,
@@ -144,7 +144,7 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
 
       return {
         success: false,
-        service: 'ads' as GoogleServiceType,
+        service: GoogleServiceType.ADS,
         accessType: this.determineAccessType(request.permissions),
         entityId: request.entityId,
         agencyIdentifier: request.agencyIdentifier,
@@ -245,7 +245,7 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
 
       return {
         success: true,
-        service: 'ads',
+        service: GoogleServiceType.ADS,
         message: 'Google Ads access revoked successfully'
       };
 
@@ -256,14 +256,14 @@ export class GoogleAdsAccessService implements IGoogleBaseAccessService {
         const errorMessages = error.errors.map(e => e.message).join(', ');
         return {
           success: false,
-          service: 'ads',
+          service: GoogleServiceType.ADS,
           error: `Google Ads API error: ${errorMessages}`
         };
       }
 
       return {
         success: false,
-        service: 'ads',
+        service: GoogleServiceType.ADS,
         error: `Failed to revoke access: ${error.message}`
       };
     }

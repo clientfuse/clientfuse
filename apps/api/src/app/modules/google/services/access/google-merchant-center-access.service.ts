@@ -42,7 +42,7 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
 
     return {
       ...result,
-      service: 'merchantCenter' as GoogleServiceType,
+      service: GoogleServiceType.MERCHANT_CENTER,
       accessType: 'manage' as TAccessType,
       entityId: merchantId,
       agencyIdentifier: agencyEmail
@@ -60,7 +60,7 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
 
     return {
       ...result,
-      service: 'merchantCenter' as GoogleServiceType,
+      service: GoogleServiceType.MERCHANT_CENTER,
       accessType: 'view' as TAccessType,
       entityId: merchantId,
       agencyIdentifier: agencyEmail
@@ -88,7 +88,7 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
         this.logger.warn(`User ${request.agencyIdentifier} already has access to merchant ${request.entityId}`);
         return {
           success: false,
-          service: 'merchantCenter' as GoogleServiceType,
+          service: GoogleServiceType.MERCHANT_CENTER,
           accessType: this.determineAccessType(request.permissions),
           entityId: request.entityId,
           agencyIdentifier: request.agencyIdentifier,
@@ -114,7 +114,7 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
 
       return {
         success: true,
-        service: 'merchantCenter' as GoogleServiceType,
+        service: GoogleServiceType.MERCHANT_CENTER,
         accessType: this.determineAccessType(request.permissions),
         entityId: request.entityId,
         agencyIdentifier: request.agencyIdentifier,
@@ -127,7 +127,7 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
 
       return {
         success: false,
-        service: 'merchantCenter' as GoogleServiceType,
+        service: GoogleServiceType.MERCHANT_CENTER,
         accessType: this.determineAccessType(request.permissions),
         entityId: request.entityId,
         agencyIdentifier: request.agencyIdentifier,
@@ -207,7 +207,7 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
 
       return {
         success: true,
-        service: 'merchantCenter',
+        service: GoogleServiceType.MERCHANT_CENTER,
         message: 'Merchant Center access revoked successfully'
       };
 
@@ -216,7 +216,7 @@ export class GoogleMerchantCenterAccessService implements IGoogleBaseAccessServi
 
       return {
         success: false,
-        service: 'merchantCenter',
+        service: GoogleServiceType.MERCHANT_CENTER,
         error: `Failed to revoke access: ${error.message}`
       };
     }

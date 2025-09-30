@@ -45,7 +45,7 @@ export class GoogleSearchConsoleAccessService implements IGoogleBaseAccessServic
 
     return {
       ...result,
-      service: 'searchConsole' as GoogleServiceType,
+      service: GoogleServiceType.SEARCH_CONSOLE,
       accessType: 'manage' as TAccessType,
       entityId: siteUrl,
       agencyIdentifier: agencyEmail
@@ -63,7 +63,7 @@ export class GoogleSearchConsoleAccessService implements IGoogleBaseAccessServic
 
     return {
       ...result,
-      service: 'searchConsole' as GoogleServiceType,
+      service: GoogleServiceType.SEARCH_CONSOLE,
       accessType: 'view' as TAccessType,
       entityId: siteUrl,
       agencyIdentifier: agencyEmail
@@ -81,7 +81,7 @@ export class GoogleSearchConsoleAccessService implements IGoogleBaseAccessServic
   async grantAgencyAccess(request: IBaseAccessRequest): Promise<IGrantAccessResponse> {
     return {
       success: false,
-      service: 'searchConsole' as GoogleServiceType,
+      service: GoogleServiceType.SEARCH_CONSOLE,
       accessType: this.determineAccessType(request.permissions),
       entityId: request.entityId,
       agencyIdentifier: request.agencyIdentifier,
@@ -170,7 +170,7 @@ export class GoogleSearchConsoleAccessService implements IGoogleBaseAccessServic
     this.logger.warn('Google Search Console API does not support user removal');
     return {
       success: false,
-      service: 'searchConsole',
+      service: GoogleServiceType.SEARCH_CONSOLE,
       error: 'Google Search Console API does not support user removal. Changes must be made through the web interface.'
     };
   }
