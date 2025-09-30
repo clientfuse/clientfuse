@@ -5,7 +5,9 @@ import {
   TConnectionLinkResponse,
   TFacebookAccessLink,
   TFacebookConnectionLinkWithId,
-  TGoogleConnectionLink
+  TGoogleConnectionLink,
+  GoogleServiceType,
+  FacebookServiceType
 } from '@clientfuse/models';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -221,9 +223,7 @@ export class ConnectionLinkMergeService {
     if (!primary) return secondary;
     const merged: TGoogleConnectionLink = { ...primary };
 
-    const services: (keyof TGoogleConnectionLink)[] = [
-      'googleAds', 'googleAnalytics', 'googleMerchantCenter', 'googleMyBusiness', 'googleSearchConsole', 'googleTagManager'
-    ];
+    const services = Object.values(GoogleServiceType) as (keyof TGoogleConnectionLink)[];
 
     for (const service of services) {
       if (secondary[service]) {
@@ -244,9 +244,7 @@ export class ConnectionLinkMergeService {
     if (!primary) return secondary;
     const merged: TFacebookAccessLink = { ...primary };
 
-    const services: (keyof TFacebookAccessLink)[] = [
-      'facebookAds', 'facebookBusiness', 'facebookPages', 'facebookCatalogs', 'facebookPixels'
-    ];
+    const services = Object.values(FacebookServiceType) as (keyof TFacebookAccessLink)[];
 
     for (const service of services) {
       if (secondary[service]) {

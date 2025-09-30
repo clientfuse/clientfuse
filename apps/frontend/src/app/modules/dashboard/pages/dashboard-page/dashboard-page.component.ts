@@ -130,11 +130,6 @@ export class DashboardPageComponent implements OnInit {
     await this.connectionResultAgencyStoreService.changePage(event.pageIndex + 1);
   }
 
-  onViewConnectionDetails(resultId: string): void {
-    // TODO: Navigate to details page or open modal
-    console.log('View details for:', resultId);
-  }
-
   onCopySuccess(): void {
     this.snackbarService.success('Link copied to clipboard');
   }

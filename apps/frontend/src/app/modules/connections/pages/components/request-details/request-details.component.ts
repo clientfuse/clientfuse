@@ -1,13 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
 import {
-  AccessTypeNames,
-  ServiceNames,
   TAccessType,
   TConnectionLinkResponse,
-  TFacebookAccessLinkKeys,
-  TGoogleAccessLinkKeys
+  GoogleServiceType,
+  FacebookServiceType
 } from '@clientfuse/models';
+import { getServiceDisplayName, getAccessTypeDisplayName } from '../../../../../utils/platform.utils';
 
 interface IServiceGroup {
   identifier: string; // email for Google, businessPortfolioId for Facebook
@@ -26,11 +25,11 @@ export class RequestDetailsComponent {
   readonly connectionLink = input.required<TConnectionLinkResponse | null>();
   readonly agencyEmail = input<string>('');
   readonly accessType = input.required<TAccessType>();
-  readonly enabledGoogleServicesNames = input<TGoogleAccessLinkKeys[]>([]);
-  readonly enabledFacebookServicesNames = input<TFacebookAccessLinkKeys[]>([]);
+  readonly enabledGoogleServicesNames = input<GoogleServiceType[]>([]);
+  readonly enabledFacebookServicesNames = input<FacebookServiceType[]>([]);
 
   readonly accessTypeName = computed(() =>
-    AccessTypeNames[this.accessType() as keyof typeof AccessTypeNames] || this.accessType()
+    getAccessTypeDisplayName(this.accessType())
   );
 
   private getPlatformAccountName(platformPrefix: string): string {
@@ -102,7 +101,7 @@ export class RequestDetailsComponent {
         if (!groups.has(identifier)) {
           groups.set(identifier, []);
         }
-        groups.get(identifier)?.push(ServiceNames[serviceKey] || serviceKey);
+        groups.get(identifier)?.push(getServiceDisplayName(serviceKey));
       }
     }
 
@@ -126,7 +125,7 @@ export class RequestDetailsComponent {
       if (!groups.has(identifier)) {
         groups.set(identifier, []);
       }
-      groups.get(identifier)?.push(ServiceNames[serviceKey] || serviceKey);
+      groups.get(identifier)?.push(getServiceDisplayName(serviceKey));
     }
 
     return this.groupServicesByIdentifier(groups, enabledServices.length, 'Meta');

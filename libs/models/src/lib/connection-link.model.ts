@@ -1,13 +1,11 @@
+import { GoogleServiceType } from './integrations/google.model';
+import { FacebookServiceType } from './integrations/facebook.model';
+
 export interface IConnectionLinkItemBase {
   isEnabled: boolean;
 }
 
 export type TAccessType = 'view' | 'manage';
-
-export const AccessTypeNames: Record<TAccessType, string> = {
-  view: 'View',
-  manage: 'Manage'
-};
 
 export type IGoogleAccessLinkWithEmail = IConnectionLinkItemBase & {
   email: string;
@@ -18,29 +16,25 @@ export type IGoogleAccessLinkWithEmailOrId = IConnectionLinkItemBase & {
 }
 
 export type TGoogleConnectionLink = {
-  googleAds: IGoogleAccessLinkWithEmail & { method: string };
-  googleAnalytics: IGoogleAccessLinkWithEmail;
-  googleMerchantCenter: IGoogleAccessLinkWithEmail;
-  googleMyBusiness: IGoogleAccessLinkWithEmailOrId;
-  googleSearchConsole: IGoogleAccessLinkWithEmail;
-  googleTagManager: IGoogleAccessLinkWithEmail;
+  [GoogleServiceType.ADS]: IGoogleAccessLinkWithEmail & { method: string };
+  [GoogleServiceType.ANALYTICS]: IGoogleAccessLinkWithEmail;
+  [GoogleServiceType.MERCHANT_CENTER]: IGoogleAccessLinkWithEmail;
+  [GoogleServiceType.MY_BUSINESS]: IGoogleAccessLinkWithEmailOrId;
+  [GoogleServiceType.SEARCH_CONSOLE]: IGoogleAccessLinkWithEmail;
+  [GoogleServiceType.TAG_MANAGER]: IGoogleAccessLinkWithEmail;
 }
-
-export type TGoogleAccessLinkKeys = keyof TGoogleConnectionLink;
 
 export type TFacebookConnectionLinkWithId = IConnectionLinkItemBase & {
   businessPortfolioId: string;
 }
 
 export type TFacebookAccessLink = {
-  facebookAds: TFacebookConnectionLinkWithId;
-  facebookBusiness: TFacebookConnectionLinkWithId;
-  facebookPages: TFacebookConnectionLinkWithId;
-  facebookCatalogs: TFacebookConnectionLinkWithId;
-  facebookPixels: TFacebookConnectionLinkWithId;
+  [FacebookServiceType.AD_ACCOUNT]: TFacebookConnectionLinkWithId;
+  [FacebookServiceType.BUSINESS]: TFacebookConnectionLinkWithId;
+  [FacebookServiceType.PAGE]: TFacebookConnectionLinkWithId;
+  [FacebookServiceType.CATALOG]: TFacebookConnectionLinkWithId;
+  [FacebookServiceType.PIXEL]: TFacebookConnectionLinkWithId;
 }
-
-export type TFacebookAccessLinkKeys = keyof TFacebookAccessLink;
 
 export type TConnectionLink = {
   google?: TGoogleConnectionLink;
@@ -61,27 +55,6 @@ export type TConnectionLinkResponse = TConnectionLinkBase & {
 }
 
 export type TPlatformNamesKeys = keyof TConnectionLink;
-
-export const PlatformNames: Record<TPlatformNamesKeys, string> = {
-  google: 'Google',
-  facebook: 'Meta'
-};
-
-export type AllAccessLinkKeys = TGoogleAccessLinkKeys | TFacebookAccessLinkKeys;
-
-export const ServiceNames: Record<AllAccessLinkKeys, string> = {
-  googleAds: 'Ads',
-  googleAnalytics: 'Analytics',
-  googleMerchantCenter: 'Merchant Center',
-  googleMyBusiness: 'My Business',
-  googleSearchConsole: 'Search Console',
-  googleTagManager: 'Tag Manager',
-  facebookAds: 'Ads',
-  facebookBusiness: 'Business',
-  facebookPages: 'Pages',
-  facebookCatalogs: 'Catalogs',
-  facebookPixels: 'Pixels'
-};
 
 export function generateConnectionLinkName(type: TAccessType, includeDate: boolean = false): string {
   const baseName = `${type === 'view' ? 'View' : 'Manage'} Connection Link`;

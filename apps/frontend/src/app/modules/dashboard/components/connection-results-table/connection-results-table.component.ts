@@ -1,28 +1,22 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
-  AccessTypeNames,
+  FacebookServiceType,
   IGrantAccessResponse,
-  PlatformNames,
   TAccessType,
   TConnectionResultResponse,
   TPlatformNamesKeys
 } from '@clientfuse/models';
-import {
-  detectPlatforms,
-  formatRelativeTime,
-  generatePlatformDeepLink,
-  getPlatformDisplayName,
-  getServiceDisplayName,
-  getServiceIcon
-} from '@clientfuse/utils';
+import { DateTime } from 'luxon';
 import { BadgeComponent } from '../../../../components/badge/badge.component';
 import { UIVariant } from '../../../../models/ui.model';
+import { getServiceDisplayName, getPlatformDisplayName, getAccessTypeDisplayName } from '../../../../utils/platform.utils';
+import { getServiceIcon } from '../../../../utils/icon.utils';
 
 interface ConnectionResultRow {
   id: string;
@@ -52,9 +46,6 @@ export class ConnectionResultsTableComponent {
   results = input<TConnectionResultResponse[]>([]);
   isLoading = input<boolean>(false);
 
-  rowClicked = output<TConnectionResultResponse>();
-  viewDetails = output<string>();
-
   expandedRows = new Set<string>();
 
   tableRows = computed(() => {
@@ -63,7 +54,7 @@ export class ConnectionResultsTableComponent {
       connectionTime: result.createdAt,
       accessType: result.accessType,
       connectionLink: result.connectionLinkId,
-      platforms: detectPlatforms(result),
+      platforms: this.detectPlatforms(result),
       grantedAccesses: this.getAllGrantedAccesses(result)
     }));
   });
@@ -81,15 +72,32 @@ export class ConnectionResultsTableComponent {
   }
 
   formatTime(date: Date | string): string {
-    return formatRelativeTime(date);
+    const dateTime = typeof date === 'string' ? DateTime.fromISO(date) : DateTime.fromJSDate(date);
+    const diff = dateTime.diffNow();
+    const absoluteDiff = Math.abs(diff.as('minutes'));
+
+    if (absoluteDiff < 1) {
+      return 'just now';
+    } else if (absoluteDiff < 60) {
+      const minutes = Math.floor(absoluteDiff);
+      return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+    } else if (absoluteDiff < 1440) {
+      const hours = Math.floor(absoluteDiff / 60);
+      return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+    } else if (absoluteDiff < 43200) {
+      const days = Math.floor(absoluteDiff / 1440);
+      return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+    } else {
+      return dateTime.toLocaleString(DateTime.DATETIME_SHORT);
+    }
   }
 
   getAccessBadgeVariant(accessType: TAccessType): UIVariant {
-    return accessType === 'view' ? 'info' : 'warning';
+    return accessType === 'view' ? 'info' : 'success';
   }
 
   getAccessBadgeText(accessType: TAccessType): string {
-    return AccessTypeNames[accessType] || accessType;
+    return getAccessTypeDisplayName(accessType);
   }
 
   getServiceIcon(service: string, platform?: TPlatformNamesKeys): string {
@@ -106,7 +114,24 @@ export class ConnectionResultsTableComponent {
     entityId: string,
     businessId?: string
   ): string {
-    return generatePlatformDeepLink(platform, service, entityId, businessId);
+    if (platform === 'facebook' && businessId) {
+      const serviceMap: Record<string, string> = {
+        [FacebookServiceType.AD_ACCOUNT]: 'ad_accounts',
+        [FacebookServiceType.PAGE]: 'pages',
+        [FacebookServiceType.CATALOG]: 'product_catalogs',
+        [FacebookServiceType.PIXEL]: 'events_dataset',
+        [FacebookServiceType.BUSINESS]: 'businesses'
+      };
+
+      const servicePath = serviceMap[service] || service;
+      const assetType = service === FacebookServiceType.PIXEL ? 'events-dataset-new' : service;
+
+      return `https://business.facebook.com/latest/settings/${servicePath}?business_id=${businessId}&selected_asset_id=${entityId}&selected_asset_type=${assetType}`;
+    }
+
+    // For Google, we need additional parameters like ocid which are not available
+    // Return a placeholder or basic URL
+    return '#';
   }
 
   getPlatformIcon(platform: TPlatformNamesKeys): string {
@@ -133,32 +158,22 @@ export class ConnectionResultsTableComponent {
     return getPlatformDisplayName(platform);
   }
 
-  getBusinessId(result: TConnectionResultResponse, platform: TPlatformNamesKeys): string {
-    const platformAccesses = result.grantedAccesses[platform];
-    if (platformAccesses && platformAccesses.length > 0) {
-      return platformAccesses[0].agencyIdentifier || '';
+  detectPlatforms(result: TConnectionResultResponse): TPlatformNamesKeys[] {
+    const platforms: TPlatformNamesKeys[] = [];
+
+    if (result.googleUserId) {
+      platforms.push('google');
     }
-    return '';
-  }
 
-  getSuccessIcon(): string {
-    return 'check_circle';
-  }
+    if (result.facebookUserId) {
+      platforms.push('facebook');
+    }
 
-  getWarningIcon(): string {
-    return 'warning';
-  }
-
-  onRowClick(result: TConnectionResultResponse): void {
-    this.rowClicked.emit(result);
-  }
-
-  onViewDetails(resultId: string): void {
-    this.viewDetails.emit(resultId);
+    return platforms;
   }
 
   getPlatformDisplayName(platform: TPlatformNamesKeys): string {
-    return PlatformNames[platform];
+    return getPlatformDisplayName(platform);
   }
 
   private getAllGrantedAccesses(result: TConnectionResultResponse): IGrantAccessResponse[] {

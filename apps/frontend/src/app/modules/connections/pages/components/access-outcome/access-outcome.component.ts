@@ -2,20 +2,14 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, output } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
-import {
-  FacebookServiceType,
-  GoogleServiceType,
-  IGrantAccessResponse,
-  ServiceNames,
-  TAccessType,
-  TGoogleAccessLinkKeys
-} from '@clientfuse/models';
+import { GoogleServiceType, IGrantAccessResponse, TAccessType } from '@clientfuse/models';
 import { BadgeComponent } from '../../../../../components/badge/badge.component';
 import { IslandComponent } from '../../../../../components/island/island.component';
+import { ConnectionResultStoreService } from '../../../../../services/connection-result/connection-result-store.service';
 import { FacebookStoreService } from '../../../../../services/facebook/facebook-store.service';
 import { GoogleStoreService } from '../../../../../services/google/google-store.service';
-import { ConnectionResultStoreService } from '../../../../../services/connection-result/connection-result-store.service';
-import { GOOGLE_ICON_PATHS } from '../../../../../utils/icon.utils';
+import { getServiceIcon } from '../../../../../utils/icon.utils';
+import { getServiceDisplayName } from '../../../../../utils/platform.utils';
 
 interface ServiceGroup {
   service: GoogleServiceType;
@@ -97,8 +91,8 @@ export class AccessOutcomeComponent {
 
     return Array.from(serviceMap.entries()).map(([service, serviceAccesses]) => ({
       service,
-      serviceName: this.getServiceDisplayName(service),
-      iconPath: this.getServiceIcon(service),
+      serviceName: getServiceDisplayName(service),
+      iconPath: getServiceIcon(service, 'google'),
       accesses: serviceAccesses
     }));
   }
@@ -107,54 +101,18 @@ export class AccessOutcomeComponent {
     const serviceMap = new Map<string, IGrantAccessResponse[]>();
 
     accesses.forEach(access => {
-      const fbService = this.mapToFacebookService(access);
-      if (!serviceMap.has(fbService)) {
-        serviceMap.set(fbService, []);
+      if (!serviceMap.has(access.service)) {
+        serviceMap.set(access.service, []);
       }
-      serviceMap.get(fbService)!.push(access);
+      serviceMap.get(access.service)!.push(access);
     });
 
     return Array.from(serviceMap.entries()).map(([service, serviceAccesses]) => ({
       service: service as GoogleServiceType,
-      serviceName: this.getFacebookServiceDisplayName(service),
+      serviceName: getServiceDisplayName(service),
+      iconPath: getServiceIcon(service, 'facebook'),
       accesses: serviceAccesses
     }));
-  }
-
-  private mapToFacebookService(access: IGrantAccessResponse): string {
-    // Direct service type mapping
-    switch (access.service) {
-      case FacebookServiceType.AD_ACCOUNT:
-        return 'facebook_ads';
-      case FacebookServiceType.PAGE:
-        return 'facebook_pages';
-      case FacebookServiceType.CATALOG:
-        return 'facebook_catalogs';
-      case FacebookServiceType.PIXEL:
-        return 'facebook_pixels';
-      default:
-        return 'facebook_ads';
-    }
-  }
-
-  private getServiceDisplayName(service: GoogleServiceType): string {
-    const serviceName = ServiceNames[service as TGoogleAccessLinkKeys];
-    return serviceName || service;
-  }
-
-  private getFacebookServiceDisplayName(service: string): string {
-    const serviceMapping: Record<string, string> = {
-      'facebook_ads': 'Ads',
-      'facebook_pages': 'Pages',
-      'facebook_catalogs': 'Catalogs',
-      'facebook_pixels': 'Pixels'
-    };
-
-    return serviceMapping[service] || service;
-  }
-
-  private getServiceIcon(service: GoogleServiceType): string {
-    return GOOGLE_ICON_PATHS[service as TGoogleAccessLinkKeys] || './assets/icons/google.svg';
   }
 
   getAccessTypeLabel(accessType: TAccessType): string {

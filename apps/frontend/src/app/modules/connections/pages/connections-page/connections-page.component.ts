@@ -9,10 +9,9 @@ import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { ActivatedRoute } from '@angular/router';
 import {
   IAgencyResponse,
-  PlatformNames,
   TAccessType,
-  TFacebookAccessLinkKeys,
-  TGoogleAccessLinkKeys
+  GoogleServiceType,
+  FacebookServiceType
 } from '@clientfuse/models';
 import { ListFormatter } from '@clientfuse/utils';
 import { AgencyApiService } from '../../../../services/agency/agency-api.service';
@@ -23,6 +22,7 @@ import { ConnectionResultStoreService } from '../../../../services/connection-re
 import { AccessOutcomeComponent } from '../components/access-outcome/access-outcome.component';
 import { ConfirmAccessComponent } from '../components/confirm-access/confirm-access.component';
 import { ConnectAccountsComponent } from '../components/connect-accounts/connect-accounts.component';
+import { getPlatformDisplayName } from '../../../../utils/platform.utils';
 
 interface ConnectionStep {
   id: string;
@@ -76,31 +76,31 @@ export class ConnectionsPageComponent implements OnInit {
     if (!link) return [];
     const platforms: string[] = [];
     if (link.google && Object.keys(link.google).length > 0) {
-      platforms.push(PlatformNames.google);
+      platforms.push(getPlatformDisplayName('google'));
     }
     if (link.facebook && Object.keys(link.facebook).length > 0) {
-      platforms.push(PlatformNames.facebook);
+      platforms.push(getPlatformDisplayName('facebook'));
     }
     return platforms;
   });
   requestedPlatformsText = computed<string>(() => ListFormatter.formatItemsList(this.requestedPlatforms(), 'No platforms requested'));
-  readonly enabledGoogleServicesNames = computed<TGoogleAccessLinkKeys[]>(() => {
+  readonly enabledGoogleServicesNames = computed<GoogleServiceType[]>(() => {
     const connectionLink = this.connectionLink();
     const googleServices = connectionLink?.google;
     if (!googleServices) return [];
     return Object.keys(googleServices).filter(serviceKey =>
-      googleServices[serviceKey as TGoogleAccessLinkKeys].isEnabled
-    ) as TGoogleAccessLinkKeys[];
+      googleServices[serviceKey as GoogleServiceType].isEnabled
+    ) as GoogleServiceType[];
   });
 
-  readonly enabledFacebookServicesNames = computed<TFacebookAccessLinkKeys[]>(() => {
+  readonly enabledFacebookServicesNames = computed<FacebookServiceType[]>(() => {
     const connectionLink = this.connectionLink();
     const facebookServices = connectionLink?.facebook;
     if (!facebookServices) return [];
     return Object.keys(facebookServices).filter(serviceKey => {
-      const service = facebookServices[serviceKey as TFacebookAccessLinkKeys];
+      const service = facebookServices[serviceKey as FacebookServiceType];
       return service.isEnabled && service.businessPortfolioId && service.businessPortfolioId.trim() !== '';
-    }) as TFacebookAccessLinkKeys[];
+    }) as FacebookServiceType[];
   });
 
   readonly nextButtonText = computed<string>(() => {

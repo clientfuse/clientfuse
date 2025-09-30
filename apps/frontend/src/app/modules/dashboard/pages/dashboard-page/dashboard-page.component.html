@@ -212,11 +212,7 @@
             </mat-form-field>
           </div>
 
-          <app-connection-results-table
-            [results]="connectionResults()"
-            [isLoading]="isLoadingResults()"
-            (viewDetails)="onViewConnectionDetails($event)">
-          </app-connection-results-table>
+          <app-connection-results-table [results]="connectionResults()" [isLoading]="isLoadingResults()" />
 
           <mat-paginator
             [length]="totalResults()"

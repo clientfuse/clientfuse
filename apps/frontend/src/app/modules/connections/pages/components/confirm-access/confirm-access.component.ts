@@ -15,8 +15,6 @@ import {
   IGoogleAdsAccount,
   TAccessType,
   TConnectionLinkResponse,
-  TFacebookAccessLinkKeys,
-  TGoogleAccessLinkKeys,
   TPlatformNamesKeys
 } from '@clientfuse/models';
 import { analytics_v3, content_v2_1, mybusinessbusinessinformation_v1, searchconsole_v1, tagmanager_v2 } from 'googleapis';
@@ -27,7 +25,7 @@ import { DialogService } from '../../../../../services/dialog.service';
 import { FacebookStoreService } from '../../../../../services/facebook/facebook-store.service';
 import { GoogleStoreService } from '../../../../../services/google/google-store.service';
 import { SnackbarService } from '../../../../../services/snackbar.service';
-import { GOOGLE_ICON_PATHS } from '../../../../../utils/icon.utils';
+import { getServiceIcon } from '../../../../../utils/icon.utils';
 import { InstructionStepComponent } from '../instruction-step/instruction-step.component';
 import { FacebookAdsModalComponent, IFacebookAdsModalData } from '../modals/facebook-ads-modal/facebook-ads-modal.component';
 import { FacebookPixelModalComponent, IFacebookPixelModalData } from '../modals/facebook-pixel-modal/facebook-pixel-modal.component';
@@ -86,8 +84,8 @@ export class ConfirmAccessComponent {
   readonly connectionLink = input.required<TConnectionLinkResponse | null>();
   readonly agencyEmail = input<string>('');
   readonly accessType = input.required<TAccessType>();
-  readonly enabledGoogleServicesNames = input<TGoogleAccessLinkKeys[]>([]);
-  readonly enabledFacebookServicesNames = input<TFacebookAccessLinkKeys[]>([]);
+  readonly enabledGoogleServicesNames = input<GoogleServiceType[]>([]);
+  readonly enabledFacebookServicesNames = input<FacebookServiceType[]>([]);
 
   private isInitializingPanels = false;
   readonly servicesEffect = effect(() => {
@@ -106,8 +104,6 @@ export class ConfirmAccessComponent {
     }
   }, { allowSignalWrites: true });
 
-
-  readonly googleIcons = GOOGLE_ICON_PATHS;
   servicePanels: ServicePanel[] = [];
   readonly entityUsersCache = signal<Map<string, { users: string[]; timestamp: number }>>(new Map());
 
@@ -117,11 +113,11 @@ export class ConfirmAccessComponent {
     const facebookConnectionData = this.facebookStoreService.connectionData();
 
     const googleServices = this.enabledGoogleServicesNames();
-    if (googleServices.includes('googleAds')) {
+    if (googleServices.includes(GoogleServiceType.ADS)) {
       panels.push({
         key: GoogleServiceType.ADS,
         name: 'Google Ads Account',
-        iconPath: this.googleIcons.googleAds,
+        iconPath: getServiceIcon(GoogleServiceType.ADS, 'google'),
         expanded: panels.length === 0,
         provider: 'google',
         accounts: connectionData?.accounts?.googleAdsAccounts || [],
@@ -129,15 +125,15 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Ads Account found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        agencyIdentifier: this.connectionLink()?.google?.googleAds?.email
+        agencyIdentifier: this.connectionLink()?.google?.[GoogleServiceType.ADS]?.email
       });
     }
 
-    if (googleServices.includes('googleAnalytics')) {
+    if (googleServices.includes(GoogleServiceType.ANALYTICS)) {
       panels.push({
         key: GoogleServiceType.ANALYTICS,
         name: 'Analytics Account',
-        iconPath: this.googleIcons.googleAnalytics,
+        iconPath: getServiceIcon(GoogleServiceType.ANALYTICS, 'google'),
         expanded: false,
         provider: 'google',
         accounts: connectionData?.accounts?.googleAnalyticsAccounts || [],
@@ -145,15 +141,15 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Analytics Account found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        agencyIdentifier: this.connectionLink()?.google?.googleAnalytics?.email
+        agencyIdentifier: this.connectionLink()?.google?.[GoogleServiceType.ANALYTICS]?.email
       });
     }
 
-    if (googleServices.includes('googleSearchConsole')) {
+    if (googleServices.includes(GoogleServiceType.SEARCH_CONSOLE)) {
       panels.push({
         key: GoogleServiceType.SEARCH_CONSOLE,
         name: 'Search Console',
-        iconPath: this.googleIcons.googleSearchConsole,
+        iconPath: getServiceIcon(GoogleServiceType.SEARCH_CONSOLE, 'google'),
         expanded: false,
         provider: 'google',
         accounts: connectionData?.accounts?.googleSearchConsoles || [],
@@ -161,15 +157,15 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Search Console found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        agencyIdentifier: this.connectionLink()?.google?.googleSearchConsole?.email
+        agencyIdentifier: this.connectionLink()?.google?.[GoogleServiceType.SEARCH_CONSOLE]?.email
       });
     }
 
-    if (googleServices.includes('googleTagManager')) {
+    if (googleServices.includes(GoogleServiceType.TAG_MANAGER)) {
       panels.push({
         key: GoogleServiceType.TAG_MANAGER,
         name: 'Google Tag Manager',
-        iconPath: this.googleIcons.googleTagManager,
+        iconPath: getServiceIcon(GoogleServiceType.TAG_MANAGER, 'google'),
         expanded: false,
         provider: 'google',
         accounts: connectionData?.accounts?.googleTagManagers || [],
@@ -177,15 +173,15 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Tag Manager found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        agencyIdentifier: this.connectionLink()?.google?.googleTagManager?.email
+        agencyIdentifier: this.connectionLink()?.google?.[GoogleServiceType.TAG_MANAGER]?.email
       });
     }
 
-    if (googleServices.includes('googleMerchantCenter')) {
+    if (googleServices.includes(GoogleServiceType.MERCHANT_CENTER)) {
       panels.push({
         key: GoogleServiceType.MERCHANT_CENTER,
         name: 'Google Merchant Center',
-        iconPath: this.googleIcons.googleMerchantCenter,
+        iconPath: getServiceIcon(GoogleServiceType.MERCHANT_CENTER, 'google'),
         expanded: false,
         provider: 'google',
         accounts: connectionData?.accounts?.googleMerchantCenters || [],
@@ -193,15 +189,15 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Merchant Center found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        agencyIdentifier: this.connectionLink()?.google?.googleMerchantCenter?.email
+        agencyIdentifier: this.connectionLink()?.google?.[GoogleServiceType.MERCHANT_CENTER]?.email
       });
     }
 
-    if (googleServices.includes('googleMyBusiness')) {
+    if (googleServices.includes(GoogleServiceType.MY_BUSINESS)) {
       panels.push({
         key: GoogleServiceType.MY_BUSINESS,
         name: 'Google Business Profile',
-        iconPath: this.googleIcons.googleMyBusiness,
+        iconPath: getServiceIcon(GoogleServiceType.MY_BUSINESS, 'google'),
         expanded: false,
         provider: 'google',
         accounts: connectionData?.accounts?.googleMyBusinessLocations || [],
@@ -209,15 +205,16 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Business Profile found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        agencyIdentifier: this.connectionLink()?.google?.googleMyBusiness?.emailOrId
+        agencyIdentifier: this.connectionLink()?.google?.[GoogleServiceType.MY_BUSINESS]?.emailOrId
       });
     }
 
     const facebookServices = this.enabledFacebookServicesNames();
-    if (facebookServices.includes('facebookAds')) {
+    if (facebookServices.includes(FacebookServiceType.AD_ACCOUNT)) {
       panels.push({
         key: FacebookServiceType.AD_ACCOUNT,
         name: 'Meta Ads Account',
+        iconPath: getServiceIcon(FacebookServiceType.AD_ACCOUNT, 'facebook'),
         expanded: panels.length === 0,
         provider: 'facebook',
         accounts: facebookConnectionData?.accounts?.facebookAdAccounts || [],
@@ -225,14 +222,15 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Meta Ads Account found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        agencyIdentifier: this.connectionLink()?.facebook?.facebookAds?.businessPortfolioId
+        agencyIdentifier: this.connectionLink()?.facebook?.[FacebookServiceType.AD_ACCOUNT]?.businessPortfolioId
       });
     }
 
-    if (facebookServices.includes('facebookPages')) {
+    if (facebookServices.includes(FacebookServiceType.PAGE)) {
       panels.push({
         key: FacebookServiceType.PAGE,
         name: 'Meta Pages',
+        iconPath: getServiceIcon(FacebookServiceType.PAGE, 'facebook'),
         expanded: false,
         provider: 'facebook',
         accounts: facebookConnectionData?.accounts?.facebookPages || [],
@@ -240,14 +238,15 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Meta Pages found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        agencyIdentifier: this.connectionLink()?.facebook?.facebookPages?.businessPortfolioId
+        agencyIdentifier: this.connectionLink()?.facebook?.[FacebookServiceType.PAGE]?.businessPortfolioId
       });
     }
 
-    if (facebookServices.includes('facebookCatalogs')) {
+    if (facebookServices.includes(FacebookServiceType.CATALOG)) {
       panels.push({
         key: FacebookServiceType.CATALOG,
         name: 'Meta Catalogs',
+        iconPath: getServiceIcon(FacebookServiceType.CATALOG, 'facebook'),
         expanded: false,
         provider: 'facebook',
         accounts: facebookConnectionData?.accounts?.facebookCatalogs || [],
@@ -255,14 +254,15 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Meta Catalogs found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        agencyIdentifier: this.connectionLink()?.facebook?.facebookCatalogs?.businessPortfolioId
+        agencyIdentifier: this.connectionLink()?.facebook?.[FacebookServiceType.CATALOG]?.businessPortfolioId
       });
     }
 
-    if (facebookServices.includes('facebookPixels')) {
+    if (facebookServices.includes(FacebookServiceType.PIXEL)) {
       panels.push({
         key: FacebookServiceType.PIXEL,
         name: 'Meta Pixels',
+        iconPath: getServiceIcon(FacebookServiceType.PIXEL, 'facebook'),
         expanded: false,
         provider: 'facebook',
         accounts: facebookConnectionData?.accounts?.facebookPixels || [],
@@ -270,7 +270,7 @@ export class ConfirmAccessComponent {
         noAccountsMessage: 'No Meta Pixels found.',
         existingUsers: new Map(),
         loadingUsers: new Set(),
-        agencyIdentifier: this.connectionLink()?.facebook?.facebookPixels?.businessPortfolioId
+        agencyIdentifier: this.connectionLink()?.facebook?.[FacebookServiceType.PIXEL]?.businessPortfolioId
       });
     }
 

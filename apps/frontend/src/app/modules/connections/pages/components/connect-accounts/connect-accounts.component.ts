@@ -12,11 +12,10 @@ import { MatIconModule } from '@angular/material/icon';
 import {
   IFacebookConnectionDto,
   IGoogleConnectionDto,
-  ServiceNames,
   TAccessType,
   TConnectionLinkResponse,
-  TFacebookAccessLinkKeys,
-  TGoogleAccessLinkKeys
+  GoogleServiceType,
+  FacebookServiceType
 } from '@clientfuse/models';
 import { ListFormatter } from '@clientfuse/utils';
 import { IslandComponent } from '../../../../../components/island/island.component';
@@ -25,6 +24,7 @@ import { GoogleStoreService } from '../../../../../services/google/google-store.
 import { ConnectionResultStoreService } from '../../../../../services/connection-result/connection-result-store.service';
 import { InstructionStepComponent } from '../instruction-step/instruction-step.component';
 import { RequestDetailsComponent } from '../request-details/request-details.component';
+import { getServiceDisplayName } from '../../../../../utils/platform.utils';
 
 type ConnectionStatus = 'disconnected' | 'connected' | 'skipped' | 'pending';
 
@@ -60,8 +60,8 @@ export class ConnectAccountsComponent implements OnInit {
   readonly connectionLink = input.required<TConnectionLinkResponse | null>();
   readonly agencyEmail = input<string>('');
   readonly accessType = input.required<TAccessType>();
-  readonly enabledGoogleServicesNames = input.required<TGoogleAccessLinkKeys[]>();
-  readonly enabledFacebookServicesNames = input.required<TFacebookAccessLinkKeys[]>();
+  readonly enabledGoogleServicesNames = input.required<GoogleServiceType[]>();
+  readonly enabledFacebookServicesNames = input.required<FacebookServiceType[]>();
   readonly connectionStatusChanged = output<boolean>();
   readonly metaConnectionStatus = signal<ConnectionStatus>('disconnected');
   readonly googleConnectionStatus = signal<ConnectionStatus>('disconnected');
@@ -73,12 +73,12 @@ export class ConnectAccountsComponent implements OnInit {
   readonly facebookError = computed(() => this.facebookStoreService.error());
 
   readonly googleServicesText = computed(() => {
-    const enabledGoogleServices = this.enabledGoogleServicesNames().map(service => ServiceNames[service as keyof typeof ServiceNames] || service);
+    const enabledGoogleServices = this.enabledGoogleServicesNames().map(service => getServiceDisplayName(service));
     return ListFormatter.formatItemsList(enabledGoogleServices, '');
   });
 
   readonly facebookServicesText = computed(() => {
-    const enabledFacebookServices = this.enabledFacebookServicesNames().map(service => ServiceNames[service as keyof typeof ServiceNames] || service);
+    const enabledFacebookServices = this.enabledFacebookServicesNames().map(service => getServiceDisplayName(service));
     return ListFormatter.formatItemsList(enabledFacebookServices, '');
   });
 

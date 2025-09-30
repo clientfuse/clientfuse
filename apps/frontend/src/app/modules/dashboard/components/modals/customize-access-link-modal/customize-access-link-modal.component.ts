@@ -11,19 +11,18 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleChange, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import {
-  AllAccessLinkKeys,
   CONNECTION_LINK_VALIDATORS,
-  ServiceNames,
+  FacebookServiceType,
+  GoogleServiceType,
   TConnectionLinkBase,
   TConnectionLinkResponse,
-  TFacebookAccessLinkKeys,
-  TGoogleAccessLinkKeys,
   TPlatformNamesKeys
 } from '@clientfuse/models';
 import { cloneDeep, isEqual, set } from 'lodash';
 import { ConnectionLinkStoreService } from '../../../../../services/connection-link/connection-link-store.service';
 import { ProfileStoreService } from '../../../../../services/profile/profile-store.service';
-import { GOOGLE_ICON_PATHS } from '../../../../../utils/icon.utils';
+import { getServiceIcon } from '../../../../../utils/icon.utils';
+import { getServiceDisplayName } from '../../../../../utils/platform.utils';
 
 interface IPlatformSection {
   name: string;
@@ -69,7 +68,6 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
   protected readonly data: ICustomizeAccessLinkModalData = inject(MAT_DIALOG_DATA);
   private readonly connectionLinkStoreService = inject(ConnectionLinkStoreService);
   private readonly profileStoreService = inject(ProfileStoreService);
-  private readonly googleIconPaths = GOOGLE_ICON_PATHS;
 
   form = new FormGroup({});
   nameControl = new FormControl('', [
@@ -120,13 +118,13 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
         iconSrc: './assets/icons/google.svg',
         services: Object.keys(connectionLink.google)
           .map((key: string) => {
-            const service = connectionLink.google?.[key as TGoogleAccessLinkKeys];
+            const service = connectionLink.google?.[key as GoogleServiceType];
 
             return {
               key,
-              name: ServiceNames[key as AllAccessLinkKeys] || key,
+              name: getServiceDisplayName(key),
               email: (<any>service)?.email || (<any>service)?.emailOrId || '',
-              iconSrc: this.googleIconPaths[key as TGoogleAccessLinkKeys] || '',
+              iconSrc: getServiceIcon(key, 'google'),
               isEnabled: service?.isEnabled || false,
               platform: 'google' as TPlatformNamesKeys
             };
@@ -145,12 +143,13 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
         iconSrc: './assets/icons/meta.svg',
         services: Object.keys(connectionLink.facebook)
           .map((key: string) => {
-            const service = connectionLink.facebook?.[key as TFacebookAccessLinkKeys];
+            const service = connectionLink.facebook?.[key as FacebookServiceType];
 
             return {
               key,
-              name: ServiceNames[key as AllAccessLinkKeys] || key,
+              name: getServiceDisplayName(key),
               email: service?.businessPortfolioId || '',
+              iconSrc: getServiceIcon(key, 'facebook'),
               isEnabled: service?.isEnabled || false,
               platform: 'facebook' as TPlatformNamesKeys
             };
@@ -206,9 +205,7 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
 
     this.selectedBusinessPortfolioId.set(portfolioId);
 
-    const facebookServices: TFacebookAccessLinkKeys[] = ['facebookAds', 'facebookBusiness', 'facebookPages', 'facebookCatalogs', 'facebookPixels'];
-
-    facebookServices.forEach(serviceKey => {
+    Object.values(FacebookServiceType).forEach(serviceKey => {
       if (connectionLink.facebook && connectionLink.facebook[serviceKey]) {
         connectionLink.facebook[serviceKey].businessPortfolioId = portfolioId;
       }
@@ -218,10 +215,10 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
   }
 
   private initializeSelectedBusinessPortfolioId(link: TConnectionLinkResponse | null) {
-    if (link?.facebook?.facebookAds?.businessPortfolioId) {
-      this.selectedBusinessPortfolioId.set(link.facebook.facebookAds.businessPortfolioId);
-    } else if (link?.facebook?.facebookBusiness?.businessPortfolioId) {
-      this.selectedBusinessPortfolioId.set(link.facebook.facebookBusiness.businessPortfolioId);
+    if (link?.facebook?.[FacebookServiceType.AD_ACCOUNT]?.businessPortfolioId) {
+      this.selectedBusinessPortfolioId.set(link.facebook[FacebookServiceType.AD_ACCOUNT].businessPortfolioId);
+    } else if (link?.facebook?.[FacebookServiceType.BUSINESS]?.businessPortfolioId) {
+      this.selectedBusinessPortfolioId.set(link.facebook[FacebookServiceType.BUSINESS].businessPortfolioId);
     }
   }
 }
