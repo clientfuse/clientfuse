@@ -6,6 +6,7 @@ import { MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionP
 import { MatIconModule } from '@angular/material/icon';
 import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
 import {
+  AccessType,
   FacebookAdAccount,
   FacebookCatalog,
   FacebookPage,
@@ -13,7 +14,6 @@ import {
   FacebookServiceType,
   GoogleServiceType,
   IGoogleAdsAccount,
-  AccessType,
   TConnectionLinkResponse,
   TPlatformNamesKeys
 } from '@clientfuse/models';
@@ -25,7 +25,7 @@ import { DialogService } from '../../../../../services/dialog.service';
 import { FacebookStoreService } from '../../../../../services/facebook/facebook-store.service';
 import { GoogleStoreService } from '../../../../../services/google/google-store.service';
 import { SnackbarService } from '../../../../../services/snackbar.service';
-import { getServiceIcon } from '../../../../../utils/icon.utils';
+import { getAccessTypeMessageName, getPlatformIcon, getServiceIcon, getServiceShortDisplayName } from '../../../../../utils';
 import { InstructionStepComponent } from '../instruction-step/instruction-step.component';
 import { FacebookAdsModalComponent, IFacebookAdsModalData } from '../modals/facebook-ads-modal/facebook-ads-modal.component';
 import { FacebookPixelModalComponent, IFacebookPixelModalData } from '../modals/facebook-pixel-modal/facebook-pixel-modal.component';
@@ -116,7 +116,7 @@ export class ConfirmAccessComponent {
     if (googleServices.includes(GoogleServiceType.ADS)) {
       panels.push({
         key: GoogleServiceType.ADS,
-        name: 'Google Ads Account',
+        name: getServiceShortDisplayName(GoogleServiceType.ADS),
         iconPath: getServiceIcon(GoogleServiceType.ADS, 'google'),
         expanded: panels.length === 0,
         provider: 'google',
@@ -132,7 +132,7 @@ export class ConfirmAccessComponent {
     if (googleServices.includes(GoogleServiceType.ANALYTICS)) {
       panels.push({
         key: GoogleServiceType.ANALYTICS,
-        name: 'Analytics Account',
+        name: getServiceShortDisplayName(GoogleServiceType.ANALYTICS),
         iconPath: getServiceIcon(GoogleServiceType.ANALYTICS, 'google'),
         expanded: false,
         provider: 'google',
@@ -148,7 +148,7 @@ export class ConfirmAccessComponent {
     if (googleServices.includes(GoogleServiceType.SEARCH_CONSOLE)) {
       panels.push({
         key: GoogleServiceType.SEARCH_CONSOLE,
-        name: 'Search Console',
+        name: getServiceShortDisplayName(GoogleServiceType.SEARCH_CONSOLE),
         iconPath: getServiceIcon(GoogleServiceType.SEARCH_CONSOLE, 'google'),
         expanded: false,
         provider: 'google',
@@ -164,7 +164,7 @@ export class ConfirmAccessComponent {
     if (googleServices.includes(GoogleServiceType.TAG_MANAGER)) {
       panels.push({
         key: GoogleServiceType.TAG_MANAGER,
-        name: 'Google Tag Manager',
+        name: getServiceShortDisplayName(GoogleServiceType.TAG_MANAGER),
         iconPath: getServiceIcon(GoogleServiceType.TAG_MANAGER, 'google'),
         expanded: false,
         provider: 'google',
@@ -180,7 +180,7 @@ export class ConfirmAccessComponent {
     if (googleServices.includes(GoogleServiceType.MERCHANT_CENTER)) {
       panels.push({
         key: GoogleServiceType.MERCHANT_CENTER,
-        name: 'Google Merchant Center',
+        name: getServiceShortDisplayName(GoogleServiceType.MERCHANT_CENTER),
         iconPath: getServiceIcon(GoogleServiceType.MERCHANT_CENTER, 'google'),
         expanded: false,
         provider: 'google',
@@ -196,7 +196,7 @@ export class ConfirmAccessComponent {
     if (googleServices.includes(GoogleServiceType.MY_BUSINESS)) {
       panels.push({
         key: GoogleServiceType.MY_BUSINESS,
-        name: 'Google Business Profile',
+        name: getServiceShortDisplayName(GoogleServiceType.MY_BUSINESS),
         iconPath: getServiceIcon(GoogleServiceType.MY_BUSINESS, 'google'),
         expanded: false,
         provider: 'google',
@@ -213,7 +213,7 @@ export class ConfirmAccessComponent {
     if (facebookServices.includes(FacebookServiceType.AD_ACCOUNT)) {
       panels.push({
         key: FacebookServiceType.AD_ACCOUNT,
-        name: 'Meta Ads Account',
+        name: getServiceShortDisplayName(FacebookServiceType.AD_ACCOUNT),
         iconPath: getServiceIcon(FacebookServiceType.AD_ACCOUNT, 'facebook'),
         expanded: panels.length === 0,
         provider: 'facebook',
@@ -229,7 +229,7 @@ export class ConfirmAccessComponent {
     if (facebookServices.includes(FacebookServiceType.PAGE)) {
       panels.push({
         key: FacebookServiceType.PAGE,
-        name: 'Meta Pages',
+        name: getServiceShortDisplayName(FacebookServiceType.PAGE),
         iconPath: getServiceIcon(FacebookServiceType.PAGE, 'facebook'),
         expanded: false,
         provider: 'facebook',
@@ -245,7 +245,7 @@ export class ConfirmAccessComponent {
     if (facebookServices.includes(FacebookServiceType.CATALOG)) {
       panels.push({
         key: FacebookServiceType.CATALOG,
-        name: 'Meta Catalogs',
+        name: getServiceShortDisplayName(FacebookServiceType.CATALOG),
         iconPath: getServiceIcon(FacebookServiceType.CATALOG, 'facebook'),
         expanded: false,
         provider: 'facebook',
@@ -261,7 +261,7 @@ export class ConfirmAccessComponent {
     if (facebookServices.includes(FacebookServiceType.PIXEL)) {
       panels.push({
         key: FacebookServiceType.PIXEL,
-        name: 'Meta Pixels',
+        name: getServiceShortDisplayName(FacebookServiceType.PIXEL),
         iconPath: getServiceIcon(FacebookServiceType.PIXEL, 'facebook'),
         expanded: false,
         provider: 'facebook',
@@ -446,7 +446,7 @@ export class ConfirmAccessComponent {
 
   getGrantButtonText(): string {
     const accessType = this.accessType();
-    return accessType === 'manage' ? 'Grant Manage Access' : 'Grant View Access';
+    return accessType === AccessType.MANAGE ? 'Grant Manage Access' : 'Grant View Access';
   }
 
   async grantAccess(panel: ServicePanel): Promise<void> {
@@ -502,12 +502,12 @@ export class ConfirmAccessComponent {
     };
 
     try {
-      const response = accessType === 'manage'
+      const response = accessType === AccessType.MANAGE
         ? await this.googleStoreService.grantManagementAccess(dto)
         : await this.googleStoreService.grantViewAccess(dto);
 
       if (response) {
-        const accessTypeText = accessType === 'manage' ? 'Management' : 'View';
+        const accessTypeText = getAccessTypeMessageName(accessType);
         this.snackbarService.success(
           `${accessTypeText} access granted successfully for ${panel.name}`
         );
@@ -592,12 +592,12 @@ export class ConfirmAccessComponent {
     };
 
     try {
-      const response = accessType === 'manage'
+      const response = accessType === AccessType.MANAGE
         ? await this.facebookStoreService.grantManagementAccess(dto)
         : await this.facebookStoreService.grantViewAccess(dto);
 
       if (response) {
-        const accessTypeText = accessType === 'manage' ? 'Management' : 'View';
+        const accessTypeText = getAccessTypeMessageName(accessType);
         this.snackbarService.success(
           `${accessTypeText} access granted successfully for ${panel.name}`
         );
@@ -743,4 +743,6 @@ export class ConfirmAccessComponent {
   isLoadingUsers(panel: ServicePanel, accountValue: string): boolean {
     return panel.loadingUsers?.has(accountValue) || false;
   }
+
+  protected readonly getPlatformIcon = getPlatformIcon;
 }

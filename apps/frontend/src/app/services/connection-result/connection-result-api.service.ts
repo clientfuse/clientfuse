@@ -2,12 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import {
   ENDPOINTS,
+  IConnectionResultFilterDto,
+  IPaginatedResponse,
   IResponse,
   TBaseConnectionResult,
   TConnectionResultFilter,
-  TConnectionResultResponse,
-  IConnectionResultFilterDto,
-  IPaginatedResponse
+  TConnectionResultResponse
 } from '@clientfuse/models';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';

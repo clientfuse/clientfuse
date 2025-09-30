@@ -3,13 +3,14 @@ import { Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { FacebookServiceType, AccessType } from '@clientfuse/models';
-import { CommonIssuesComponent } from '../../common-issues/common-issues.component';
+import { AccessType, FacebookServiceType } from '@clientfuse/models';
 import { IslandComponent } from '../../../../../../components/island/island.component';
 import { StatusCardComponent } from '../../../../../../components/status-card/status-card.component';
-import { FacebookStoreService } from '../../../../../../services/facebook/facebook-store.service';
 import { ConnectionResultStoreService } from '../../../../../../services/connection-result/connection-result-store.service';
+import { FacebookStoreService } from '../../../../../../services/facebook/facebook-store.service';
 import { SnackbarService } from '../../../../../../services/snackbar.service';
+import { getAccessTypeMessageName } from '../../../../../../utils/platform.utils';
+import { CommonIssuesComponent } from '../../common-issues/common-issues.component';
 
 export interface IFacebookAdsModalData {
   adAccountName: string;
@@ -66,7 +67,7 @@ export class FacebookAdsModalComponent {
         const agencyUser = entityUsers.users.find(user => user.email === this.data.businessPortfolioId);
         if (agencyUser) {
           this.accessStatus.set('granted');
-          const accessTypeText = this.data.accessType === 'manage' ? 'Management' : 'View';
+          const accessTypeText = getAccessTypeMessageName(this.data.accessType);
           const message = `${accessTypeText} access granted successfully!`;
           this.accessMessage.set(message);
           this.snackbarService.success(message);

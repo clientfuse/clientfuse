@@ -1,10 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import {
-  TConnectionResultResponse,
-  TPlatformNamesKeys,
-  AccessType,
-  IConnectionResultFilterDto
-} from '@clientfuse/models';
+import { AccessType, IConnectionResultFilterDto, TConnectionResultResponse, TPlatformNamesKeys } from '@clientfuse/models';
 import { ConnectionResultApiService } from './connection-result-api.service';
 
 export interface ConnectionResultFilters {

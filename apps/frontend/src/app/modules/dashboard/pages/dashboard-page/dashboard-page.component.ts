@@ -2,17 +2,17 @@ import { ClipboardModule } from '@angular/cdk/clipboard';
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatCardModule } from '@angular/material/card';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   AccessType,
   generateConnectionLinkName,
@@ -28,6 +28,7 @@ import { ConnectionLinkStoreService } from '../../../../services/connection-link
 import { ConnectionResultAgencyStoreService } from '../../../../services/connection-result/connection-result-agency-store.service';
 import { DialogService } from '../../../../services/dialog.service';
 import { SnackbarService } from '../../../../services/snackbar.service';
+import { getAccessTypeBadgeVariant, getAccessTypeDisplayName, getAccessTypeIcon } from '../../../../utils/platform.utils';
 import { ConnectionResultsTableComponent } from '../../components/connection-results-table/connection-results-table.component';
 import {
   CustomizeAccessLinkModalComponent,
@@ -68,6 +69,11 @@ export class DashboardPageComponent implements OnInit {
   private readonly connectionLinkStoreService = inject(ConnectionLinkStoreService);
   private readonly connectionResultAgencyStoreService = inject(ConnectionResultAgencyStoreService);
   private readonly snackbarService = inject(SnackbarService);
+
+  protected readonly AccessType = AccessType;
+  protected readonly getAccessTypeIcon = getAccessTypeIcon;
+  protected readonly getAccessTypeDisplayName = getAccessTypeDisplayName;
+  protected readonly getAccessTypeBadgeVariant = getAccessTypeBadgeVariant;
 
   readonly agency = this.agencyStoreService.agency;
   readonly connectionLinks = this.connectionLinkStoreService.connectionLinks;

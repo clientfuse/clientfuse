@@ -14,8 +14,8 @@
     <mat-form-field appearance="outline">
       <mat-label>Connection Type</mat-label>
       <mat-select formControlName="type">
-        <mat-option value="view">View Access</mat-option>
-        <mat-option value="manage">Manage Access</mat-option>
+        <mat-option [value]="AccessType.VIEW">View Access</mat-option>
+        <mat-option [value]="AccessType.MANAGE">Manage Access</mat-option>
       </mat-select>
       <mat-hint>View access allows read-only permissions, Manage access allows full control</mat-hint>
     </mat-form-field>

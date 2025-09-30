@@ -1,12 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
-import {
-  AccessType,
-  TConnectionLinkResponse,
-  GoogleServiceType,
-  FacebookServiceType
-} from '@clientfuse/models';
-import { getServiceDisplayName, getAccessTypeDisplayName } from '../../../../../utils/platform.utils';
+import { AccessType, FacebookServiceType, GoogleServiceType, TConnectionLinkResponse } from '@clientfuse/models';
+import { getAccessTypeDisplayName, getServiceDisplayName } from '../../../../../utils';
 
 interface IServiceGroup {
   identifier: string; // email for Google, businessPortfolioId for Facebook

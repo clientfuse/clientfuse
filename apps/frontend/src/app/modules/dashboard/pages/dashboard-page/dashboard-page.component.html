@@ -14,7 +14,7 @@
             <mat-card class="link-card">
               <mat-card-header>
                 <mat-card-title>
-                  <mat-icon class="card-icon manage-icon">admin_panel_settings</mat-icon>
+                  <mat-icon class="card-icon manage-icon">{{ getAccessTypeIcon(AccessType.MANAGE) }}</mat-icon>
                   Manage Access Link
                 </mat-card-title>
                 <mat-card-subtitle>
@@ -59,7 +59,7 @@
             <mat-card class="link-card">
               <mat-card-header>
                 <mat-card-title>
-                  <mat-icon class="card-icon view-icon">visibility</mat-icon>
+                  <mat-icon class="card-icon view-icon">{{ getAccessTypeIcon(AccessType.VIEW) }}</mat-icon>
                   View Access Link
                 </mat-card-title>
                 <mat-card-subtitle>
@@ -126,8 +126,8 @@
                   <td>{{ link.name }}</td>
                   <td>
                     <app-badge
-                      [text]="link.type === 'view' ? 'View' : 'Manage'"
-                      [variant]="link.type === 'view' ? 'info' : 'warning'">
+                      [text]="getAccessTypeDisplayName(link.type)"
+                      [variant]="getAccessTypeBadgeVariant(link.type)">
                     </app-badge>
                   </td>
                   <td>
@@ -197,8 +197,8 @@
               <mat-label>Access Type</mat-label>
               <mat-select [value]="selectedAccessType()" (selectionChange)="selectedAccessType.set($event.value); onFilterChange()">
                 <mat-option value="all">All</mat-option>
-                <mat-option value="view">View Only</mat-option>
-                <mat-option value="manage">Manage</mat-option>
+                <mat-option [value]="AccessType.VIEW">View Only</mat-option>
+                <mat-option [value]="AccessType.MANAGE">Manage</mat-option>
               </mat-select>
             </mat-form-field>
 

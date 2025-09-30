@@ -7,13 +7,13 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { FacebookServiceType, AccessType } from '@clientfuse/models';
-import { CommonIssuesComponent } from '../../common-issues/common-issues.component';
+import { AccessType, FacebookServiceType } from '@clientfuse/models';
 import { IslandComponent } from '../../../../../../components/island/island.component';
 import { StatusCardComponent } from '../../../../../../components/status-card/status-card.component';
-import { FacebookStoreService } from '../../../../../../services/facebook/facebook-store.service';
 import { ConnectionResultStoreService } from '../../../../../../services/connection-result/connection-result-store.service';
+import { FacebookStoreService } from '../../../../../../services/facebook/facebook-store.service';
 import { SnackbarService } from '../../../../../../services/snackbar.service';
+import { CommonIssuesComponent } from '../../common-issues/common-issues.component';
 
 export interface IFacebookPixelModalData {
   pixelName: string;

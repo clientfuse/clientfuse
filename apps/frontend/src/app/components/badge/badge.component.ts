@@ -1,14 +1,14 @@
-import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { UIVariant, UIDensity } from '../../models/ui.model';
+import { UIDensity, UIVariant } from '../../models/ui.model';
 
 @Component({
   selector: 'app-badge',
   standalone: true,
   imports: [CommonModule, MatIconModule],
   templateUrl: './badge.component.html',
-  styleUrl: './badge.component.scss',
+  styleUrl: './badge.component.scss'
 })
 export class BadgeComponent {
   readonly variant = input<UIVariant>('neutral');

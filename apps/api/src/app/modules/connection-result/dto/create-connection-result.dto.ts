@@ -1,6 +1,6 @@
 import { TBaseConnectionResult, IGrantAccessResponse, TPlatformNamesKeys, AccessType } from '@clientfuse/models';
 import { Type } from 'class-transformer';
-import { IsDefined, IsIn, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsDefined, IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 
 export class CreateConnectionResultDto implements TBaseConnectionResult {
@@ -25,8 +25,7 @@ export class CreateConnectionResultDto implements TBaseConnectionResult {
   @IsDefined()
   grantedAccesses: Record<TPlatformNamesKeys, IGrantAccessResponse[]>;
 
-  @IsString()
   @IsDefined()
-  @IsIn(['view', 'manage'])
+  @IsEnum(AccessType)
   accessType: AccessType;
 }

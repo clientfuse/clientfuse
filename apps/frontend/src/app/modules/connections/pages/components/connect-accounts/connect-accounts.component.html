@@ -21,7 +21,7 @@
           @if (facebookServicesText()) {
             <div class="account-item">
               <div class="account-icon">
-                <img src="./assets/icons/meta.svg" alt="Meta" class="provider-icon" />
+                <img [src]="getPlatformIcon('facebook')" alt="Meta" class="provider-icon" />
               </div>
               <div class="account-details">
                 <div class="account-title">
@@ -35,7 +35,7 @@
           @if (googleServicesText()) {
             <div class="account-item">
               <div class="account-icon">
-                <img src="./assets/icons/google.svg" alt="Google" class="provider-icon" />
+                <img [src]="getPlatformIcon('google')" alt="Google" class="provider-icon" />
               </div>
               <div class="account-details">
                 <div class="account-title">
@@ -71,7 +71,7 @@
       <app-island [variant]="'neutral'">
         <div class="connection-island-content">
           <div class="provider-header">
-            <img src="./assets/icons/meta.svg" alt="Meta" class="provider-icon-large" />
+            <img [src]="getPlatformIcon('facebook')" alt="Meta" class="provider-icon-large" />
             <h3 class="subtitle-medium">Meta</h3>
           </div>
 
@@ -181,7 +181,7 @@
       <app-island [variant]="'neutral'">
         <div class="connection-island-content">
           <div class="provider-header">
-            <img src="./assets/icons/google.svg" alt="Google" class="provider-icon-large" />
+            <img [src]="getPlatformIcon('google')" alt="Google" class="provider-icon-large" />
             <h3 class="subtitle-medium">Google</h3>
           </div>
 

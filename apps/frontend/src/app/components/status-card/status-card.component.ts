@@ -1,14 +1,14 @@
-import { Component, input, computed } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { UIDensity, UIVariant } from '../../models/ui.model';
 import { IslandComponent } from '../island/island.component';
-import { UIVariant, UIDensity } from '../../models/ui.model';
 
 @Component({
   selector: 'app-status-card',
   standalone: true,
   imports: [MatIconModule, IslandComponent],
   templateUrl: './status-card.component.html',
-  styleUrl: './status-card.component.scss',
+  styleUrl: './status-card.component.scss'
 })
 export class StatusCardComponent {
   readonly variant = input<UIVariant>('neutral');

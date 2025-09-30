@@ -21,8 +21,8 @@ import {
 import { cloneDeep, isEqual, set } from 'lodash';
 import { ConnectionLinkStoreService } from '../../../../../services/connection-link/connection-link-store.service';
 import { ProfileStoreService } from '../../../../../services/profile/profile-store.service';
-import { getServiceIcon } from '../../../../../utils/icon.utils';
-import { getServiceDisplayName } from '../../../../../utils/platform.utils';
+import { getPlatformIcon, getServiceIcon } from '../../../../../utils/icon.utils';
+import { getServiceShortDisplayName } from '../../../../../utils/platform.utils';
 
 interface IPlatformSection {
   name: string;
@@ -115,14 +115,14 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
         name: 'Google Accounts',
         platform: 'google' as TPlatformNamesKeys,
         expanded: isFirstSection,
-        iconSrc: './assets/icons/google.svg',
+        iconSrc: getPlatformIcon('google'),
         services: Object.keys(connectionLink.google)
           .map((key: string) => {
             const service = connectionLink.google?.[key as GoogleServiceType];
 
             return {
               key,
-              name: getServiceDisplayName(key),
+              name: getServiceShortDisplayName(key),
               email: (<any>service)?.email || (<any>service)?.emailOrId || '',
               iconSrc: getServiceIcon(key, 'google'),
               isEnabled: service?.isEnabled || false,
@@ -140,14 +140,14 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
         name: 'Meta Assets',
         platform: 'facebook' as TPlatformNamesKeys,
         expanded: isFirstSection,
-        iconSrc: './assets/icons/meta.svg',
+        iconSrc: getPlatformIcon('facebook'),
         services: Object.keys(connectionLink.facebook)
           .map((key: string) => {
             const service = connectionLink.facebook?.[key as FacebookServiceType];
 
             return {
               key,
-              name: getServiceDisplayName(key),
+              name: getServiceShortDisplayName(key),
               email: service?.businessPortfolioId || '',
               iconSrc: getServiceIcon(key, 'facebook'),
               isEnabled: service?.isEnabled || false,

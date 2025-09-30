@@ -10,8 +10,8 @@ import {
   IRevokeAccessResponse,
   IRevokeAgencyAccessDto
 } from '@clientfuse/models';
-import { GoogleApiService } from './google-api.service';
 import { ConnectionResultStoreService } from '../connection-result/connection-result-store.service';
+import { GoogleApiService } from './google-api.service';
 
 export interface GoogleStoreState {
   connectionData: IGoogleConnectionResponse | null;

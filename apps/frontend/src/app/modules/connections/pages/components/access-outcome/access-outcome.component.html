@@ -38,7 +38,7 @@
                     <div class="access-item">
                       <div class="access-header">
                         <app-badge [icon]="getAccessTypeIcon(access.accessType)"
-                                   [variant]="access.accessType === 'manage' ? 'success' : 'info'"
+                                   [variant]="getAccessTypeBadgeVariant(access.accessType)"
                                    [density]="'compact'" />
                         <div class="access-content">
                           @if (access.message) {
@@ -46,8 +46,8 @@
                           }
                           <span class="body-very-small access-id">{{ access.entityId }}</span>
                         </div>
-                        <app-badge [text]="getAccessTypeLabel(access.accessType)"
-                                   [variant]="access.accessType === 'manage' ? 'success' : 'neutral'"
+                        <app-badge [text]="getAccessTypeDisplayName(access.accessType)"
+                                   [variant]="getAccessTypeBadgeVariant(access.accessType)"
                                    [density]="'compact'"
                                    class="access-badge" />
                       </div>

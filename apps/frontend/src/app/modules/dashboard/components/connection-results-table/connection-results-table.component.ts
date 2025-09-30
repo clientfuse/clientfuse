@@ -5,18 +5,16 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import {
-  FacebookServiceType,
-  IGrantAccessResponse,
-  AccessType,
-  TConnectionResultResponse,
-  TPlatformNamesKeys
-} from '@clientfuse/models';
+import { AccessType, FacebookServiceType, IGrantAccessResponse, TConnectionResultResponse, TPlatformNamesKeys } from '@clientfuse/models';
 import { DateTime } from 'luxon';
 import { BadgeComponent } from '../../../../components/badge/badge.component';
-import { UIVariant } from '../../../../models/ui.model';
-import { getServiceDisplayName, getPlatformDisplayName, getAccessTypeDisplayName } from '../../../../utils/platform.utils';
-import { getServiceIcon } from '../../../../utils/icon.utils';
+import { getPlatformIcon, getServiceIcon } from '../../../../utils/icon.utils';
+import {
+  getAccessTypeBadgeVariant,
+  getAccessTypeDisplayName,
+  getPlatformDisplayName,
+  getServiceDisplayName
+} from '../../../../utils/platform.utils';
 
 interface ConnectionResultRow {
   id: string;
@@ -92,9 +90,7 @@ export class ConnectionResultsTableComponent {
     }
   }
 
-  getAccessBadgeVariant(accessType: AccessType): UIVariant {
-    return accessType === 'view' ? 'info' : 'success';
-  }
+  getAccessBadgeVariant = getAccessTypeBadgeVariant;
 
   getAccessBadgeText(accessType: AccessType): string {
     return getAccessTypeDisplayName(accessType);
@@ -134,28 +130,20 @@ export class ConnectionResultsTableComponent {
     return '#';
   }
 
-  getPlatformIcon(platform: TPlatformNamesKeys): string {
-    const platformIcons: Record<TPlatformNamesKeys, string> = {
-      google: './assets/icons/google.svg',
-      facebook: './assets/icons/meta.svg'
-    };
-    return platformIcons[platform] || '';
-  }
+  getPlatformIcon = getPlatformIcon;
 
   getPlatformBusinessName(result: TConnectionResultResponse, platform: TPlatformNamesKeys): string {
-    // Extract business name from granted accesses
     const platformAccesses = result.grantedAccesses[platform];
     if (platformAccesses && platformAccesses.length > 0 && platformAccesses[0].agencyIdentifier) {
-      // Display the identifier for all platforms
       const identifier = platformAccesses[0].agencyIdentifier;
+
       if (platform === 'facebook') {
-        // For Facebook, show business ID with prefix
         return `Meta Business (${identifier})`;
       }
-      // For Google and other platforms, show the identifier directly
+
       return identifier;
     }
-    return getPlatformDisplayName(platform);
+    return '';
   }
 
   detectPlatforms(result: TConnectionResultResponse): TPlatformNamesKeys[] {
@@ -172,9 +160,7 @@ export class ConnectionResultsTableComponent {
     return platforms;
   }
 
-  getPlatformDisplayName(platform: TPlatformNamesKeys): string {
-    return getPlatformDisplayName(platform);
-  }
+  getPlatformDisplayName = getPlatformDisplayName;
 
   private getAllGrantedAccesses(result: TConnectionResultResponse): IGrantAccessResponse[] {
     const allAccesses: IGrantAccessResponse[] = [];

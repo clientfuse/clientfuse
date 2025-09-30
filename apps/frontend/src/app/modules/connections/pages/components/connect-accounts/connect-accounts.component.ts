@@ -10,21 +10,22 @@ import { Component, computed, effect, inject, input, OnInit, output, PLATFORM_ID
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import {
+  AccessType,
+  FacebookServiceType,
+  GoogleServiceType,
   IFacebookConnectionDto,
   IGoogleConnectionDto,
-  AccessType,
-  TConnectionLinkResponse,
-  GoogleServiceType,
-  FacebookServiceType
+  TConnectionLinkResponse
 } from '@clientfuse/models';
 import { ListFormatter } from '@clientfuse/utils';
 import { IslandComponent } from '../../../../../components/island/island.component';
+import { ConnectionResultStoreService } from '../../../../../services/connection-result/connection-result-store.service';
 import { FacebookStoreService } from '../../../../../services/facebook/facebook-store.service';
 import { GoogleStoreService } from '../../../../../services/google/google-store.service';
-import { ConnectionResultStoreService } from '../../../../../services/connection-result/connection-result-store.service';
+import { getPlatformIcon } from '../../../../../utils/icon.utils';
+import { getServiceShortDisplayName } from '../../../../../utils/platform.utils';
 import { InstructionStepComponent } from '../instruction-step/instruction-step.component';
 import { RequestDetailsComponent } from '../request-details/request-details.component';
-import { getServiceDisplayName } from '../../../../../utils/platform.utils';
 
 type ConnectionStatus = 'disconnected' | 'connected' | 'skipped' | 'pending';
 
@@ -73,12 +74,12 @@ export class ConnectAccountsComponent implements OnInit {
   readonly facebookError = computed(() => this.facebookStoreService.error());
 
   readonly googleServicesText = computed(() => {
-    const enabledGoogleServices = this.enabledGoogleServicesNames().map(service => getServiceDisplayName(service));
+    const enabledGoogleServices = this.enabledGoogleServicesNames().map(service => getServiceShortDisplayName(service));
     return ListFormatter.formatItemsList(enabledGoogleServices, '');
   });
 
   readonly facebookServicesText = computed(() => {
-    const enabledFacebookServices = this.enabledFacebookServicesNames().map(service => getServiceDisplayName(service));
+    const enabledFacebookServices = this.enabledFacebookServicesNames().map(service => getServiceShortDisplayName(service));
     return ListFormatter.formatItemsList(enabledFacebookServices, '');
   });
 
@@ -222,4 +223,6 @@ export class ConnectAccountsComponent implements OnInit {
       await this.socialAuthService.signOut();
     }
   }
+
+  protected readonly getPlatformIcon = getPlatformIcon;
 }

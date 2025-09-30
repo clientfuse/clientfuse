@@ -16,7 +16,7 @@ export class ConnectionLink implements TConnectionLinkBase {
   @Prop({ type: Boolean, required: true, default: false })
   isDefault: boolean;
 
-  @Prop({ type: String, enum: ['view', 'manage'], required: true })
+  @Prop({ type: String, enum: Object.values(AccessType), required: true })
   type: AccessType;
 
   @Prop({

@@ -25,7 +25,7 @@ export class ConnectionResult implements TBaseConnectionResult {
   })
   grantedAccesses: Record<TPlatformNamesKeys, IGrantAccessResponse[]>;
 
-  @Prop({ type: String, required: true, enum: ['view', 'manage'], index: true })
+  @Prop({ type: String, required: true, enum: Object.values(AccessType), index: true })
   accessType: AccessType;
 
   updatedAt: Date;

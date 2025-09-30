@@ -7,22 +7,17 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { ActivatedRoute } from '@angular/router';
-import {
-  IAgencyResponse,
-  AccessType,
-  GoogleServiceType,
-  FacebookServiceType
-} from '@clientfuse/models';
+import { AccessType, FacebookServiceType, GoogleServiceType, IAgencyResponse } from '@clientfuse/models';
 import { ListFormatter } from '@clientfuse/utils';
 import { AgencyApiService } from '../../../../services/agency/agency-api.service';
 import { ConnectionLinkStoreService } from '../../../../services/connection-link/connection-link-store.service';
+import { ConnectionResultStoreService } from '../../../../services/connection-result/connection-result-store.service';
 import { FacebookStoreService } from '../../../../services/facebook/facebook-store.service';
 import { GoogleStoreService } from '../../../../services/google/google-store.service';
-import { ConnectionResultStoreService } from '../../../../services/connection-result/connection-result-store.service';
+import { getPlatformDisplayName } from '../../../../utils/platform.utils';
 import { AccessOutcomeComponent } from '../components/access-outcome/access-outcome.component';
 import { ConfirmAccessComponent } from '../components/confirm-access/confirm-access.component';
 import { ConnectAccountsComponent } from '../components/connect-accounts/connect-accounts.component';
-import { getPlatformDisplayName } from '../../../../utils/platform.utils';
 
 interface ConnectionStep {
   id: string;

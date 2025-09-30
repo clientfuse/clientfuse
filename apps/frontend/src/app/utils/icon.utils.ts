@@ -1,5 +1,10 @@
 import { FacebookServiceType, GoogleServiceType, TPlatformNamesKeys } from '@clientfuse/models';
 
+export const PLATFORM_ICONS: Record<TPlatformNamesKeys, string> = {
+  google: './assets/icons/google.svg',
+  facebook: './assets/icons/meta.svg'
+};
+
 export const SERVICE_ICONS: Record<string, string> = {
   // Google services
   [GoogleServiceType.ANALYTICS]: './assets/icons/google-analytics.svg',
@@ -16,15 +21,17 @@ export const SERVICE_ICONS: Record<string, string> = {
   [FacebookServiceType.BUSINESS]: './assets/icons/meta.svg'
 };
 
+export function getPlatformIcon(platform: TPlatformNamesKeys): string {
+  return PLATFORM_ICONS[platform] || '';
+}
+
 export function getServiceIcon(service: string, platform?: TPlatformNamesKeys): string {
   if (SERVICE_ICONS[service]) {
     return SERVICE_ICONS[service];
   }
 
-  if (platform === 'google') {
-    return './assets/icons/google.svg';
-  } else if (platform === 'facebook') {
-    return './assets/icons/meta.svg';
+  if (platform) {
+    return getPlatformIcon(platform);
   }
 
   return '';

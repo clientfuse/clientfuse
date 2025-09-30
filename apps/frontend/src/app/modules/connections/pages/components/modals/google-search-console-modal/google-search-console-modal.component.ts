@@ -7,11 +7,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { GoogleSearchConsolePermissionLevel, GoogleServiceType, AccessType } from '@clientfuse/models';
+import { AccessType, GoogleSearchConsolePermissionLevel, GoogleServiceType } from '@clientfuse/models';
 import { IslandComponent } from '../../../../../../components/island/island.component';
 import { StatusCardComponent } from '../../../../../../components/status-card/status-card.component';
-import { GoogleStoreService } from '../../../../../../services/google/google-store.service';
 import { ConnectionResultStoreService } from '../../../../../../services/connection-result/connection-result-store.service';
+import { GoogleStoreService } from '../../../../../../services/google/google-store.service';
 import { SnackbarService } from '../../../../../../services/snackbar.service';
 
 export interface IGoogleSearchConsoleModalData {
@@ -45,6 +45,8 @@ export class GoogleSearchConsoleModalComponent {
   private readonly googleStoreService = inject(GoogleStoreService);
   private readonly connectionResultStore = inject(ConnectionResultStoreService);
   protected readonly data: IGoogleSearchConsoleModalData = inject(MAT_DIALOG_DATA);
+
+  protected readonly AccessType = AccessType;
 
   readonly copyButtonText = signal<string>('Copy');
   readonly isChecking = signal<boolean>(false);
@@ -83,7 +85,7 @@ export class GoogleSearchConsoleModalComponent {
 
         if (agencyUser) {
           const permissionLevel = agencyUser.permissions[0];
-          const expectedLevel = this.data.accessType === 'manage'
+          const expectedLevel = this.data.accessType === AccessType.MANAGE
             ? GoogleSearchConsolePermissionLevel.SITE_OWNER
             : GoogleSearchConsolePermissionLevel.SITE_RESTRICTED_USER;
 
@@ -91,7 +93,7 @@ export class GoogleSearchConsoleModalComponent {
 
           if (hasCorrectAccess) {
             this.accessStatus.set('granted');
-            const accessTypeText = this.data.accessType === 'manage' ? 'Owner' : 'Restricted';
+            const accessTypeText = this.data.accessType === AccessType.MANAGE ? 'Owner' : 'Restricted';
             const message = `Access granted successfully with correct ${accessTypeText} permissions!`;
             this.accessMessage.set(message);
             this.snackbarService.success(message);
@@ -108,7 +110,7 @@ export class GoogleSearchConsoleModalComponent {
           } else {
             this.accessStatus.set('incorrect_access');
             const currentAccessType = this.getAccessTypeFromPermission(permissionLevel);
-            const expectedAccessType = this.data.accessType === 'manage' ? 'Owner' : 'Restricted';
+            const expectedAccessType = this.data.accessType === AccessType.MANAGE ? 'Owner' : 'Restricted';
             const message = `Incorrect access level! Granted: ${currentAccessType}, Required: ${expectedAccessType}. Please adjust the permissions.`;
             this.accessMessage.set(message);
             this.snackbarService.warn(message);

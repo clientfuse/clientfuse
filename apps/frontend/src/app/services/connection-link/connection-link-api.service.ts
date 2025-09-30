@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { ENDPOINTS, IResponse, AccessType, TConnectionLinkBase, TConnectionLinkResponse } from '@clientfuse/models';
+import { AccessType, ENDPOINTS, IResponse, TConnectionLinkBase, TConnectionLinkResponse } from '@clientfuse/models';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 

@@ -31,6 +31,8 @@ export class SelectLinkTypeModalComponent implements OnInit {
   private readonly dialogRef = inject(MatDialogRef<SelectLinkTypeModalComponent>);
   private readonly fb = inject(FormBuilder);
 
+  protected readonly AccessType = AccessType;
+
   form!: FormGroup;
 
   ngOnInit(): void {

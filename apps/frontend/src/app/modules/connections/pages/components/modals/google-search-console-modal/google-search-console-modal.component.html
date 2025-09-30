@@ -61,8 +61,8 @@
               <ul class="sub-steps">
                 <li>Click on the "ADD USER" button</li>
                 <li>Paste your Agency's email address: <strong>{{ data.agencyEmail }}</strong></li>
-                <li *ngIf="data.accessType === 'view'">Assign the role <strong>"Restricted"</strong> for view access</li>
-                <li *ngIf="data.accessType === 'manage'">Assign the role <strong>"Owner"</strong> for manage access</li>
+                <li *ngIf="data.accessType === AccessType.VIEW">Assign the role <strong>"Restricted"</strong> for view access</li>
+                <li *ngIf="data.accessType === AccessType.MANAGE">Assign the role <strong>"Owner"</strong> for manage access</li>
                 <li>Click "Add" to save</li>
               </ul>
             </div>

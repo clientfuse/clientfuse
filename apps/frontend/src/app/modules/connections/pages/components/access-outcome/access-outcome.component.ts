@@ -2,14 +2,17 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, output } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
-import { GoogleServiceType, IGrantAccessResponse, AccessType } from '@clientfuse/models';
+import { AccessType, GoogleServiceType, IGrantAccessResponse } from '@clientfuse/models';
 import { BadgeComponent } from '../../../../../components/badge/badge.component';
 import { IslandComponent } from '../../../../../components/island/island.component';
 import { ConnectionResultStoreService } from '../../../../../services/connection-result/connection-result-store.service';
-import { FacebookStoreService } from '../../../../../services/facebook/facebook-store.service';
-import { GoogleStoreService } from '../../../../../services/google/google-store.service';
-import { getServiceIcon } from '../../../../../utils/icon.utils';
-import { getServiceDisplayName } from '../../../../../utils/platform.utils';
+import { getPlatformIcon, getServiceIcon } from '../../../../../utils/icon.utils';
+import {
+  getAccessTypeBadgeVariant,
+  getAccessTypeDisplayName,
+  getAccessTypeIcon,
+  getServiceDisplayName
+} from '../../../../../utils/platform.utils';
 
 interface ServiceGroup {
   service: GoogleServiceType;
@@ -39,10 +42,12 @@ interface PlatformSection {
   styleUrl: './access-outcome.component.scss'
 })
 export class AccessOutcomeComponent {
-  private googleStoreService = inject(GoogleStoreService);
-  private facebookStoreService = inject(FacebookStoreService);
   private connectionResultStore = inject(ConnectionResultStoreService);
 
+  protected readonly getAccessTypeDisplayName = getAccessTypeDisplayName;
+  protected readonly getAccessTypeIcon = getAccessTypeIcon;
+  protected readonly getAccessTypeBadgeVariant = getAccessTypeBadgeVariant;
+  protected readonly AccessType = AccessType;
   resetConnection = output<void>();
 
   googleAccesses = computed(() => this.connectionResultStore.googleGrantedAccesses());
@@ -56,7 +61,7 @@ export class AccessOutcomeComponent {
       sections.push({
         platform: 'google',
         platformName: 'Google',
-        platformIcon: './assets/icons/google.svg',
+        platformIcon: getPlatformIcon('google'),
         services: googleGroups
       });
     }
@@ -66,7 +71,7 @@ export class AccessOutcomeComponent {
       sections.push({
         platform: 'facebook',
         platformName: 'Meta',
-        platformIcon: './assets/icons/meta.svg',
+        platformIcon: getPlatformIcon('facebook'),
         services: facebookGroups
       });
     }
@@ -113,14 +118,6 @@ export class AccessOutcomeComponent {
       iconPath: getServiceIcon(service, 'facebook'),
       accesses: serviceAccesses
     }));
-  }
-
-  getAccessTypeLabel(accessType: AccessType): string {
-    return accessType === 'manage' ? 'Manage Access' : 'View Access';
-  }
-
-  getAccessTypeIcon(accessType: AccessType): string {
-    return accessType === 'manage' ? 'admin_panel_settings' : 'visibility';
   }
 
   addMoreConnections(): void {

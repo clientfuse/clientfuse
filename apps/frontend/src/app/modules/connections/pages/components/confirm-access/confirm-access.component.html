@@ -10,7 +10,7 @@
     <app-island [variant]="'neutral'">
       <div class="header-info">
         <div class="platform-info">
-          <div class="platform-icon"><img src="./assets/icons/google.svg" alt="Google" /></div>
+          <div class="platform-icon"><img [src]="getPlatformIcon('google')" alt="Google" /></div>
           <div class="user-info">
             <p class="email">{{ agencyEmail() }}</p>
             <p class="manage-text">would like to manage your Google accounts</p>
@@ -90,7 +90,7 @@
     <app-island [variant]="'neutral'">
       <div class="header-info">
         <div class="platform-info">
-          <div class="platform-icon"><img src="./assets/icons/meta.svg" alt="Meta" /></div>
+          <div class="platform-icon"><img [src]="getPlatformIcon('facebook')" alt="Meta" /></div>
           <div class="user-info">
             <p class="email">{{ agencyEmail() }}</p>
             <p class="manage-text">would like to manage your Meta accounts</p>
