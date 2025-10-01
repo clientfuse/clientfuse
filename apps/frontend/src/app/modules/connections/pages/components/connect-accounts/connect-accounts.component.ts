@@ -19,6 +19,9 @@ import {
 } from '@clientfuse/models';
 import { ListFormatter } from '@clientfuse/utils';
 import { IslandComponent } from '../../../../../components/island/island.component';
+import {
+  FacebookSocialButtonComponent
+} from '../../../../../components/social-buttons/facebook-social-button/facebook-social-button.component';
 import { ConnectionResultStoreService } from '../../../../../services/connection-result/connection-result-store.service';
 import { FacebookStoreService } from '../../../../../services/facebook/facebook-store.service';
 import { GoogleStoreService } from '../../../../../services/google/google-store.service';
@@ -38,7 +41,8 @@ type ConnectionStatus = 'disconnected' | 'connected' | 'skipped' | 'pending';
     MatButtonModule,
     GoogleSigninButtonModule,
     RequestDetailsComponent,
-    IslandComponent
+    IslandComponent,
+    FacebookSocialButtonComponent
   ],
   templateUrl: './connect-accounts.component.html',
   styleUrl: './connect-accounts.component.scss'

@@ -1,0 +1,56 @@
+@import "../../../../assets/styles/variables";
+@import "../../../../assets/styles/mixins";
+
+:host {
+  display: block;
+}
+
+.google-signin-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--spacing-6);
+  background: white;
+  color: $dark-80;
+  border: 1px solid $dark-40;
+  border-radius: var(--br-2);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-16);
+  line-height: var(--fs-16-lh);
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+  height: 44px;
+  min-width: 240px;
+  width: 100%;
+
+  .platform-icon {
+    position: absolute;
+    left: var(--spacing-4);
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+  }
+
+  @include mouseOrTrackpadNavigation {
+    &:hover:not([disabled]) {
+      border-color: $blue-60;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  &:active:not([disabled]) {
+    background: $cloud;
+    border-color: $blue-60;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+
+  &:disabled {
+    background: $dark-20;
+    border-color: $dark-40;
+    color: $dark-60;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}

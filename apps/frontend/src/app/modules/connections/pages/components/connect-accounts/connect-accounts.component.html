@@ -79,13 +79,10 @@
             <div class="connection-content">
               <p>Let's start by connecting Facebook</p>
 
-              <button type="button"
-                      class="facebook-connect-btn"
-                      (click)="connectFacebook()"
-                      [disabled]="metaConnectionStatus() === 'pending'">
-                <img src="./assets/icons/facebook.svg" alt="Facebook" class="facebook-icon" />
-                Connect Facebook
-              </button>
+              <app-facebook-social-button
+                (buttonClick)="connectFacebook()"
+                [disabled]="metaConnectionStatus() === 'pending'"
+                text="Connect Facebook" />
 
               <p class="connection-alternative body-smaller-text">
                 Or

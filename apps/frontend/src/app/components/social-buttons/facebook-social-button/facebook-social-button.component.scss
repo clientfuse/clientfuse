@@ -1,0 +1,50 @@
+@import "../../../../assets/styles/variables";
+@import "../../../../assets/styles/mixins";
+
+:host {
+  display: block;
+}
+
+.facebook-connect-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--spacing-6);
+  background: $blue-80;
+  color: white;
+  border: none;
+  border-radius: var(--br-2);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-16);
+  line-height: var(--fs-16-lh);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  min-height: 44px;
+  min-width: 240px;
+  width: 100%;
+
+  .facebook-icon {
+    position: absolute;
+    left: var(--spacing-4);
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1);
+  }
+
+  @include mouseOrTrackpadNavigation {
+    &:hover:not([disabled]) {
+      background: $blue-100;
+    }
+  }
+
+  &:active:not([disabled]) {
+    background: darken($blue-100, 10%);
+  }
+
+  &:disabled {
+    background: $dark-60;
+    cursor: not-allowed;
+  }
+}

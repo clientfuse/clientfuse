@@ -6,9 +6,9 @@
       <div>Connect to Connectly right now with:</div>
 
       <div class="login-page-buttons">
-        <button mat-flat-button (click)="authStoreService.loginWithGoogle()">Google</button>
+        <app-google-social-button (buttonClick)="authStoreService.loginWithGoogle()" text="Google" />
         <div>or</div>
-        <button mat-flat-button (click)="authStoreService.loginWithFacebook()">Facebook</button>
+        <app-facebook-social-button (buttonClick)="authStoreService.loginWithFacebook()" text="Facebook" />
       </div>
     </div>
   </app-island>
