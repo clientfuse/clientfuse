@@ -138,6 +138,36 @@ export class GoogleAccounts {
     }
   }
 
+  async getUserInfo(): Promise<{ email: string; id: string } | null> {
+    try {
+      if (this.verifiedUser) {
+        return {
+          email: this.verifiedUser.email,
+          id: this.verifiedUser.sub
+        };
+      }
+
+      const oauth2 = google.oauth2({
+        version: 'v2',
+        auth: this.oauth2Client
+      });
+
+      const response = await oauth2.userinfo.get();
+
+      if (response.data && response.data.email && response.data.id) {
+        return {
+          email: response.data.email,
+          id: response.data.id
+        };
+      }
+
+      return null;
+    } catch (error) {
+      Logger.error('Error fetching user info from Google API:', error);
+      return null;
+    }
+  }
+
   async getGoogleAdsAccounts() {
     try {
       const googleAdsClient = new GoogleAdsApi({
@@ -434,7 +464,8 @@ export class GoogleAccounts {
         googleTagManagers,
         googleMerchantCenters,
         googleMyBusinessAccounts,
-        googleMyBusinessLocations
+        googleMyBusinessLocations,
+        userInfo
       ] = await Promise.all([
         this.getGoogleAdsAccounts(),
         this.getGoogleAnalyticsAccounts(),
@@ -442,7 +473,8 @@ export class GoogleAccounts {
         this.getGoogleTagManagerAccounts(),
         this.getGoogleMerchantCenterAccounts(),
         this.getGoogleMyBusinessAccounts(),
-        this.getGoogleMyBusinessLocations()
+        this.getGoogleMyBusinessLocations(),
+        this.getUserInfo()
       ]);
 
       const googleGrantedScopes = this.getGrantedScopes();
@@ -458,7 +490,9 @@ export class GoogleAccounts {
           googleMerchantCenters,
           googleMyBusinessAccounts,
           googleMyBusinessLocations,
-          googleGrantedScopes
+          googleGrantedScopes,
+          googleEmail: userInfo?.email || null,
+          googleUserId: userInfo?.id || null
         },
         tokens: updatedTokens
       };

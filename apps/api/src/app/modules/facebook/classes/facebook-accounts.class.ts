@@ -15,7 +15,6 @@ import { facebookHttpClient } from '../../../core/utils/http';
 export class FacebookAccounts {
   private readonly logger = new Logger(FacebookAccounts.name);
   private readonly accessToken: string;
-  private userId: string | null = null;
 
   constructor(accessToken: string) {
     this.accessToken = accessToken;
@@ -35,10 +34,6 @@ export class FacebookAccounts {
           fields: 'id,email'
         }
       });
-
-      if (data?.id) {
-        this.userId = data.id;
-      }
 
       return data;
     } catch (error: any) {
@@ -340,7 +335,7 @@ export class FacebookAccounts {
     try {
       this.logger.log('Fetching all Facebook user accounts data');
 
-      await this.getUserInfo();
+      const userInfo = await this.getUserInfo();
 
       const [
         adAccounts,
@@ -368,7 +363,9 @@ export class FacebookAccounts {
           facebookPages: pages,
           facebookCatalogs: catalogs,
           facebookPixels: pixels,
-          grantedScopes: grantedScopes
+          grantedScopes: grantedScopes,
+          facebookEmail: userInfo.email,
+          facebookUserId: userInfo.id
         },
         tokens
       };

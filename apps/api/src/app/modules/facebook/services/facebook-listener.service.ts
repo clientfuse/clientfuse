@@ -41,7 +41,9 @@ export class FacebookListenerService {
         businessAccounts: data.facebookBusinessAccounts || [],
         pages: data.facebookPages || [],
         catalogs: data.facebookCatalogs || [],
-        pixels: data.facebookPixels || []
+        pixels: data.facebookPixels || [],
+        email: data.facebookEmail || foundUser.facebook.email || null,
+        userId: data.facebookUserId || foundUser.facebook.userId || null
       };
 
       await this.userService.updateUser(

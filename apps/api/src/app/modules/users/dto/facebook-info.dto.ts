@@ -1,5 +1,5 @@
 import { FacebookAdAccount, FacebookBusinessAccount, FacebookCatalog, FacebookPage, FacebookPixel, IFacebookInfo } from '@clientfuse/models';
-import { IsArray, IsDefined, IsString } from 'class-validator';
+import { IsArray, IsDefined, IsOptional, IsString } from 'class-validator';
 
 export class FacebookInfoDto implements IFacebookInfo {
   @IsString()
@@ -14,6 +14,10 @@ export class FacebookInfoDto implements IFacebookInfo {
   @IsString()
   @IsDefined()
   userId: string | null;
+
+  @IsString()
+  @IsOptional()
+  email?: string | null;
 
   @IsArray()
   @IsDefined()

@@ -158,6 +158,9 @@ export class UserMergeService {
     if (!merged.userId && secondary.userId) {
       merged.userId = secondary.userId;
     }
+    if (!merged.email && secondary.email) {
+      merged.email = secondary.email;
+    }
 
     if (
       secondary.tokenExpirationDate &&
@@ -186,6 +189,9 @@ export class UserMergeService {
     }
     if (!merged.userId && secondary.userId) {
       merged.userId = secondary.userId;
+    }
+    if (!merged.email && secondary.email) {
+      merged.email = secondary.email;
     }
 
     merged.grantedScopes = this.mergeStringArrays(merged.grantedScopes, secondary.grantedScopes);

@@ -1,5 +1,5 @@
 import { IAccessToken, IUserResponse, LocalStorageKey, Role, ServerErrorCode } from '@clientfuse/models';
-import { generateStrongPassword } from '@clientfuse/utils';
+import { checkIfNoUserEmail, generateStrongPassword } from '@clientfuse/utils';
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcryptJs from 'bcryptjs';
@@ -63,7 +63,8 @@ export class AuthService {
           userId: user.googleId,
           accessToken: user.accessToken,
           refreshToken: user.refreshToken ?? foundUser.google.refreshToken,
-          tokenExpirationDate: getGoogleTokenExpirationDate(null)
+          tokenExpirationDate: getGoogleTokenExpirationDate(null),
+          email: user.email
         },
         isLoggedInWithGoogle: true
       });
@@ -94,6 +95,7 @@ export class AuthService {
         accessToken: user.accessToken,
         refreshToken: user.refreshToken,
         tokenExpirationDate: getGoogleTokenExpirationDate(null),
+        email: user.email,
         analyticsAccounts: [],
         adsAccounts: [],
         grantedScopes: [],
@@ -106,6 +108,7 @@ export class AuthService {
       facebook: {
         userId: null,
         accessToken: null,
+        email: null,
         grantedScopes: [],
         catalogs: [],
         adsAccounts: [],
@@ -132,6 +135,7 @@ export class AuthService {
   }
 
   async loginWithFacebook(user: IFacebookUser): Promise<IAccessToken> {
+    const facebookEmail = checkIfNoUserEmail(user.email) ? null : user.email;
     const foundUser = await this.usersService.findUser({ 'facebook.userId': user.userId });
 
     if (foundUser) {
@@ -139,7 +143,8 @@ export class AuthService {
         facebook: {
           ...foundUser.facebook,
           userId: user.userId,
-          accessToken: user.accessToken
+          accessToken: user.accessToken,
+          email: facebookEmail
         },
         isLoggedInWithFacebook: true
       });
@@ -169,6 +174,7 @@ export class AuthService {
         accessToken: null,
         refreshToken: null,
         tokenExpirationDate: null,
+        email: null,
         analyticsAccounts: [],
         adsAccounts: [],
         grantedScopes: [],
@@ -181,6 +187,7 @@ export class AuthService {
       facebook: {
         userId: user.userId,
         accessToken: user.accessToken,
+        email: facebookEmail,
         grantedScopes: [],
         catalogs: [],
         adsAccounts: [],

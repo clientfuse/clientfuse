@@ -1,5 +1,14 @@
+@import "variables";
 @import "../settings-page-shared";
 
 :host {
   display: block;
+}
+
+.account-info {
+  margin-top: var(--spacing-2);
+  color: $dark-60;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
 }

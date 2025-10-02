@@ -13,28 +13,61 @@
       <div class="settings-content-row">
         <div class="settings-content-row-label">Connected Facebook Account</div>
         <div class="settings-content-row-value">
-          <app-facebook-social-button text="Link Facebook Account" />
+          <app-facebook-social-button
+            [disabled]="isFacebookConnected()"
+            (buttonClick)="handleFacebookConnect()" />
+          @if (isFacebookConnected() && facebookAccountInfo()) {
+            <div class="body-smaller-text account-info">
+              Connected as: {{ facebookAccountInfo() }}
+              <button class="click-target-helper link link-red body-smaller-text"
+                      [class.disabled]="!canDisconnectServices()"
+                      (click)="canDisconnectServices() && handleFacebookDisconnect()">
+                [Disconnect]
+              </button>
+            </div>
+          }
         </div>
       </div>
 
       <div class="settings-content-row">
         <div class="settings-content-row-label">Connected Google Account</div>
         <div class="settings-content-row-value">
-          <app-google-social-button text="Link Google Account" />
+          <div [style.opacity]="isGoogleConnected() ? '0.5' : '1'"
+               [style.pointer-events]="isGoogleConnected() ? 'none' : 'auto'"
+               [style.cursor]="isGoogleConnected() ? 'not-allowed' : 'pointer'"
+               [style.transition]="'opacity 0.2s ease'">
+            <asl-google-signin-button
+              type="standard"
+              size="large"
+              theme="outline"
+              text="signin_with"
+              shape="rectangular"
+              (click)="handleGoogleConnect()">
+            </asl-google-signin-button>
+          </div>
+          @if (isGoogleConnected() && googleAccountInfo()) {
+            <div class="body-smaller-text account-info">
+              Connected as: {{ googleAccountInfo() }}
+              <button class="click-target-helper link link-red body-smaller-text"
+                      [class.disabled]="!canDisconnectServices()"
+                      (click)="canDisconnectServices() && handleGoogleDisconnect()">
+                [Disconnect]
+              </button>
+            </div>
+          }
         </div>
       </div>
 
       <div class="settings-content-row">
         <div class="settings-content-row-label">Joined Date</div>
-        <div class="settings-content-row-value">Nov 18, 2024</div>
+        <div class="settings-content-row-value">{{ joinedDate() | date:'MMM d, yyyy' }}</div>
       </div>
 
       <div class="settings-content-row">
-        <div class="settings-content-row-label">User Email</div>
         <div class="settings-content-row-value">
           <mat-form-field appearance="outline">
             <mat-label>User Email</mat-label>
-            <input readonly matInput placeholder="User Email" value="olegbespalko12@gmail.com"/>
+            <input readonly matInput placeholder="User Email" [value]="userEmail()" [readOnly]="true" />
             <mat-hint>
               This is where you will get updates about Client Fuse. For connection notifications visit White-label Settings.
             </mat-hint>

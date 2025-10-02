@@ -62,7 +62,9 @@ export class GoogleListenerService {
         grantedScopes: data.googleGrantedScopes,
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
-        tokenExpirationDate: getGoogleTokenExpirationDate(tokens.expiry_date)
+        tokenExpirationDate: getGoogleTokenExpirationDate(tokens.expiry_date),
+        email: data.googleEmail || foundUser.google.email || null,
+        userId: data.googleUserId || foundUser.google.userId || null
       };
 
       await this.userService.updateUser(

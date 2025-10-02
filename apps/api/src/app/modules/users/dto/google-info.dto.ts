@@ -59,5 +59,9 @@ export class GoogleInfoDto implements IGoogleInfo {
   @IsString()
   @IsOptional()
   userId: string | null;
+
+  @IsString()
+  @IsOptional()
+  email?: string | null;
 }
 

@@ -60,12 +60,14 @@ export type IGoogleInfo = {
   tagManagers: tagmanager_v2.Schema$Account[];
   tokenExpirationDate: Date | null;
   userId: string | null;
+  email?: string | null;
 };
 
 export type IFacebookInfo = {
   accessToken: string | null;
   grantedScopes: string[];
   userId: string | null;
+  email?: string | null;
   adsAccounts: FacebookAdAccount[];
   businessAccounts: FacebookBusinessAccount[];
   pages: FacebookPage[];
