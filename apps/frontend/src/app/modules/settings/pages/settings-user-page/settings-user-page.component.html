@@ -14,14 +14,15 @@
         <div class="settings-content-row-label">Connected Facebook Account</div>
         <div class="settings-content-row-value">
           <app-facebook-social-button
-            [disabled]="isFacebookConnected()"
+            [disabled]="isFacebookButtonDisabled()"
             (buttonClick)="handleFacebookConnect()" />
           @if (isFacebookConnected() && facebookAccountInfo()) {
             <div class="body-smaller-text account-info">
               Connected as: {{ facebookAccountInfo() }}
               <button class="click-target-helper link link-red body-smaller-text"
-                      [class.disabled]="!canDisconnectPlatform()"
-                      (click)="canDisconnectPlatform() && handleFacebookDisconnect()">
+                      [class.disabled]="isFacebookDisconnectDisabled()"
+                      [disabled]="isFacebookDisconnectDisabled()"
+                      (click)="handleFacebookDisconnect()">
                 [Disconnect]
               </button>
             </div>
@@ -32,9 +33,9 @@
       <div class="settings-content-row">
         <div class="settings-content-row-label">Connected Google Account</div>
         <div class="settings-content-row-value">
-          <div [style.opacity]="isGoogleConnected() ? '0.5' : '1'"
-               [style.pointer-events]="isGoogleConnected() ? 'none' : 'auto'"
-               [style.cursor]="isGoogleConnected() ? 'not-allowed' : 'pointer'"
+          <div [style.opacity]="isGoogleButtonDisabled() ? '0.5' : '1'"
+               [style.pointer-events]="isGoogleButtonDisabled() ? 'none' : 'auto'"
+               [style.cursor]="isGoogleButtonDisabled() ? 'not-allowed' : 'pointer'"
                [style.transition]="'opacity 0.2s ease'">
             <asl-google-signin-button
               type="standard"
@@ -49,8 +50,9 @@
             <div class="body-smaller-text account-info">
               Connected as: {{ googleAccountInfo() }}
               <button class="click-target-helper link link-red body-smaller-text"
-                      [class.disabled]="!canDisconnectPlatform()"
-                      (click)="canDisconnectPlatform() && handleGoogleDisconnect()">
+                      [class.disabled]="isGoogleDisconnectDisabled()"
+                      [disabled]="isGoogleDisconnectDisabled()"
+                      (click)="handleGoogleDisconnect()">
                 [Disconnect]
               </button>
             </div>

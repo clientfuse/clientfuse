@@ -18,6 +18,7 @@ import {
   TConnectionLinkResponse
 } from '@clientfuse/models';
 import { ListFormatter } from '@clientfuse/utils';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { IslandComponent } from '../../../../../components/island/island.component';
 import {
   FacebookSocialButtonComponent
@@ -31,6 +32,7 @@ import { RequestDetailsComponent } from '../request-details/request-details.comp
 
 type ConnectionStatus = 'disconnected' | 'connected' | 'skipped' | 'pending';
 
+@UntilDestroy()
 @Component({
   selector: 'app-connect-accounts',
   standalone: true,
@@ -116,18 +118,20 @@ export class ConnectAccountsComponent implements OnInit {
   }
 
   private initializeAuthService(): void {
-    this.socialAuthService.authState.subscribe(async (user: SocialUser) => {
-      if (user) {
-        if (user.provider === FacebookLoginProvider.PROVIDER_ID) {
-          await this.handleFacebookSignIn(user);
-        } else if (user.provider === GoogleLoginProvider.PROVIDER_ID) {
-          await this.handleGoogleSignIn(user);
+    this.socialAuthService.authState
+      .pipe(untilDestroyed(this))
+      .subscribe(async (user: SocialUser) => {
+        if (user) {
+          if (user.provider === FacebookLoginProvider.PROVIDER_ID) {
+            await this.handleFacebookSignIn(user);
+          } else if (user.provider === GoogleLoginProvider.PROVIDER_ID) {
+            await this.handleGoogleSignIn(user);
+          }
+        } else {
+          this.metaConnectionStatus.set('disconnected');
+          this.googleConnectionStatus.set('disconnected');
         }
-      } else {
-        this.metaConnectionStatus.set('disconnected');
-        this.googleConnectionStatus.set('disconnected');
-      }
-    });
+      });
   }
 
   private async handleGoogleSignIn(user: SocialUser): Promise<void> {

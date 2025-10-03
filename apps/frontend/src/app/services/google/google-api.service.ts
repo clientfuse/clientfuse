@@ -71,6 +71,15 @@ export class GoogleApiService {
     );
   }
 
+  async connectGoogleInternal(dto: IGoogleConnectionDto): Promise<IResponse<{ message: string }>> {
+    return firstValueFrom(
+      this.httpClient.post<IResponse<{ message: string }>>(
+        `${environment.API_URL}/${ENDPOINTS.google.root}/${ENDPOINTS.google.connectInternal}`,
+        dto
+      )
+    );
+  }
+
   async disconnectGoogleInternal(): Promise<IResponse<{ message: string }>> {
     return firstValueFrom(
       this.httpClient.post<IResponse<{ message: string }>>(

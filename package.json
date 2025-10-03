@@ -87,6 +87,7 @@
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.0.2",
     "@nestjs/schedule": "^6.0.0",
+    "@ngneat/until-destroy": "^10.0.0",
     "axios": "^1.11.0",
     "axios-retry": "^4.5.0",
     "bcryptjs": "^2.4.3",

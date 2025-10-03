@@ -71,6 +71,15 @@ export class FacebookApiService {
     );
   }
 
+  async connectFacebookInternal(dto: IFacebookConnectionDto): Promise<IResponse<{ message: string }>> {
+    return firstValueFrom(
+      this.httpClient.post<IResponse<{ message: string }>>(
+        `${environment.API_URL}/${ENDPOINTS.facebook.root}/${ENDPOINTS.facebook.connectInternal}`,
+        dto
+      )
+    );
+  }
+
   async disconnectFacebookInternal(): Promise<IResponse<{ message: string }>> {
     return firstValueFrom(
       this.httpClient.post<IResponse<{ message: string }>>(

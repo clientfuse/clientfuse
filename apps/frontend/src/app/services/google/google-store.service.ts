@@ -11,6 +11,7 @@ import {
   IRevokeAccessResponse,
   IRevokeAgencyAccessDto
 } from '@clientfuse/models';
+import { firstValueFrom } from 'rxjs';
 import { AgencyStoreService } from '../agency/agency-store.service';
 import { ConnectionLinkStoreService } from '../connection-link/connection-link-store.service';
 import { ConnectionResultStoreService } from '../connection-result/connection-result-store.service';
@@ -266,6 +267,30 @@ export class GoogleStoreService {
 
   private clearError(): void {
     this.setError(null);
+  }
+
+  async connectGoogleInternal(dto: IGoogleConnectionDto): Promise<void> {
+    this.setLoading(true);
+    this.clearError();
+
+    try {
+      await this.googleApiService.connectGoogleInternal(dto);
+      const profile = this.profileStoreService.profile();
+
+      await firstValueFrom(this.profileStoreService.getProfile$());
+
+      if (profile?._id) {
+        const agency = await this.agencyStoreService.getUserAgency(profile._id);
+        if (agency?._id) {
+          await this.connectionLinkStoreService.loadConnectionLinksForAgency(agency._id);
+        }
+      }
+    } catch (error) {
+      this.setError('An error occurred while connecting Google account');
+      throw error;
+    } finally {
+      this.setLoading(false);
+    }
   }
 
   async disconnectGoogleInternal(): Promise<void> {
