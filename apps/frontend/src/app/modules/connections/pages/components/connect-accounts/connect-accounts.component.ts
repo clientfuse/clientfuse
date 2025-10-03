@@ -139,10 +139,9 @@ export class ConnectAccountsComponent implements OnInit {
 
       const connectionDto: IGoogleConnectionDto = { idToken, accessToken };
 
-      await this.googleStoreService.connectGoogle(connectionDto);
+      await this.googleStoreService.connectGoogleExternal(connectionDto);
       this.googleConnectionStatus.set('connected');
 
-      // Initialize or load connection result
       const connectionLink = this.connectionLink();
       if (connectionLink) {
         const googleConnectionData = this.googleStoreService.connectionData();
@@ -168,10 +167,9 @@ export class ConnectAccountsComponent implements OnInit {
 
       const connectionDto: IFacebookConnectionDto = { accessToken: user.authToken };
 
-      await this.facebookStoreService.connectFacebook(connectionDto);
+      await this.facebookStoreService.connectFacebookExternal(connectionDto);
       this.metaConnectionStatus.set('connected');
 
-      // Initialize or load connection result
       const connectionLink = this.connectionLink();
       if (connectionLink) {
         const facebookConnectionData = this.facebookStoreService.connectionData();

@@ -3,7 +3,8 @@ import { ConflictException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { isEmpty } from 'lodash';
 import { ClientSession, Model, Types } from 'mongoose';
-import { ConnectionLinkMergeService } from '../../connection-link/services/connection-link-merge.service';
+import { EventBusService } from '../../../core/modules/event-bus/event-bus.service';
+import { EventType, IAgencyMergeCompletedEvent } from '../../../core/modules/event-bus/event-bus.model';
 import { Agency, AgencyDocument } from '../schemas/agencies.schema';
 
 interface IAgencyMergeResult {
@@ -17,11 +18,11 @@ export class AgencyMergeService {
 
   constructor(
     @InjectModel(Agency.name) private readonly agencyModel: Model<AgencyDocument>,
-    private connectionLinkMergeService: ConnectionLinkMergeService
+    private readonly eventBusService: EventBusService
   ) {
   }
 
-  async mergeAgenciesByUserId(userId: string): Promise<IAgencyMergeResult | null> {
+  async mergeAgenciesByUserId(userId: string, correlationId?: string): Promise<IAgencyMergeResult | null> {
     if (isEmpty(userId)) {
       throw new ConflictException('UserId cannot be empty');
     }
@@ -52,7 +53,13 @@ export class AgencyMergeService {
         const mergeResult = await this.performAgencyMerge(agenciesAsPlainObjects, session);
         const allAgencyIds = duplicateAgencies.map(a => a._id.toString());
         const mergedAgencyIdString = mergeResult.mergedAgencyId.toString();
-        await this.connectionLinkMergeService.mergeDefaultConnectionLinks(allAgencyIds, mergedAgencyIdString);
+
+        await this.eventBusService.emitAsync<IAgencyMergeCompletedEvent>(
+          EventType.AGENCIES_MERGED,
+          { allAgencyIds, mergedAgencyId: mergedAgencyIdString },
+          AgencyMergeService.name,
+          correlationId
+        );
 
         return mergeResult;
       });

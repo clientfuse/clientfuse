@@ -31,7 +31,7 @@ export class EventBusService {
     type: EventType,
     payload: T,
     source: string,
-    correlationId: string
+    correlationId?: string
   ): Promise<any[]> {
     source = source || 'API';
     correlationId = correlationId || generateCorrelationId();
@@ -45,9 +45,7 @@ export class EventBusService {
     try {
       const results = await this.eventEmitter.emitAsync(type, eventPayload);
 
-      this.logger.log(`${correlationId} Event completed successfully: ${type}`, {
-        listenersCount: results.length
-      });
+      this.logger.log(`${correlationId} Event completed successfully: ${type}`);
 
       return results;
     } catch (error) {

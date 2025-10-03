@@ -54,6 +54,7 @@ export class GoogleListenerService {
       const googleInfo: IGoogleInfo = {
         ...foundUser.google,
         analyticsAccounts: data.googleAnalyticsAccounts,
+        adsAccounts: data.googleAdsAccounts,
         tagManagers: data.googleTagManagers,
         searchConsoles: data.googleSearchConsoles,
         merchantCenters: data.googleMerchantCenters,
@@ -75,6 +76,7 @@ export class GoogleListenerService {
       this.logger.log(`Successfully updated Google data for user ${event.payload.userId}`);
       this.logger.log(`Updated data summary:
         - Analytics Accounts: ${googleInfo.analyticsAccounts?.length || 0}
+        - Ads Accounts: ${googleInfo.adsAccounts?.length || 0}
         - Tag Managers: ${googleInfo.tagManagers?.length || 0}
         - Search Consoles: ${googleInfo.searchConsoles?.length || 0}
         - Merchant Centers: ${googleInfo.merchantCenters?.length || 0}
@@ -83,8 +85,8 @@ export class GoogleListenerService {
         - Granted Scopes: ${googleInfo.grantedScopes?.length || 0}
       `);
 
-      this.eventBusService.emit<IGoogleAccountsDataUpdatedEvent>(
-        EventType.GOOGLE_ACCOUNTS_DATA_UPDATED,
+      await this.eventBusService.emitAsync<IGoogleAccountsDataUpdatedEvent>(
+        EventType.USER_GOOGLE_ACCOUNTS_DATA_UPDATED,
         { userId: event.payload.userId },
         GoogleListenerService.name,
         event.correlationId

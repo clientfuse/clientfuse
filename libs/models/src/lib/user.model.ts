@@ -75,6 +75,34 @@ export type IFacebookInfo = {
   pixels: FacebookPixel[];
 };
 
+export const EMPTY_GOOGLE_INFO: IGoogleInfo = {
+  userId: null,
+  accessToken: null,
+  refreshToken: null,
+  tokenExpirationDate: null,
+  email: null,
+  analyticsAccounts: [],
+  adsAccounts: [],
+  grantedScopes: [],
+  merchantCenters: [],
+  searchConsoles: [],
+  myBusinessLocations: [],
+  myBusinessAccounts: [],
+  tagManagers: []
+};
+
+export const EMPTY_FACEBOOK_INFO: IFacebookInfo = {
+  userId: null,
+  accessToken: null,
+  email: null,
+  grantedScopes: [],
+  catalogs: [],
+  adsAccounts: [],
+  businessAccounts: [],
+  pages: [],
+  pixels: []
+};
+
 export interface IRegistrationCredentials {
   // *** User identification fields ***
   birthDate: string | null;

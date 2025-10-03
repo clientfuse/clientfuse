@@ -32,7 +32,9 @@ export const ENDPOINTS = {
   },
   google: {
     root: 'google',
-    connect: 'connect',
+    connectExternal: 'connect-external',
+    connectInternal: 'connect-internal',
+    disconnectInternal: 'disconnect-internal',
     accessManagement: {
       root: 'access-management',
       grantManagementAccess: 'grant-management-access',
@@ -43,7 +45,9 @@ export const ENDPOINTS = {
   },
   facebook: {
     root: 'facebook',
-    connect: 'connect',
+    connectExternal: 'connect-external',
+    connectInternal: 'connect-internal',
+    disconnectInternal: 'disconnect-internal',
     accessManagement: {
       root: 'access-management',
       grantManagementAccess: 'grant-management-access',

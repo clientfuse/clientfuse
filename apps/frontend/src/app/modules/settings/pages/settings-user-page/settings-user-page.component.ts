@@ -4,9 +4,12 @@ import { Component, computed, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormField, MatHint, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
+import { canDisconnectPlatform } from '@clientfuse/utils';
 import {
   FacebookSocialButtonComponent
 } from '../../../../components/social-buttons/facebook-social-button/facebook-social-button.component';
+import { FacebookStoreService } from '../../../../services/facebook/facebook-store.service';
+import { GoogleStoreService } from '../../../../services/google/google-store.service';
 import { ProfileStoreService } from '../../../../services/profile/profile-store.service';
 
 @Component({
@@ -28,6 +31,8 @@ import { ProfileStoreService } from '../../../../services/profile/profile-store.
 })
 export class SettingsUserPageComponent {
   private profileStoreService = inject(ProfileStoreService);
+  private googleStoreService = inject(GoogleStoreService);
+  private facebookStoreService = inject(FacebookStoreService);
 
   readonly userEmail = computed(() => this.profileStoreService.profile()?.email || '');
   readonly joinedDate = computed(() => this.profileStoreService.profile()?.createdAt);
@@ -41,23 +46,38 @@ export class SettingsUserPageComponent {
     const profile = this.profileStoreService.profile();
     return profile?.facebook?.email || profile?.facebook?.userId || null;
   });
-  readonly canDisconnectServices = computed(() => {
-    return this.isFacebookConnected() && this.isGoogleConnected();
+  readonly canDisconnectPlatform = computed(() => {
+    const profile = this.profileStoreService.profile();
+    return profile ? canDisconnectPlatform(profile) : false;
   });
 
   handleFacebookConnect(): void {
     console.log('Facebook connect triggered');
   }
 
-  handleFacebookDisconnect(): void {
-    console.log('Facebook disconnect triggered');
+  async handleFacebookDisconnect(): Promise<void> {
+    if (!this.canDisconnectPlatform()) return;
+
+    try {
+      await this.facebookStoreService.disconnectFacebookInternal();
+      console.log('Facebook disconnected successfully');
+    } catch (error) {
+      console.error('Failed to disconnect Facebook:', error);
+    }
   }
 
   handleGoogleConnect(): void {
     console.log('Google connect triggered');
   }
 
-  handleGoogleDisconnect(): void {
-    console.log('Google disconnect triggered');
+  async handleGoogleDisconnect(): Promise<void> {
+    if (!this.canDisconnectPlatform()) return;
+
+    try {
+      await this.googleStoreService.disconnectGoogleInternal();
+      console.log('Google disconnected successfully');
+    } catch (error) {
+      console.error('Failed to disconnect Google:', error);
+    }
   }
 }

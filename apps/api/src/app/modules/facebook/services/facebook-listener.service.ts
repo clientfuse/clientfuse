@@ -61,8 +61,8 @@ export class FacebookListenerService {
         - Granted Scopes: ${facebookInfo.grantedScopes.length}
       `);
 
-      this.eventBusService.emit<IFacebookAccountsDataUpdatedEvent>(
-        EventType.FACEBOOK_ACCOUNTS_DATA_UPDATED,
+      await this.eventBusService.emitAsync<IFacebookAccountsDataUpdatedEvent>(
+        EventType.USER_FACEBOOK_ACCOUNTS_DATA_UPDATED,
         { userId: event.payload.userId },
         FacebookListenerService.name,
         event.correlationId

@@ -22,10 +22,10 @@ import { environment } from '../../../environments/environment';
 export class FacebookApiService {
   private httpClient = inject(HttpClient);
 
-  async connectFacebook(dto: IFacebookConnectionDto): Promise<IResponse<IFacebookConnectionResponse>> {
+  async connectFacebookExternal(dto: IFacebookConnectionDto): Promise<IResponse<IFacebookConnectionResponse>> {
     return firstValueFrom(
       this.httpClient.post<IResponse<IFacebookConnectionResponse>>(
-        `${environment.API_URL}/${ENDPOINTS.facebook.root}/${ENDPOINTS.facebook.connect}`,
+        `${environment.API_URL}/${ENDPOINTS.facebook.root}/${ENDPOINTS.facebook.connectExternal}`,
         dto
       )
     );
@@ -68,6 +68,15 @@ export class FacebookApiService {
     const url = `${environment.API_URL}/${ENDPOINTS.facebook.root}/${ENDPOINTS.facebook.accessManagement.root}/revoke/${dto.service}/${dto.entityId}/${dto.linkId}`;
     return firstValueFrom(
       this.httpClient.delete<IResponse<IRevokeAccessResponse>>(url, { body: dto })
+    );
+  }
+
+  async disconnectFacebookInternal(): Promise<IResponse<{ message: string }>> {
+    return firstValueFrom(
+      this.httpClient.post<IResponse<{ message: string }>>(
+        `${environment.API_URL}/${ENDPOINTS.facebook.root}/${ENDPOINTS.facebook.disconnectInternal}`,
+        {}
+      )
     );
   }
 }

@@ -22,10 +22,10 @@ import { environment } from '../../../environments/environment';
 export class GoogleApiService {
   private httpClient = inject(HttpClient);
 
-  async connectGoogle(dto: IGoogleConnectionDto): Promise<IResponse<IGoogleConnectionResponse>> {
+  async connectGoogleExternal(dto: IGoogleConnectionDto): Promise<IResponse<IGoogleConnectionResponse>> {
     return firstValueFrom(
       this.httpClient.post<IResponse<IGoogleConnectionResponse>>(
-        `${environment.API_URL}/${ENDPOINTS.google.root}/${ENDPOINTS.google.connect}`,
+        `${environment.API_URL}/${ENDPOINTS.google.root}/${ENDPOINTS.google.connectExternal}`,
         dto
       )
     );
@@ -68,6 +68,15 @@ export class GoogleApiService {
     const url = `${environment.API_URL}/${ENDPOINTS.google.root}/${ENDPOINTS.google.accessManagement.root}/revoke/${dto.service}/${dto.entityId}/${dto.linkId}`;
     return firstValueFrom(
       this.httpClient.delete<IResponse<IRevokeAccessResponse>>(url, { body: dto })
+    );
+  }
+
+  async disconnectGoogleInternal(): Promise<IResponse<{ message: string }>> {
+    return firstValueFrom(
+      this.httpClient.post<IResponse<{ message: string }>>(
+        `${environment.API_URL}/${ENDPOINTS.google.root}/${ENDPOINTS.google.disconnectInternal}`,
+        {}
+      )
     );
   }
 }

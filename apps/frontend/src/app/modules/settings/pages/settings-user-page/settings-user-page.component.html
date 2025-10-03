@@ -20,8 +20,8 @@
             <div class="body-smaller-text account-info">
               Connected as: {{ facebookAccountInfo() }}
               <button class="click-target-helper link link-red body-smaller-text"
-                      [class.disabled]="!canDisconnectServices()"
-                      (click)="canDisconnectServices() && handleFacebookDisconnect()">
+                      [class.disabled]="!canDisconnectPlatform()"
+                      (click)="canDisconnectPlatform() && handleFacebookDisconnect()">
                 [Disconnect]
               </button>
             </div>
@@ -49,8 +49,8 @@
             <div class="body-smaller-text account-info">
               Connected as: {{ googleAccountInfo() }}
               <button class="click-target-helper link link-red body-smaller-text"
-                      [class.disabled]="!canDisconnectServices()"
-                      (click)="canDisconnectServices() && handleGoogleDisconnect()">
+                      [class.disabled]="!canDisconnectPlatform()"
+                      (click)="canDisconnectPlatform() && handleGoogleDisconnect()">
                 [Disconnect]
               </button>
             </div>

@@ -1,5 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import {
+  EMPTY_GOOGLE_INFO,
   GoogleServiceType,
   IGetEntityUsersQueryDto,
   IGetEntityUsersResponse,
@@ -10,7 +11,10 @@ import {
   IRevokeAccessResponse,
   IRevokeAgencyAccessDto
 } from '@clientfuse/models';
+import { AgencyStoreService } from '../agency/agency-store.service';
+import { ConnectionLinkStoreService } from '../connection-link/connection-link-store.service';
 import { ConnectionResultStoreService } from '../connection-result/connection-result-store.service';
+import { ProfileStoreService } from '../profile/profile-store.service';
 import { GoogleApiService } from './google-api.service';
 
 export interface GoogleStoreState {
@@ -27,6 +31,9 @@ export interface GoogleStoreState {
 export class GoogleStoreService {
   private googleApiService = inject(GoogleApiService);
   private connectionResultStore = inject(ConnectionResultStoreService);
+  private profileStoreService = inject(ProfileStoreService);
+  private agencyStoreService = inject(AgencyStoreService);
+  private connectionLinkStoreService = inject(ConnectionLinkStoreService);
 
   private state = signal<GoogleStoreState>({
     connectionData: null,
@@ -42,12 +49,12 @@ export class GoogleStoreService {
   readonly isLoading = computed(() => this.state().isLoading);
   readonly error = computed(() => this.state().error);
 
-  async connectGoogle(dto: IGoogleConnectionDto): Promise<void> {
+  async connectGoogleExternal(dto: IGoogleConnectionDto): Promise<void> {
     this.setLoading(true);
     this.clearError();
 
     try {
-      const response = await this.googleApiService.connectGoogle(dto);
+      const response = await this.googleApiService.connectGoogleExternal(dto);
       if (response.payload) {
         this.state.update(state => ({
           ...state,
@@ -259,5 +266,38 @@ export class GoogleStoreService {
 
   private clearError(): void {
     this.setError(null);
+  }
+
+  async disconnectGoogleInternal(): Promise<void> {
+    this.setLoading(true);
+    this.clearError();
+
+    try {
+      const response = await this.googleApiService.disconnectGoogleInternal();
+      if (response.payload) {
+        const profile = this.profileStoreService.profile();
+
+        this.profileStoreService.updateProfile({
+          google: EMPTY_GOOGLE_INFO,
+          isLoggedInWithGoogle: false
+        });
+        this.clearAll();
+
+        // Reload connection links after disconnect
+        if (profile?._id) {
+          const agency = await this.agencyStoreService.getUserAgency(profile._id);
+          if (agency?._id) {
+            await this.connectionLinkStoreService.loadConnectionLinksForAgency(agency._id);
+          }
+        }
+      } else {
+        this.setError('Failed to disconnect Google account');
+      }
+    } catch (error) {
+      this.setError('An error occurred while disconnecting Google account');
+      throw error;
+    } finally {
+      this.setLoading(false);
+    }
   }
 }

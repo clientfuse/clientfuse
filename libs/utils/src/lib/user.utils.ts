@@ -1,6 +1,12 @@
+import { IUserResponse } from '@clientfuse/models';
+
 export const noUserEmailPrefix = 'no-user-email-';
 export const getNoEmailPlaceholder = () => `${noUserEmailPrefix}${Date.now()}@connectly.io`;
 export const checkIfNoUserEmail = (email: string | undefined): boolean => !!email?.startsWith(noUserEmailPrefix);
+
+export function canDisconnectPlatform(user: IUserResponse): boolean {
+  return user.isLoggedInWithFacebook && user.isLoggedInWithGoogle;
+}
 
 export function generateStrongPassword(length = 16): string {
   const upperCaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';

@@ -2,7 +2,8 @@ import { IAgencyBase, IAgencyResponse } from '@clientfuse/models';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
-import { ConnectionLinkService } from '../../connection-link/services/connection-link.service';
+import { EventType, IAgencyCreatedEvent } from '../../../core/modules/event-bus/event-bus.model';
+import { EventBusService } from '../../../core/modules/event-bus/event-bus.service';
 import { CreateAgencyDto } from '../dto/create-agency.dto';
 import { UpdateAgencyDto } from '../dto/update-agency.dto';
 import { Agency, AgencyDocument } from '../schemas/agencies.schema';
@@ -12,16 +13,21 @@ export class AgenciesService {
 
   constructor(
     @InjectModel(Agency.name) private agencyModel: Model<AgencyDocument>,
-    private connectionLinkService: ConnectionLinkService
+    private eventBusService: EventBusService
   ) {
   }
 
-  async createAgency(agency: CreateAgencyDto): Promise<IAgencyResponse> {
+  async createAgency(agency: CreateAgencyDto, correlationId?: string): Promise<IAgencyResponse> {
     const newAgency: IAgencyBase = { ...agency };
     const createdAgency = await this.agencyModel.create(newAgency);
     const agencyResponse = createdAgency.toJSON() as unknown as IAgencyResponse;
 
-    await this.connectionLinkService.createDefaultConnectionLinks(agencyResponse._id);
+    await this.eventBusService.emitAsync<IAgencyCreatedEvent>(
+      EventType.AGENCY_CREATED,
+      { agencyId: agencyResponse._id, userId: agencyResponse.userId },
+      AgenciesService.name,
+      correlationId
+    );
 
     return agencyResponse;
   }

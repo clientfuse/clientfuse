@@ -1,5 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import {
+  EMPTY_FACEBOOK_INFO,
   FacebookServiceType,
   IFacebookConnectionDto,
   IFacebookConnectionResponse,
@@ -10,7 +11,10 @@ import {
   IRevokeAccessResponse,
   IRevokeAgencyAccessDto
 } from '@clientfuse/models';
+import { AgencyStoreService } from '../agency/agency-store.service';
+import { ConnectionLinkStoreService } from '../connection-link/connection-link-store.service';
 import { ConnectionResultStoreService } from '../connection-result/connection-result-store.service';
+import { ProfileStoreService } from '../profile/profile-store.service';
 import { FacebookApiService } from './facebook-api.service';
 
 export interface FacebookStoreState {
@@ -27,6 +31,9 @@ export interface FacebookStoreState {
 export class FacebookStoreService {
   private facebookApiService = inject(FacebookApiService);
   private connectionResultStore = inject(ConnectionResultStoreService);
+  private profileStoreService = inject(ProfileStoreService);
+  private agencyStoreService = inject(AgencyStoreService);
+  private connectionLinkStoreService = inject(ConnectionLinkStoreService);
 
   private state = signal<FacebookStoreState>({
     connectionData: null,
@@ -42,12 +49,12 @@ export class FacebookStoreService {
   readonly isLoading = computed(() => this.state().isLoading);
   readonly error = computed(() => this.state().error);
 
-  async connectFacebook(dto: IFacebookConnectionDto): Promise<void> {
+  async connectFacebookExternal(dto: IFacebookConnectionDto): Promise<void> {
     this.setLoading(true);
     this.clearError();
 
     try {
-      const response = await this.facebookApiService.connectFacebook(dto);
+      const response = await this.facebookApiService.connectFacebookExternal(dto);
       if (response.payload) {
         this.state.update(state => ({
           ...state,
@@ -259,5 +266,38 @@ export class FacebookStoreService {
 
   private clearError(): void {
     this.setError(null);
+  }
+
+  async disconnectFacebookInternal(): Promise<void> {
+    this.setLoading(true);
+    this.clearError();
+
+    try {
+      const response = await this.facebookApiService.disconnectFacebookInternal();
+      if (response.payload) {
+        const profile = this.profileStoreService.profile();
+
+        this.profileStoreService.updateProfile({
+          facebook: EMPTY_FACEBOOK_INFO,
+          isLoggedInWithFacebook: false
+        });
+        this.clearAll();
+
+        // Reload connection links after disconnect
+        if (profile?._id) {
+          const agency = await this.agencyStoreService.getUserAgency(profile._id);
+          if (agency?._id) {
+            await this.connectionLinkStoreService.loadConnectionLinksForAgency(agency._id);
+          }
+        }
+      } else {
+        this.setError('Failed to disconnect Facebook account');
+      }
+    } catch (error) {
+      this.setError('An error occurred while disconnecting Facebook account');
+      throw error;
+    } finally {
+      this.setLoading(false);
+    }
   }
 }

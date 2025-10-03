@@ -1,4 +1,4 @@
-import { IAccessToken, IUserResponse, LocalStorageKey, Role, ServerErrorCode } from '@clientfuse/models';
+import { EMPTY_FACEBOOK_INFO, EMPTY_GOOGLE_INFO, IAccessToken, IUserResponse, LocalStorageKey, Role, ServerErrorCode } from '@clientfuse/models';
 import { checkIfNoUserEmail, generateStrongPassword } from '@clientfuse/utils';
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -69,7 +69,7 @@ export class AuthService {
         isLoggedInWithGoogle: true
       });
 
-      this.eventBusService.emit<IGoogleAuthEvent>(
+      await this.eventBusService.emitAsync<IGoogleAuthEvent>(
         EventType.AUTH_LOGIN_GOOGLE,
         {
           userId: foundUser._id,
@@ -91,37 +91,20 @@ export class AuthService {
       lastSeenDate: null,
       phone: null,
       google: {
+        ...EMPTY_GOOGLE_INFO,
         userId: user.googleId,
         accessToken: user.accessToken,
         refreshToken: user.refreshToken,
         tokenExpirationDate: getGoogleTokenExpirationDate(null),
-        email: user.email,
-        analyticsAccounts: [],
-        adsAccounts: [],
-        grantedScopes: [],
-        merchantCenters: [],
-        searchConsoles: [],
-        myBusinessLocations: [],
-        myBusinessAccounts: [],
-        tagManagers: []
+        email: user.email
       },
-      facebook: {
-        userId: null,
-        accessToken: null,
-        email: null,
-        grantedScopes: [],
-        catalogs: [],
-        adsAccounts: [],
-        businessAccounts: [],
-        pages: [],
-        pixels: []
-      },
+      facebook: EMPTY_FACEBOOK_INFO,
       isLoggedInWithGoogle: true,
       isLoggedInWithFacebook: false,
       role: Role.MANAGER
     });
 
-    this.eventBusService.emit<IGoogleAuthEvent>(
+    await this.eventBusService.emitAsync<IGoogleAuthEvent>(
       EventType.AUTH_REGISTER_GOOGLE,
       {
         userId: createdUser._id,
@@ -149,7 +132,7 @@ export class AuthService {
         isLoggedInWithFacebook: true
       });
 
-      this.eventBusService.emit<IFacebookAuthEvent>(
+      await this.eventBusService.emitAsync<IFacebookAuthEvent>(
         EventType.AUTH_LOGIN_FACEBOOK,
         {
           userId: foundUser._id,
@@ -169,38 +152,19 @@ export class AuthService {
       birthDate: null,
       lastSeenDate: null,
       phone: null,
-      google: {
-        userId: null,
-        accessToken: null,
-        refreshToken: null,
-        tokenExpirationDate: null,
-        email: null,
-        analyticsAccounts: [],
-        adsAccounts: [],
-        grantedScopes: [],
-        merchantCenters: [],
-        searchConsoles: [],
-        myBusinessLocations: [],
-        myBusinessAccounts: [],
-        tagManagers: []
-      },
+      google: EMPTY_GOOGLE_INFO,
       facebook: {
+        ...EMPTY_FACEBOOK_INFO,
         userId: user.userId,
         accessToken: user.accessToken,
-        email: facebookEmail,
-        grantedScopes: [],
-        catalogs: [],
-        adsAccounts: [],
-        businessAccounts: [],
-        pages: [],
-        pixels: []
+        email: facebookEmail
       },
       isLoggedInWithGoogle: false,
       isLoggedInWithFacebook: true,
       role: Role.MANAGER
     });
 
-    this.eventBusService.emit<IFacebookAuthEvent>(
+    await this.eventBusService.emitAsync<IFacebookAuthEvent>(
       EventType.AUTH_REGISTER_FACEBOOK,
       {
         userId: createdUser._id,
@@ -240,7 +204,7 @@ export class AuthService {
     const foundUsers = await this.usersService.findUsers({ email });
 
     if (foundUsers.length === 1) {
-      this.eventBusService.emit<IUserEmailUpdatedEvent>(EventType.USER_EMAIL_UPDATED, { userId }, AuthService.name);
+      await this.eventBusService.emitAsync<IUserEmailUpdatedEvent>(EventType.USER_EMAIL_UPDATED, { userId }, AuthService.name);
       return 'User email was successfully updated';
     }
 
@@ -259,7 +223,7 @@ export class AuthService {
       await this.agenciesService.updateAgency(agencyMergeResult.mergedAgencyId.toString(), { email });
     }
 
-    this.eventBusService.emit<IUserEmailUpdatedEvent>(EventType.USER_EMAIL_UPDATED, { userId }, AuthService.name);
+    await this.eventBusService.emitAsync<IUserEmailUpdatedEvent>(EventType.USER_EMAIL_UPDATED, { userId }, AuthService.name);
     return 'User email was successfully updated and accounts were merged';
   }
 

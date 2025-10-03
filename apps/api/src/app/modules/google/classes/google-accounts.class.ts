@@ -192,7 +192,7 @@ export class GoogleAccounts {
       }
 
       const accounts = [];
-      const userEmail = this.verifiedUser?.email;
+      const userEmail = (await this.getUserInfo()).email;
 
       for (const resourceName of customerResourceNames) {
         try {
