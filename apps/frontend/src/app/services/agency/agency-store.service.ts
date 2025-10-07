@@ -35,4 +35,26 @@ export class AgencyStoreService {
     }
   }
 
+  async uploadLogo(id: string, formData: FormData) {
+    try {
+      const response = await this.agencyApiService.uploadLogo(id, formData);
+      const updatedAgency = await this.agencyApiService.findAgency(id);
+      this._agency.set(updatedAgency.payload);
+      return response.payload;
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      throw error;
+    }
+  }
+
+  async deleteLogo(id: string) {
+    try {
+      const response = await this.agencyApiService.deleteLogo(id);
+      this._agency.set(response.payload);
+      return response.payload;
+    } catch (error) {
+      console.error('Error deleting logo:', error);
+      throw error;
+    }
+  }
 }

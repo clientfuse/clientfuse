@@ -67,7 +67,9 @@ export const ENDPOINTS = {
     root: 'agencies',
     getOne: ':id',
     editOne: ':id',
-    deleteOne: ':id'
+    deleteOne: ':id',
+    uploadLogo: ':id/upload-logo',
+    deleteLogo: ':id/delete-logo',
   }
 };
 

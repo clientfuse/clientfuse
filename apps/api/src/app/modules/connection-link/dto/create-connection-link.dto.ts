@@ -1,5 +1,4 @@
-import { CONNECTION_LINK_VALIDATORS } from '@clientfuse/models';
-import { AccessType, TConnectionLinkBase } from '@clientfuse/models';
+import { AccessType, TConnectionLinkBase, VALIDATORS } from '@clientfuse/models';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsDefined, IsEnum, IsOptional, IsString, MaxLength, MinLength, ValidateNested } from 'class-validator';
 import { FacebookAccessDto } from './facebook-access-link.dto';
@@ -8,8 +7,8 @@ import { GoogleAccessDto } from './google-access-link.dto';
 export class CreateConnectionLinkDto implements TConnectionLinkBase {
   @IsString()
   @IsDefined()
-  @MinLength(CONNECTION_LINK_VALIDATORS.NAME.MIN_LENGTH)
-  @MaxLength(CONNECTION_LINK_VALIDATORS.NAME.MAX_LENGTH)
+  @MinLength(VALIDATORS.CONNECTION_LINK.NAME.MIN_LENGTH)
+  @MaxLength(VALIDATORS.CONNECTION_LINK.NAME.MAX_LENGTH)
   name: string;
 
   @IsString()

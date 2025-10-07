@@ -1,4 +1,4 @@
-import { IAgencyBase } from '@clientfuse/models';
+import { IAgencyBase, IWhiteLabelingConfig } from '@clientfuse/models';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 
@@ -11,6 +11,16 @@ export class Agency implements IAgencyBase {
 
   @Prop({ type: String, required: true, unique: true })
   email: string;
+
+  @Prop({
+    type: {
+      agencyName: { type: String, default: null },
+      agencyLogo: { type: String, default: null },
+    },
+    default: { agencyName: null, agencyLogo: null },
+    required: true,
+  })
+  whiteLabeling: IWhiteLabelingConfig;
 
   updatedAt: Date;
   createdAt: Date;

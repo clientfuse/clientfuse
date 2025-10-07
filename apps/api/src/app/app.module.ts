@@ -10,6 +10,7 @@ import { AxiosRetryModule } from 'nestjs-axios-retry';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EventBusModule } from './core/modules/event-bus/event-bus.module';
+import { AwsModule } from './core/services/aws/aws.module';
 import { createRetryConfig } from './core/utils/http';
 import { AgenciesModule } from './modules/agencies/agencies.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -42,6 +43,7 @@ import { UsersModule } from './modules/users/users.module';
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     EventBusModule,
+    AwsModule,
     AuthModule,
     UsersModule,
     AgenciesModule,

@@ -1,5 +1,5 @@
-import { IAgencyBase } from '@clientfuse/models';
-import { IsDefined, IsEmail, IsString } from 'class-validator';
+import { IAgencyBase, IWhiteLabelingConfig } from '@clientfuse/models';
+import { IsDefined, IsEmail, IsOptional, IsString } from 'class-validator';
 
 export class CreateAgencyDto implements IAgencyBase {
   @IsString()
@@ -10,4 +10,7 @@ export class CreateAgencyDto implements IAgencyBase {
   @IsString()
   @IsDefined()
   email: string;
+
+  @IsOptional()
+  whiteLabeling: IWhiteLabelingConfig;
 }

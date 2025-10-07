@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { ENDPOINTS, IAgencyBase, IAgencyResponse, IResponse } from '@clientfuse/models';
+import { ENDPOINTS, IAgencyBase, IAgencyResponse, IResponse, IS3UploadResult } from '@clientfuse/models';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -50,6 +50,23 @@ export class AgencyApiService {
     return firstValueFrom(
       this.httpClient.delete<IResponse<null>>(
         `${this.baseUrl}/${ENDPOINTS.agencies.deleteOne.replace(':id', id)}`
+      )
+    );
+  }
+
+  uploadLogo(id: string, formData: FormData) {
+    return firstValueFrom(
+      this.httpClient.post<IResponse<IS3UploadResult>>(
+        `${this.baseUrl}/${ENDPOINTS.agencies.uploadLogo.replace(':id', id)}`,
+        formData
+      )
+    );
+  }
+
+  deleteLogo(id: string) {
+    return firstValueFrom(
+      this.httpClient.delete<IResponse<IAgencyResponse>>(
+        `${this.baseUrl}/${ENDPOINTS.agencies.deleteLogo.replace(':id', id)}`
       )
     );
   }

@@ -1,1 +1,115 @@
-<p>settings-white-labeling-page works!</p>
+<div class="settings-content">
+  <div>
+    <div class="subtitle-medium">White-Labeling Settings</div>
+    <p>Customize how your agency appears to clients on connection pages.</p>
+  </div>
+
+  <div class="settings-content-stack">
+    <!-- Agency Name Section -->
+    <div class="settings-content-row">
+      <div class="settings-content-row-label">Agency Display Name</div>
+      <div class="settings-content-row-value">
+        <form [formGroup]="whiteLabelingForm">
+          <mat-form-field appearance="outline" style="width: 100%;">
+            <mat-label>Agency Name</mat-label>
+            <input
+              matInput
+              formControlName="agencyName"
+              placeholder="Enter your agency name"
+              [maxlength]="maxNameLength" />
+            <mat-hint>
+              This name will be displayed on connection pages.
+              Maximum {{ maxNameLength }} characters.
+            </mat-hint>
+            @if (whiteLabelingForm.get('agencyName')?.hasError('maxlength')) {
+              <mat-error>Name cannot exceed {{ maxNameLength }} characters</mat-error>
+            }
+          </mat-form-field>
+        </form>
+
+        <div class="button-group">
+          <button
+            mat-flat-button
+            color="primary"
+            [disabled]="whiteLabelingForm.invalid || isLoading()"
+            (click)="saveAgencyName()">
+            @if (isLoading()) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              Save Name
+            }
+          </button>
+
+          @if (currentAgencyName()) {
+            <button
+              mat-stroked-button
+              [disabled]="isLoading()"
+              (click)="clearAgencyName()">
+              Clear
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Agency Logo Section -->
+    <div class="settings-content-row">
+      <div class="settings-content-row-label">Agency Logo</div>
+      <div class="settings-content-row-value">
+        <div class="logo-upload-container">
+          @if (previewUrl()) {
+            <div class="logo-preview">
+              <img [src]="previewUrl()" alt="Agency Logo" />
+              <div class="logo-actions">
+                <button
+                  mat-icon-button
+                  color="warn"
+                  [disabled]="isLoading()"
+                  (click)="deleteLogo()">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+          }
+
+          <div class="upload-controls">
+            <input
+              type="file"
+              #fileInput
+              accept=".png,.jpg,.jpeg"
+              (change)="onFileSelected($event)"
+              style="display: none;" />
+
+            <button
+              mat-stroked-button
+              (click)="fileInput.click()">
+              <mat-icon>upload_file</mat-icon>
+              Choose Image
+            </button>
+
+            @if (selectedFile()) {
+              <div class="selected-file-info">
+                <span>{{ selectedFile()?.name }}</span>
+                <button
+                  mat-flat-button
+                  color="primary"
+                  [disabled]="isUploadingLogo()"
+                  (click)="uploadLogo()">
+                  @if (isUploadingLogo()) {
+                    <mat-spinner diameter="20"></mat-spinner>
+                  } @else {
+                    Upload
+                  }
+                </button>
+              </div>
+            }
+
+            <mat-hint>
+              Accepted formats: {{ allowedFormats }}. Maximum size: {{ VALIDATORS.AGENCY.WHITE_LABELING.LOGO.MAX_SIZE_MB }}MB.
+            </mat-hint>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

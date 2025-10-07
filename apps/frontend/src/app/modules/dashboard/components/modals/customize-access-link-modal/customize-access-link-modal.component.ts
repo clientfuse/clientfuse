@@ -11,12 +11,12 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleChange, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import {
-  CONNECTION_LINK_VALIDATORS,
   FacebookServiceType,
   GoogleServiceType,
   TConnectionLinkBase,
   TConnectionLinkResponse,
-  TPlatformNamesKeys
+  TPlatformNamesKeys,
+  VALIDATORS
 } from '@clientfuse/models';
 import { cloneDeep, isEqual, set } from 'lodash';
 import { ConnectionLinkStoreService } from '../../../../../services/connection-link/connection-link-store.service';
@@ -71,8 +71,8 @@ export class CustomizeAccessLinkModalComponent implements OnInit {
   form = new FormGroup({});
   nameControl = new FormControl('', [
     Validators.required,
-    Validators.minLength(CONNECTION_LINK_VALIDATORS.NAME.MIN_LENGTH),
-    Validators.maxLength(CONNECTION_LINK_VALIDATORS.NAME.MAX_LENGTH)
+    Validators.minLength(VALIDATORS.CONNECTION_LINK.NAME.MIN_LENGTH),
+    Validators.maxLength(VALIDATORS.CONNECTION_LINK.NAME.MAX_LENGTH)
   ]);
   nameControlChanges = toSignal(this.nameControl.valueChanges);
 

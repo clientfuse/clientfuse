@@ -63,6 +63,15 @@ export class ConnectionsPageComponent implements OnInit {
   agency = signal<IAgencyResponse | null>(null);
 
   agencyEmail = computed(() => this.agency()?.email || '');
+  agencyDisplayName = computed(() => {
+    const agency = this.agency();
+    if (!agency) return '';
+    return agency.whiteLabeling?.agencyName || agency.email;
+  });
+  agencyLogoUrl = computed(() => {
+    const agency = this.agency();
+    return agency?.whiteLabeling?.agencyLogo || null;
+  });
   readonly accessType = computed<AccessType>(() =>
     this.connectionLink()?.type || AccessType.VIEW
   );

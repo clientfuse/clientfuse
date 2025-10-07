@@ -1,9 +1,23 @@
-import { ENDPOINTS, IAgencyBase, IAgencyResponse, ServerErrorCode } from '@clientfuse/models';
-import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Query } from '@nestjs/common';
+import { ENDPOINTS, IAgencyBase, IAgencyResponse, IS3UploadResult, ServerErrorCode, VALIDATORS } from '@clientfuse/models';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  Put,
+  Query,
+  UploadedFile,
+  UseInterceptors
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Public } from '../auth/decorators/is-public.decorator';
-import { AgenciesService } from './services/agencies.service';
 import { CreateAgencyDto } from './dto/create-agency.dto';
 import { UpdateAgencyDto } from './dto/update-agency.dto';
+import { AgenciesService } from './services/agencies.service';
 
 @Controller(ENDPOINTS.agencies.root)
 export class AgenciesController {
@@ -44,5 +58,32 @@ export class AgenciesController {
   @Delete(ENDPOINTS.agencies.deleteOne)
   async remove(@Param('id') id: string): Promise<null> {
     return this.agenciesService.removeAgency(id);
+  }
+
+  @Post(ENDPOINTS.agencies.uploadLogo)
+  @UseInterceptors(
+    FileInterceptor('logo', {
+      limits: { fileSize: VALIDATORS.AGENCY.WHITE_LABELING.LOGO.MAX_SIZE_BYTES },
+      fileFilter: (req, file, callback) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
+          return callback(
+            new BadRequestException('Only PNG and JPG images are allowed'),
+            false
+          );
+        }
+        callback(null, true);
+      }
+    })
+  )
+  async uploadLogo(
+    @Param('id') id: string,
+    @UploadedFile() file: any
+  ): Promise<IS3UploadResult> {
+    return this.agenciesService.uploadAgencyLogo(id, file);
+  }
+
+  @Delete(ENDPOINTS.agencies.deleteLogo)
+  async deleteLogo(@Param('id') id: string): Promise<IAgencyResponse> {
+    return this.agenciesService.deleteAgencyLogo(id);
   }
 }

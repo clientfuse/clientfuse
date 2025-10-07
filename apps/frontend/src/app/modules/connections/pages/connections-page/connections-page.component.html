@@ -1,8 +1,13 @@
 <div class="connections-container">
 
   <div class="header-section">
+    @if (agencyLogoUrl()) {
+      <div class="agency-logo">
+        <img [src]="agencyLogoUrl()" [alt]="agencyDisplayName()" />
+      </div>
+    }
     <h1 class="title-heading-2">
-      {{ agencyEmail() }} is requesting access to
+      {{ agencyDisplayName() }} is requesting access to
       <span class="platforms">{{ requestedPlatformsText() }}</span>
     </h1>
   </div>

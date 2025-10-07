@@ -1,26 +1,15 @@
 import { ENDPOINTS, TConnectionResultResponse } from '@clientfuse/models';
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  NotFoundException,
-  Param,
-  Post,
-  Put,
-  Query
-} from '@nestjs/common';
-import {
-  CreateConnectionResultDto,
-  FilterConnectionResultDto,
-  UpdateConnectionResultDto
-} from './dto';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Query } from '@nestjs/common';
+import { Public } from '../auth/decorators/is-public.decorator';
+import { CreateConnectionResultDto, FilterConnectionResultDto, UpdateConnectionResultDto } from './dto';
 import { ConnectionResultService } from './services/connection-result.service';
 
 @Controller(ENDPOINTS.connectionResults.root)
 export class ConnectionResultController {
-  constructor(private readonly connectionResultService: ConnectionResultService) {}
+  constructor(private readonly connectionResultService: ConnectionResultService) {
+  }
 
+  @Public()
   @Post()
   async create(
     @Body() createDto: CreateConnectionResultDto
@@ -40,6 +29,7 @@ export class ConnectionResultController {
     return this.connectionResultService.findAll(filterDto);
   }
 
+  @Public()
   @Get(ENDPOINTS.connectionResults.one)
   async findOneByFilter(
     @Query() filterDto: FilterConnectionResultDto
@@ -60,6 +50,7 @@ export class ConnectionResultController {
     return result;
   }
 
+  @Public()
   @Put(ENDPOINTS.connectionResults.editOne)
   async update(
     @Param('id') id: string,

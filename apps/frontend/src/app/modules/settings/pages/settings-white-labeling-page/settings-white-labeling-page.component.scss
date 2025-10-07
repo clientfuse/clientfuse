@@ -1,3 +1,65 @@
+@import "variables";
+@import "../settings-page-shared";
+
 :host {
   display: block;
+}
+
+.button-group {
+  display: flex;
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-3);
+}
+
+.logo-upload-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  width: 100%;
+}
+
+.logo-preview {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  border: 2px dashed $dark-40;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $cloud;
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  .logo-actions {
+    position: absolute;
+    top: var(--spacing-2);
+    right: var(--spacing-2);
+  }
+}
+
+.upload-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.selected-file-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+  background-color: $dark-20;
+  border-radius: var(--border-radius-sm);
+
+  span {
+    flex: 1;
+    font-size: var(--fs-14);
+    color: $dark-80;
+  }
 }

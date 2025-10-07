@@ -35,7 +35,11 @@ export class AgenciesListenerService {
 
         const agency: IAgencyBase = {
           userId: event.payload.userId,
-          email: user.email
+          email: user.email,
+          whiteLabeling: {
+            agencyName: null,
+            agencyLogo: null,
+          },
         };
 
         const createdAgency = await this.agenciesService.createAgency(agency, event.correlationId);
@@ -70,7 +74,11 @@ export class AgenciesListenerService {
 
         const agency: IAgencyBase = {
           userId: event.payload.userId,
-          email: user.email
+          email: user.email,
+          whiteLabeling: {
+            agencyName: null,
+            agencyLogo: null,
+          },
         };
 
         const createdAgency = await this.agenciesService.createAgency(agency, event.correlationId);

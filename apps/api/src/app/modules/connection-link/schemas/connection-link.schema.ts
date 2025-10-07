@@ -1,5 +1,4 @@
-import { CONNECTION_LINK_VALIDATORS } from '@clientfuse/models';
-import { AccessType, TConnectionLinkBase, TFacebookAccessLink, TGoogleConnectionLink } from '@clientfuse/models';
+import { AccessType, TConnectionLinkBase, TFacebookAccessLink, TGoogleConnectionLink, VALIDATORS } from '@clientfuse/models';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 
@@ -7,7 +6,7 @@ export type ConnectionLinkDocument = mongoose.HydratedDocument<ConnectionLink>;
 
 @Schema({ timestamps: true, collection: 'connection_links' })
 export class ConnectionLink implements TConnectionLinkBase {
-  @Prop({ type: String, required: true, minlength: CONNECTION_LINK_VALIDATORS.NAME.MIN_LENGTH, maxlength: CONNECTION_LINK_VALIDATORS.NAME.MAX_LENGTH })
+  @Prop({ type: String, required: true, minlength: VALIDATORS.CONNECTION_LINK.NAME.MIN_LENGTH, maxlength: VALIDATORS.CONNECTION_LINK.NAME.MAX_LENGTH })
   name: string;
 
   @Prop({ type: String, ref: 'Agency', required: true })

@@ -37,7 +37,6 @@ export class ConnectionResultStoreService {
     error: null
   });
 
-  readonly currentResult = computed(() => this.state().currentResult);
   readonly isLoading = computed(() => this.state().isLoading);
   readonly error = computed(() => this.state().error);
 
