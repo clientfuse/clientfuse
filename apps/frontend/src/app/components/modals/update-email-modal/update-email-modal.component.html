@@ -14,8 +14,8 @@
     <mat-form-field>
       <mat-label>Email</mat-label>
       <input matInput formControlName="email">
-      <mat-error *ngIf="form.get('email')?.hasError('required')">Email is required</mat-error>
-      <mat-error *ngIf="form.get('email')?.hasError('email')">Please enter a valid email address</mat-error>
+      <mat-error *ngIf="form.controls['email'].hasError('required')">Email is required</mat-error>
+      <mat-error *ngIf="form.controls['email'].hasError('email')">Please enter a valid email address</mat-error>
     </mat-form-field>
 
     <div class="connectly-modal-actions">

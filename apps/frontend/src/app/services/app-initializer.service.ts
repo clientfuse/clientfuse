@@ -15,7 +15,6 @@ import { ProfileStoreService } from './profile/profile-store.service';
   providedIn: 'root'
 })
 export class AppInitializerService {
-
   private readonly agencyStoreService = inject(AgencyStoreService);
   private readonly authStoreService = inject(AuthStoreService);
   private readonly connectionLinkStoreService = inject(ConnectionLinkStoreService);
