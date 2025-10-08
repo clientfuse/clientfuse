@@ -10,6 +10,6 @@ RUN npx nx build frontend --prod
 
 # Stage 2: Serve the app with nginx
 FROM nginx:alpine
-COPY --from=build /app/dist/apps/frontend /usr/share/nginx/html
+COPY --from=build /app/dist/apps/frontend/browser /usr/share/nginx/html
 COPY --from=build /app/apps/frontend/nginx.conf /etc/nginx/nginx.conf
 EXPOSE 8000
