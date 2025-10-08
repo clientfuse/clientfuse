@@ -1,18 +1,18 @@
-<div class="connectly-modal">
+<div class="clientfuse-modal">
 
-  <div class="connectly-modal-header">
+  <div class="clientfuse-modal-header">
     <div class="subtitle-medium">Customize your standard access links</div>
     <button mat-icon-button (click)="onCancel()">
       <mat-icon>close</mat-icon>
     </button>
   </div>
 
-  <div class="connectly-modal-description">
+  <div class="clientfuse-modal-description">
     <p>Select which accounts to get access to by default.</p>
     <p>You can also create <a href="#" class="link link-blue">custom requests</a> to receive access to specific assets.</p>
   </div>
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="connectly-modal-content">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="clientfuse-modal-content">
 
     <mat-form-field class="w-100">
       <mat-label>Connection Link Name</mat-label>
@@ -97,7 +97,7 @@
     </div>
 
 
-    <div class="connectly-modal-actions">
+    <div class="clientfuse-modal-actions">
       <button mat-button type="button" (click)="onCancel()">Cancel</button>
       <button mat-flat-button color="primary" type="submit" [disabled]="!isChanged() || nameControl.invalid">Save Changes</button>
     </div>

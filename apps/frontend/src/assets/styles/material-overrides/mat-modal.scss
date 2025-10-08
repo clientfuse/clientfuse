@@ -1,5 +1,5 @@
-body .connectly-modal {
-  .connectly-modal-header {
+body .clientfuse-modal {
+  .clientfuse-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -7,7 +7,7 @@ body .connectly-modal {
     border-bottom: 1px solid $dark-20;
   }
 
-  .connectly-modal-description {
+  .clientfuse-modal-description {
     padding: var(--spacing-4) var(--spacing-6) var(--spacing-6) var(--spacing-6);
 
     p {
@@ -22,14 +22,14 @@ body .connectly-modal {
     }
   }
 
-  .connectly-modal-content {
+  .clientfuse-modal-content {
     padding: var(--spacing-6);
     max-height: 65Jrvh;
     overflow-y: auto;
     position: relative;
   }
 
-  .connectly-modal-actions {
+  .clientfuse-modal-actions {
     display: flex;
     justify-content: flex-end;
     gap: var(--spacing-3);

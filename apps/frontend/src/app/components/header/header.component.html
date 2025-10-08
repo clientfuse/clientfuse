@@ -1,6 +1,6 @@
 <header>
   <div class="container">
-    <a [routerLink]="routesService.dashboard()" class="title-heading-3 header-logo">Connectly</a>
+    <a [routerLink]="routesService.dashboard()" class="title-heading-3 header-logo">{{ appName }}</a>
 
     @if (authStoreService.isLoggedIn()) {
       <ul class="header-menu">

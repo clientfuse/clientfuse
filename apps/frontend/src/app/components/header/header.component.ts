@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { APP_NAME } from '@clientfuse/models';
 import { ILink } from '../../models/navigation.model';
 import { AuthStoreService } from '../../services/auth/auth-store.service';
 import { RoutesService } from '../../services/routes.service';
@@ -15,6 +16,7 @@ import { RoutesService } from '../../services/routes.service';
 export class HeaderComponent {
   protected routesService = inject(RoutesService);
   protected authStoreService = inject(AuthStoreService);
+  protected readonly appName = APP_NAME;
 
   menuItems: ILink[] = [
     { label: 'Dashboard', url: this.routesService.dashboard() },

@@ -1,16 +1,16 @@
-<div class="connectly-modal">
+<div class="clientfuse-modal">
 
-  <div class="connectly-modal-header">
+  <div class="clientfuse-modal-header">
     <div class="subtitle-medium">Provide your email</div>
   </div>
 
-  <div class="connectly-modal-description">
+  <div class="clientfuse-modal-description">
     <p>
-      To continue using Connectly, please enter your email address below, as we are unable to retrieve it automatically from the platform.
+      To continue using {{ appName }}, please enter your email address below, as we are unable to retrieve it automatically from the platform.
     </p>
   </div>
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="connectly-modal-content">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="clientfuse-modal-content">
     <mat-form-field>
       <mat-label>Email</mat-label>
       <input matInput formControlName="email">
@@ -18,7 +18,7 @@
       <mat-error *ngIf="form.controls['email'].hasError('email')">Please enter a valid email address</mat-error>
     </mat-form-field>
 
-    <div class="connectly-modal-actions">
+    <div class="clientfuse-modal-actions">
       <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid">Submit</button>
     </div>
   </form>

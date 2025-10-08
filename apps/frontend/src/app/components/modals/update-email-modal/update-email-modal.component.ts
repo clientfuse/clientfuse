@@ -5,6 +5,7 @@ import { MatButton } from '@angular/material/button';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
+import { APP_NAME } from '@clientfuse/models';
 
 export interface IUpdateEmailModalForm {
   email: FormControl<string | null>;
@@ -19,6 +20,7 @@ export interface IUpdateEmailModalForm {
 })
 export class UpdateEmailModalComponent {
   private readonly dialogRef = inject(MatDialogRef<UpdateEmailModalComponent>);
+  protected readonly appName = APP_NAME;
 
   form: FormGroup<IUpdateEmailModalForm> = new FormGroup<IUpdateEmailModalForm>({
     email: new FormControl('', { validators: [Validators.required, Validators.email] })

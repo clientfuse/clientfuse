@@ -17,3 +17,6 @@ export enum ApiEnv {
   MONGODB_URI = 'MONGODB_URI',
   PORT = 'PORT',
 }
+
+export const APP_NAME = 'Clientfuse';
+export const APP_DOMAIN = 'clientfuse.io';

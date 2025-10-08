@@ -1,7 +1,7 @@
-import { IUserResponse } from '@clientfuse/models';
+import { APP_DOMAIN, IUserResponse } from '@clientfuse/models';
 
 export const noUserEmailPrefix = 'no-user-email-';
-export const getNoEmailPlaceholder = () => `${noUserEmailPrefix}${Date.now()}@connectly.io`;
+export const getNoEmailPlaceholder = () => `${noUserEmailPrefix}${Date.now()}@${APP_DOMAIN}`;
 export const checkIfNoUserEmail = (email: string | undefined): boolean => !!email?.startsWith(noUserEmailPrefix);
 
 export function canDisconnectPlatform(user: IUserResponse): boolean {

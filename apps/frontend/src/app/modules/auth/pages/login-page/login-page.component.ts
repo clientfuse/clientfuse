@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { APP_NAME } from '@clientfuse/models';
 import { IslandComponent } from '../../../../components/island/island.component';
 import {
   FacebookSocialButtonComponent
@@ -15,4 +16,5 @@ import { AuthStoreService } from '../../../../services/auth/auth-store.service';
 })
 export class LoginPageComponent {
   protected authStoreService = inject(AuthStoreService);
+  protected readonly appName = APP_NAME;
 }

@@ -1,17 +1,17 @@
-<div class="connectly-modal">
-  <div class="connectly-modal-header">
+<div class="clientfuse-modal">
+  <div class="clientfuse-modal-header">
     <h2 class="subtitle-medium">Share Meta Pixel Access</h2>
     <button mat-icon-button (click)="onClose()">
       <mat-icon>close</mat-icon>
     </button>
   </div>
 
-  <div class="connectly-modal-description">
+  <div class="clientfuse-modal-description">
     <p>You're almost done! Share <strong>Meta</strong> access to <strong>{{ data.pixelName }}</strong></p>
     <p>Follow these manual steps to grant access to your Meta Pixel:</p>
   </div>
 
-  <div class="connectly-modal-content">
+  <div class="clientfuse-modal-content">
     <ol class="manual-step-list">
       <li class="manual-step-list-item">
         <app-island variant="neutral" density="compact">
@@ -116,7 +116,7 @@
 
     <p class="done-text">Done? Hit "Continue" 🙌</p>
 
-    <div class="connectly-modal-actions">
+    <div class="clientfuse-modal-actions">
       <button mat-stroked-button (click)="onClose()">Cancel</button>
       <button mat-flat-button color="primary" (click)="onContinue()">Continue</button>
     </div>
