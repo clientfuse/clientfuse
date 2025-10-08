@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  nginx:
+    image: ${ECR_REGISTRY}/clientfuse-nginx:${VERSION}
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+      - frontend
+    restart: always
+    mem_limit: 256m
+    networks:
+      - clientfuse-network
+
+  api:
+    image: ${ECR_REGISTRY}/clientfuse-api:${VERSION}
+    restart: always
+    mem_limit: 512m
+    networks:
+      - clientfuse-network
+    # AWS creates a root-level .env for us
+    env_file:
+      - .env
+    expose:
+      - "3000"
+
+  frontend:
+    image: ${ECR_REGISTRY}/clientfuse-frontend:${VERSION}
+    restart: always
+    mem_limit: 512m
+    depends_on:
+      - api
+    networks:
+      - clientfuse-network
+
+networks:
+  clientfuse-network:
+    driver: bridge

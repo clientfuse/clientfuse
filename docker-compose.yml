@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  nginx:
+    depends_on:
+      - api
+      - frontend
+    restart: always
+    build:
+      dockerfile: nginx/Dockerfile
+      context: .
+    image: "clientfuse/nginx:latest"
+    ports:
+      - '80:80'
+
+  frontend:
+    restart: always
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+    image: "clientfuse/frontend-prod:latest"
+    depends_on:
+      - api
+
+  api:
+    restart: always
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    image: "clientfuse/api-prod:latest"

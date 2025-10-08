@@ -1,0 +1,172 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: us-east-1  # Update with your AWS region
+  EB_APPLICATION_NAME: Clientfuse-prod  # Update with your EB application name
+  EB_ENVIRONMENT_NAME: Clientfuse-prod-env  # Update with your EB environment name
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com  # Will be set dynamically
+
+jobs:
+  version-bump:
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.version.outputs.new_version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
+      - name: Bump version (patch)
+        id: version
+        run: |
+          npm version patch --no-git-tag-version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          git add package.json
+          git commit -m "chore: bump version to v$NEW_VERSION"
+          git push origin main
+
+  build-and-push:
+    needs: version-bump
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main  # Ensure we have the latest version bump
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Create ECR repositories if not exists
+        run: |
+          aws ecr describe-repositories --repository-names clientfuse-api --region ${{ env.AWS_REGION }} || aws ecr create-repository --repository-name clientfuse-api --region ${{ env.AWS_REGION }}
+          aws ecr describe-repositories --repository-names clientfuse-frontend --region ${{ env.AWS_REGION }} || aws ecr create-repository --repository-name clientfuse-frontend --region ${{ env.AWS_REGION }}
+          aws ecr describe-repositories --repository-names clientfuse-nginx --region ${{ env.AWS_REGION }} || aws ecr create-repository --repository-name clientfuse-nginx --region ${{ env.AWS_REGION }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/api/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/clientfuse-api:${{ needs.version-bump.outputs.new_version }}
+            ${{ steps.login-ecr.outputs.registry }}/clientfuse-api:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            APP_VERSION=${{ needs.version-bump.outputs.new_version }}
+
+      - name: Build and push Frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/clientfuse-frontend:${{ needs.version-bump.outputs.new_version }}
+            ${{ steps.login-ecr.outputs.registry }}/clientfuse-frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Nginx image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./nginx/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/clientfuse-nginx:${{ needs.version-bump.outputs.new_version }}
+            ${{ steps.login-ecr.outputs.registry }}/clientfuse-nginx:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: [ version-bump, build-and-push ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Generate deployment package with injected variables
+        run: |
+          # Copy and replace variables in docker-compose.yml
+          cp docker-compose.eb.yml docker-compose.yml
+
+          # Replace ${ECR_REGISTRY} and ${VERSION} with actual values
+          sed -i "s|\${ECR_REGISTRY}|${{ steps.login-ecr.outputs.registry }}|g" docker-compose.yml
+          sed -i "s|\${VERSION}|${{ needs.version-bump.outputs.new_version }}|g" docker-compose.yml
+
+          # Create deployment package
+          zip -r deploy.zip docker-compose.yml
+
+      - name: Deploy to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v22
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: ${{ env.EB_APPLICATION_NAME }}
+          environment_name: ${{ env.EB_ENVIRONMENT_NAME }}
+          version_label: prod-v${{ needs.version-bump.outputs.new_version }}
+          region: ${{ env.AWS_REGION }}
+          deployment_package: deploy.zip
+          wait_for_deployment: true
+          wait_for_environment_recovery: 120
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        with:
+          tag_name: v${{ needs.version-bump.outputs.new_version }}
+          release_name: Production Release v${{ needs.version-bump.outputs.new_version }}
+          body: |
+            Production deployment v${{ needs.version-bump.outputs.new_version }}
+
+            Deployed to: ${{ env.EB_ENVIRONMENT_NAME }}
+            Branch: main
+            Timestamp: ${{ github.event.head_commit.timestamp }}
+          draft: false
+          prerelease: false
