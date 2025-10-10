@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AwsModule } from '../../core/services/aws/aws.module';
+import { AwsModule } from '../../core/modules/aws/aws.module';
 import { UsersModule } from '../users/users.module';
 import { AgenciesController } from './agencies.controller';
 import { Agency, AgencySchema } from './schemas/agencies.schema';

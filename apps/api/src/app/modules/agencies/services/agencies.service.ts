@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { EventType, IAgencyCreatedEvent } from '../../../core/modules/event-bus/event-bus.model';
 import { EventBusService } from '../../../core/modules/event-bus/event-bus.service';
-import { S3Service } from '../../../core/services/aws/s3.service';
+import { S3Service } from '../../../core/modules/aws/s3.service';
 import { processImageSimple } from '../../../core/utils/image';
 import { CreateAgencyDto } from '../dto/create-agency.dto';
 import { UpdateAgencyDto } from '../dto/update-agency.dto';
