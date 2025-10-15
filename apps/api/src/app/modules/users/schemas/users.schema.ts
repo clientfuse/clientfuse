@@ -75,6 +75,10 @@ export class User implements IRegistrationCredentials {
   })
   facebook: IFacebookInfo;
 
+  // *** Stripe-related fields ***
+  @Prop({ type: String, required: false })
+  stripeCustomerId?: string;
+
   updatedAt: Date;
   createdAt: Date;
 }

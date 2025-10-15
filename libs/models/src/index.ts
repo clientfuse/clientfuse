@@ -11,3 +11,4 @@ export * from './lib/agency.model';
 export * from './lib/connection-link.model';
 export * from './lib/connection-result.model';
 export * from './lib/validations.model';
+export * from './lib/subscription.model';

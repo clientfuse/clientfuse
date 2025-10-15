@@ -121,6 +121,10 @@ export interface IRegistrationCredentials {
 
   // *** Facebook-related fields ***
   facebook: IFacebookInfo;
+
+  // *** Stripe-related fields ***
+  stripeCustomerId?: string;
+  subscriptionId?: string; // MongoDB ObjectId reference to Subscription
 }
 
 export interface IUserResponse extends Omit<IRegistrationCredentials, 'password'> {

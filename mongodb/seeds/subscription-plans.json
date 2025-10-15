@@ -1,0 +1,118 @@
+[
+  {
+    "tierType": "bronze",
+    "name": "Bronze",
+    "stripePriceId": "price_1SICFm6VRdKptkbdwuY8ZePx",
+    "stripeProductId": "prod_TEfaiFJxOVPVas",
+    "billingPeriod": "monthly",
+    "price": 4900,
+    "currency": "USD",
+    "features": [
+      "Up to 2 team members per agency",
+      "Up to 5 custom connection links"
+    ],
+    "limits": {
+      "whiteLabeling": false,
+      "agencyTeamMembers": 2,
+      "customConnectionLinks": 5
+    },
+    "isActive": true
+  },
+  {
+    "tierType": "bronze",
+    "name": "Bronze",
+    "stripePriceId": "price_1SICG16VRdKptkbdI9IgjE69",
+    "stripeProductId": "prod_TEfaiFJxOVPVas",
+    "billingPeriod": "annual",
+    "price": 49000,
+    "currency": "USD",
+    "features": [
+      "Up to 2 team members per agency",
+      "Up to 5 custom connection links"
+    ],
+    "limits": {
+      "whiteLabeling": false,
+      "agencyTeamMembers": 2,
+      "customConnectionLinks": 5
+    },
+    "isActive": true
+  },
+  {
+    "tierType": "silver",
+    "name": "Silver",
+    "stripePriceId": "price_1SICIH6VRdKptkbdOHR3JyiO",
+    "stripeProductId": "prod_TEfdDPdUbrEcV0",
+    "billingPeriod": "monthly",
+    "price": 9900,
+    "currency": "USD",
+    "features": [
+      "Up to 5 team members per agency",
+      "Up to 15 custom connection links"
+    ],
+    "limits": {
+      "whiteLabeling": false,
+      "agencyTeamMembers": 5,
+      "customConnectionLinks": 15
+    },
+    "isActive": true
+  },
+  {
+    "tierType": "silver",
+    "name": "Silver",
+    "stripePriceId": "price_1SICIH6VRdKptkbdmdEoEg0g",
+    "stripeProductId": "prod_TEfdDPdUbrEcV0",
+    "billingPeriod": "annual",
+    "price": 99000,
+    "currency": "USD",
+    "features": [
+      "Up to 5 team members per agency",
+      "Up to 15 custom connection links"
+    ],
+    "limits": {
+      "whiteLabeling": false,
+      "agencyTeamMembers": 5,
+      "customConnectionLinks": 15
+    },
+    "isActive": true
+  },
+  {
+    "tierType": "gold",
+    "name": "Gold",
+    "stripePriceId": "price_1SICJQ6VRdKptkbdYsRuijFR",
+    "stripeProductId": "prod_TEfeUHRC0pgLqy",
+    "billingPeriod": "monthly",
+    "price": 24900,
+    "currency": "USD",
+    "features": [
+      "Up to 20 team members per agency",
+      "Up to 50 custom connection links",
+      "Whitelabel"
+    ],
+    "limits": {
+      "whiteLabeling": true,
+      "agencyTeamMembers": 20,
+      "customConnectionLinks": 50
+    },
+    "isActive": true
+  },
+  {
+    "tierType": "gold",
+    "name": "Gold",
+    "stripePriceId": "price_1SICJQ6VRdKptkbd9m5mX8Mz",
+    "stripeProductId": "prod_TEfeUHRC0pgLqy",
+    "billingPeriod": "annual",
+    "price": 249000,
+    "currency": "USD",
+    "features": [
+      "Up to 20 team members per agency",
+      "Up to 50 custom connection links",
+      "Whitelabel"
+    ],
+    "limits": {
+      "whiteLabeling": true,
+      "agencyTeamMembers": 20,
+      "customConnectionLinks": 50
+    },
+    "isActive": true
+  }
+]

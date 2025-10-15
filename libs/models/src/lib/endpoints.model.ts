@@ -70,6 +70,16 @@ export const ENDPOINTS = {
     deleteOne: ':id',
     uploadLogo: ':id/upload-logo',
     deleteLogo: ':id/delete-logo',
+  },
+  billing: {
+    root: 'billing',
+    checkoutSession: 'checkout-session',
+    portalSession: 'portal-session',
+    webhook: 'webhook',
+    subscription: 'subscription',
+    plans: 'plans',
+    usage: 'usage',
+    invoices: 'invoices'
   }
 };
 

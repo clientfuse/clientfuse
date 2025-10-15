@@ -9,12 +9,14 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AxiosRetryModule } from 'nestjs-axios-retry';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { EventBusModule } from './core/modules/event-bus/event-bus.module';
 import { AwsModule } from './core/modules/aws/aws.module';
+import { EventBusModule } from './core/modules/event-bus/event-bus.module';
+import { StripeModule } from './core/modules/stripe/stripe.module';
 import { createRetryConfig } from './core/utils/http';
 import { AgenciesModule } from './modules/agencies/agencies.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt.guard';
+import { BillingModule } from './modules/billing/billing.module';
 import { ConnectionLinkModule } from './modules/connection-link/connection-link.module';
 import { ConnectionResultModule } from './modules/connection-result/connection-result.module';
 import { FacebookModule } from './modules/facebook/facebook.module';
@@ -44,13 +46,15 @@ import { UsersModule } from './modules/users/users.module';
     EventEmitterModule.forRoot(),
     EventBusModule,
     AwsModule,
+    StripeModule,
     AuthModule,
     UsersModule,
     AgenciesModule,
     ConnectionLinkModule,
     ConnectionResultModule,
     GoogleModule,
-    FacebookModule
+    FacebookModule,
+    BillingModule
   ],
   controllers: [AppController],
   providers: [
