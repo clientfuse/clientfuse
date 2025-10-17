@@ -25,6 +25,8 @@ export class RoutesService {
       root: 'connect',
       connection: ':connectionId'
     },
+    privacyPolicy: 'privacy-policy',
+    termsOfService: 'terms-of-service',
     errors: {
       '404': '404'
     }
@@ -76,5 +78,13 @@ export class RoutesService {
 
   error404(): string {
     return `/${RoutesService.routes.errors['404']}`;
+  }
+
+  privacyPolicy(): string {
+    return `/${RoutesService.routes.privacyPolicy}`;
+  }
+
+  termsOfService(): string {
+    return `/${RoutesService.routes.termsOfService}`;
   }
 }

@@ -26,6 +26,14 @@ export const appRoutes: Route[] = [
     loadChildren: () => import('./modules/connections/connections.routes').then(r => r.CONNECTIONS_ROUTES)
   },
   {
+    path: RoutesService.routes.privacyPolicy,
+    loadComponent: () => import('./pages/privacy-policy-page/privacy-policy-page.component').then(c => c.PrivacyPolicyPageComponent)
+  },
+  {
+    path: RoutesService.routes.termsOfService,
+    loadComponent: () => import('./pages/terms-of-service-page/terms-of-service-page.component').then(c => c.TermsOfServicePageComponent)
+  },
+  {
     path: RoutesService.routes.errors['404'],
     loadComponent: () => import('./pages/not-found-page/not-found-page.component').then(c => c.NotFoundPageComponent)
   },

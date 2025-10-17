@@ -1,0 +1,63 @@
+@import 'variables';
+@import 'mixins';
+
+.documentation-page {
+  padding: var(--spacing-8) 0;
+  min-height: calc(100vh - 200px);
+
+  h1 {
+    margin-bottom: var(--spacing-4);
+    color: $dark-100;
+  }
+
+  .last-updated {
+    color: $dark-60;
+    margin-bottom: var(--spacing-8);
+  }
+
+  .documentation-section {
+    margin-bottom: var(--spacing-8);
+
+    h2 {
+      margin-bottom: var(--spacing-4);
+      color: $dark-100;
+    }
+
+    h3 {
+      margin-top: var(--spacing-6);
+      margin-bottom: var(--spacing-3);
+      color: $dark-80;
+    }
+
+    p {
+      margin-bottom: var(--spacing-4);
+      color: $dark-80;
+      line-height: 1.6;
+    }
+
+    ul {
+      margin: var(--spacing-4) 0;
+      padding-left: var(--spacing-6);
+
+      li {
+        margin-bottom: var(--spacing-2);
+        color: $dark-80;
+        line-height: 1.6;
+      }
+    }
+
+    a {
+      color: $blue-80;
+      text-decoration: underline;
+
+      &:hover {
+        color: $blue-100;
+      }
+    }
+
+    strong {
+      color: $dark-80;
+      font-weight: 600;
+    }
+  }
+}

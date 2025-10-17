@@ -1,0 +1,9 @@
+@import '../shared-documentation-styles';
+
+.terms-of-service-page {
+  @extend .documentation-page;
+
+  .terms-section {
+    @extend .documentation-section;
+  }
+}

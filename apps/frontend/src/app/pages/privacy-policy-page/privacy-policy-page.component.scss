@@ -1,0 +1,9 @@
+@import '../shared-documentation-styles';
+
+.privacy-policy-page {
+  @extend .documentation-page;
+
+  .policy-section {
+    @extend .documentation-section;
+  }
+}
