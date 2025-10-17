@@ -1,23 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-
-export type TierType = 'starter' | 'agency' | 'pro' | 'enterprise';
-
-export type TierPeriod = 'monthly' | 'annual';
-
-export type ITierInfo = {
-  buttonLabel: string;
-  name: string;
-  type: TierType;
-  price: string;
-  discountPrice: string | null;
-  isAnnual: boolean;
-  totalForPeriod: string;
-  features: string[];
-  isPopular: boolean;
-}
+import { ISubscriptionPlan, BillingPeriod, TierType } from '@clientfuse/models';
 
 @Component({
   selector: 'app-tier-card',
@@ -27,21 +12,28 @@ export type ITierInfo = {
   styleUrl: './tier-card.component.scss'
 })
 export class TierCardComponent {
-  tier = input.required<ITierInfo>();
-  pricePerPeriodText = computed(() => {
-    if (this.tier().type === 'enterprise') return '&nbsp;';
-    return this.tier().isAnnual ? `per year (USD)` : `per month (USD)`;
-  });
-  totalForPeriodText = computed(() => {
-    if (this.tier().type === 'enterprise') return '&nbsp;';
-    return this.tier().isAnnual
-      ? `${this.tier().totalForPeriod} billed annually`
-      : `${this.tier().totalForPeriod} billed monthly`;
-  });
-  tierCardClasses = computed(() => {
-    return {
-      'tier-card': true,
-      'tier-card--popular': this.tier().isPopular
-    };
-  });
+  tier = input.required<ISubscriptionPlan>();
+  currentPlanId = input<string | null>(null);
+  selectTier = output<ISubscriptionPlan>();
+
+  isCurrentPlan = computed(() => this.currentPlanId() === this.tier()._id);
+  isPopular = computed(() => this.tier().tierType === TierType.SILVER);
+  isAnnual = computed(() => this.tier().billingPeriod === BillingPeriod.ANNUAL);
+  formattedPrice = computed(() => `$${this.tier().price / 100}`);
+  monthlyEquivalent = computed(() => this.isAnnual() ? `$${Math.round(this.tier().price / 12 / 100)}/month` : null);
+  pricePerPeriodText = computed(() => this.isAnnual() ? 'per year (USD)' : 'per month (USD)');
+  totalForPeriodText = computed(() => `${this.formattedPrice()} ${this.isAnnual() ? 'billed annually' : 'billed monthly'}`);
+  buttonLabel = computed(() => this.isCurrentPlan() ? 'CURRENT PLAN' : 'SELECT');
+
+  tierCardClasses = computed(() => ({
+    'tier-card': true,
+    'tier-card--popular': this.isPopular(),
+    'tier-card--current': this.isCurrentPlan()
+  }));
+
+  onSelectTier(): void {
+    if (!this.isCurrentPlan()) {
+      this.selectTier.emit(this.tier());
+    }
+  }
 }

@@ -8,9 +8,4 @@ import { Component } from '@angular/core';
   styleUrl: './terms-of-service-page.component.scss'
 })
 export class TermsOfServicePageComponent {
-  readonly currentDate = new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
 }

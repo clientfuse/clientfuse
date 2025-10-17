@@ -140,7 +140,6 @@ export class GoogleSearchConsoleAccessService implements IGoogleBaseAccessServic
         return [];
       }
 
-      // Original logic when no agencyId is provided
       const searchConsole = google.searchconsole('v1');
       const response = await searchConsole.sites.list({
         auth: this.oauth2Client

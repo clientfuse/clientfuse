@@ -1,178 +1,117 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSlideToggleChange, MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { ITierInfo, TierCardComponent, TierPeriod, TierType } from '../../components/tier-card/tier-card.component';
+import { ActivatedRoute } from '@angular/router';
+import { BillingPeriod, ISubscriptionPlan, SubscriptionStatus } from '@clientfuse/models';
+import { BillingStoreService } from '../../../../services/billing/billing-store.service';
+import { SnackbarService } from '../../../../services/snackbar.service';
+import { TierCardComponent } from '../../components/tier-card/tier-card.component';
 
 @Component({
   selector: 'app-settings-billing-page',
   standalone: true,
-  imports: [CommonModule, MatSlideToggleModule, TierCardComponent],
+  imports: [
+    CommonModule,
+    MatSlideToggleModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    TierCardComponent
+  ],
   templateUrl: './settings-billing-page.component.html',
   styleUrl: './settings-billing-page.component.scss'
 })
-export class SettingsBillingPageComponent {
+export class SettingsBillingPageComponent implements OnInit {
+  private billingStore = inject(BillingStoreService);
+  private route = inject(ActivatedRoute);
+  private snackbarService = inject(SnackbarService);
 
-  billingPeriod = signal<TierPeriod>('annual');
-  isAnnual = computed(() => this.billingPeriod() === 'annual');
-  mockTiers = signal<Record<TierPeriod, Record<TierType, ITierInfo>>>({
-    monthly: {
-      starter: {
-        buttonLabel: 'SELECT',
-        name: 'Starter',
-        type: 'starter',
-        price: '$49',
-        discountPrice: null,
-        isAnnual: false,
-        totalForPeriod: '$49',
-        features: [
-          'Onboard (Manage Access) up to 3 new clients per month',
-          'Audit (View Access) up to 10 prospects per month',
-          '3 month credit rollover',
-          'Overage fee: $30 per 3 extra credits'
-        ],
-        isPopular: false
-      },
-      agency: {
-        buttonLabel: 'SELECT',
-        name: 'Agency',
-        type: 'agency',
-        price: '$99',
-        discountPrice: null,
-        isAnnual: false,
-        totalForPeriod: '$99',
-        features: [
-          'Onboard (Manage Access) up to 10 new clients per month',
-          'Audit (View Access) up to 50 prospects per month',
-          '3 month credit rollover',
-          'Overage fee: $30 per 5 extra credits'
-        ],
-        isPopular: true
-      },
-      pro: {
-        buttonLabel: 'SELECT',
-        name: 'Pro',
-        type: 'pro',
-        price: '$249',
-        discountPrice: null,
-        isAnnual: false,
-        totalForPeriod: '$249',
-        features: [
-          'Onboard (Manage Access) up to 50 new clients per month',
-          'Audit (View Access) up to 250 prospects per month',
-          '3 month credit rollover',
-          'Overage fee: $30 per 10 extra credits',
-          'Whitelabel & Embed on your website',
-          'Webhooks to automate',
-          'Teams: Add unlimited team members'
-        ],
-        isPopular: false
-      },
-      enterprise: {
-        buttonLabel: 'BOOK A DEMO',
-        name: 'Enterprise',
-        type: 'enterprise',
-        price: 'Talk to us',
-        discountPrice: null,
-        isAnnual: false,
-        totalForPeriod: 'Talk to us',
-        features: [
-          'Onboard (Manage Access) a custom amount of new clients',
-          'Custom amount of View Access credits (for auditing)',
-          'Custom amount of credit rollover',
-          'Overage Fee: custom amount',
-          'Whitelabel & Embed on your website',
-          'Webhooks to automate',
-          'Teams: Add unlimited team members',
-          'API access',
-          'Other Custom integrations'
-        ],
-        isPopular: false
-      }
-    },
-    annual: {
-      starter: {
-        buttonLabel: 'SELECT',
-        name: 'Starter',
-        type: 'starter',
-        price: '$49',
-        discountPrice: '$41',
-        isAnnual: true,
-        totalForPeriod: '$490',
-        features: [
-          'Onboard (Manage Access) up to 36 new clients per year',
-          'Audit (View Access) up to 120 prospects per year',
-          '3 month credit rollover',
-          'Overage fee: $30 per 3 extra credits'
-        ],
-        isPopular: false
-      },
-      agency: {
-        buttonLabel: 'SELECT',
-        name: 'Agency',
-        type: 'agency',
-        price: '$99',
-        discountPrice: '$83',
-        isAnnual: true,
-        totalForPeriod: '$990',
-        features: [
-          'Onboard (Manage Access) up to 120 new clients per year',
-          'Audit (View Access) up to 600 prospects per year',
-          '3 month credit rollover',
-          'Overage fee: $30 per 5 extra credits'
-        ],
-        isPopular: true
-      },
-      pro: {
-        buttonLabel: 'SELECT',
-        name: 'Pro',
-        type: 'pro',
-        price: '$249',
-        discountPrice: '$208',
-        isAnnual: true,
-        totalForPeriod: '$2490',
-        features: [
-          'Onboard (Manage Access) up to 600 new clients per year',
-          'Audit (View Access) up to 3000 prospects per year',
-          '3 month credit rollover',
-          'Overage fee: $30 per 10 extra credits',
-          'Whitelabel & Embed on your website',
-          'Webhooks to automate',
-          'Teams: Add unlimited team members'
-        ],
-        isPopular: false
-      },
-      enterprise: {
-        buttonLabel: 'BOOK A DEMO',
-        name: 'Enterprise',
-        type: 'enterprise',
-        price: 'Talk to us',
-        discountPrice: 'Talk to us',
-        isAnnual: true,
-        totalForPeriod: 'Talk to us',
-        features: [
-          'Onboard (Manage Access) a custom amount of new clients',
-          'Custom amount of View Access credits (for auditing)',
-          'Custom amount of credit rollover',
-          'Overage Fee: custom amount',
-          'Whitelabel & Embed on your website',
-          'Webhooks to automate',
-          'Teams: Add unlimited team members',
-          'API access',
-          'Other Custom integrations'
-        ],
-        isPopular: false
-      }
+  billingPeriod = signal<BillingPeriod>(BillingPeriod.MONTHLY);
+  readonly currentSubscription = this.billingStore.currentSubscription;
+  readonly isLoading = this.billingStore.isLoading;
+  readonly plansByPeriod = this.billingStore.plansByPeriod;
+  readonly hasActiveSubscription = this.billingStore.hasActiveSubscription;
+  readonly currentPlan = this.billingStore.currentPlan;
+  readonly isCanceling = this.billingStore.isCanceling;
+  readonly isAnnual = computed(() => this.billingPeriod() === BillingPeriod.ANNUAL);
+  readonly selectedPeriodPlans = computed(() => this.plansByPeriod()[this.billingPeriod()]);
+  readonly currentPlanId = computed(() => this.currentPlan()?._id || null);
+  readonly subscriptionStatusText = computed(() => {
+    const sub = this.currentSubscription();
+    if (!sub) return 'No active subscription';
+
+    const statusMap: Record<SubscriptionStatus, string> = {
+      [SubscriptionStatus.ACTIVE]: 'Active',
+      [SubscriptionStatus.CANCELED]: 'Canceled',
+      [SubscriptionStatus.INCOMPLETE]: 'Incomplete',
+      [SubscriptionStatus.INCOMPLETE_EXPIRED]: 'Incomplete Expired',
+      [SubscriptionStatus.PAST_DUE]: 'Past Due',
+      [SubscriptionStatus.PAUSED]: 'Paused',
+      [SubscriptionStatus.TRIALING]: 'Trial',
+      [SubscriptionStatus.UNPAID]: 'Unpaid'
+    };
+
+    const status = statusMap[sub.status];
+
+    if (this.isCanceling()) {
+      const cancelDate = sub.cancelAt || sub.currentPeriodEnd;
+      return `${status} (ends ${this.formatDate(cancelDate)})`;
     }
+
+    return status;
   });
-  selectedPeriodTiers = computed(() => {
-    return this.mockTiers()[this.billingPeriod()];
+  readonly billingPeriodText = computed(() => {
+    const sub = this.currentSubscription();
+    if (!sub) return 'N/A';
+    return `${this.formatDate(sub.currentPeriodStart)} - ${this.formatDate(sub.currentPeriodEnd)}`;
   });
-  selectedPeriodTiersArray = computed(() => {
-    return Object.values(this.selectedPeriodTiers());
-  });
+
+  async ngOnInit(): Promise<void> {
+    await this.billingStore.initialize();
+    this.handleQueryParams();
+
+    const currentPlan = this.currentPlan();
+    if (currentPlan) {
+      this.billingPeriod.set(currentPlan.billingPeriod);
+    }
+  }
+
+  private handleQueryParams(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['success']) {
+        this.snackbarService.success(
+          'Subscription activated successfully! Thank you for subscribing.',
+          'Close'
+        );
+        this.billingStore.loadSubscription();
+      } else if (params['canceled']) {
+        this.snackbarService.info(
+          'Checkout canceled. Feel free to try again when ready.',
+          'Close'
+        );
+      }
+    });
+  }
 
   billingPeriodChanged($event: MatSlideToggleChange): void {
-    const value = $event.checked ? 'annual' : 'monthly';
+    const value = $event.checked ? BillingPeriod.ANNUAL : BillingPeriod.MONTHLY;
     this.billingPeriod.set(value);
+  }
+
+  async onSelectTier(plan: ISubscriptionPlan): Promise<void> {
+    await this.billingStore.startCheckout(plan._id);
+  }
+
+  async openPortal(): Promise<void> {
+    await this.billingStore.openPortal();
+  }
+
+  private formatDate(date: Date | string): string {
+    return new Date(date).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
   }
 }

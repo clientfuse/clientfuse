@@ -1,17 +1,21 @@
 <div [ngClass]="tierCardClasses()">
-  @if (tier().isPopular) {
+  @if (isPopular()) {
     <div class="chip">most popular</div>
   }
 
-  <button mat-flat-button>{{ tier().buttonLabel }}</button>
+  <button mat-flat-button [disabled]="isCurrentPlan()" (click)="onSelectTier()">
+    {{ buttonLabel() }}
+  </button>
 
   <div class="tier-card-title title-heading-3">{{ tier().name }}</div>
 
   <div class="tier-card-price-container">
-    <div class="tier-card-discount-price subtitle-medium">{{ tier().discountPrice || '&nbsp;' }}</div>
-    <div class="tier-card-price subtitle-medium">{{ tier().price }}</div>
-    <div class="tier-card-per-period-text" [innerHTML]="pricePerPeriodText()"></div>
-    <div class="tier-card-total" [innerHTML]="totalForPeriodText()"></div>
+    @if (monthlyEquivalent()) {
+      <div class="tier-card-discount-price subtitle-medium">{{ monthlyEquivalent() }}</div>
+    }
+    <div class="tier-card-price subtitle-medium">{{ formattedPrice() }}</div>
+    <div class="tier-card-per-period-text">{{ pricePerPeriodText() }}</div>
+    <div class="tier-card-total">{{ totalForPeriodText() }}</div>
   </div>
 
   <div class="tier-card-features">

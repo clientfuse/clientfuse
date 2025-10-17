@@ -1,51 +1,66 @@
 <div class="settings-content">
-  <div>
-    <div class="subtitle-medium">Plan & Billing</div>
+  @if (isLoading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+      <div class="loading-text">Loading billing information...</div>
+    </div>
+  } @else {
+    <div>
+      <div class="subtitle-medium">Plan & Billing</div>
 
-    <div class="settings-content-stack">
-      <div class="settings-content-row">
-        <div class="settings-content-row-label">Your Plan</div>
-        <div class="settings-content-row-value">Free Trial, <span style="color: red;">will be cancelled December 2, 2024</span>, active
+      <div class="settings-content-stack">
+        <div class="settings-content-row">
+          <div class="settings-content-row-label">Your Plan</div>
+          <div class="settings-content-row-value">
+            @if (currentPlan(); as plan) {
+              {{ plan.name }} ({{ plan.billingPeriod }})
+            } @else {
+              No active subscription
+            }
+          </div>
         </div>
-      </div>
 
-      <div class="settings-content-row">
-        <div class="settings-content-row-label">Current Billing Period</div>
-        <div class="settings-content-row-value">November 18, 2024 - December 2, 2024</div>
-      </div>
+        @if (hasActiveSubscription()) {
+          <div class="settings-content-row">
+            <div class="settings-content-row-label">Status</div>
+            <div class="settings-content-row-value">
+              {{ subscriptionStatusText() }}
+            </div>
+          </div>
 
-      <div class="settings-content-row">
-        <div class="settings-content-row-label">Full Access (for onboarding) Credits Used</div>
-        <div class="settings-content-row-value">0</div>
-      </div>
+          <div class="settings-content-row">
+            <div class="settings-content-row-label">Current Billing Period</div>
+            <div class="settings-content-row-value">
+              {{ billingPeriodText() }}
+            </div>
+          </div>
 
-      <div class="settings-content-row">
-        <div class="settings-content-row-label">Next Usage Reset</div>
-        <div class="settings-content-row-value">December 2, 2024</div>
-      </div>
-
-      <div class="settings-content-row">
-        <div class="settings-content-row-label">View Access (for auditing) Credits Used</div>
-        <div class="settings-content-row-value">0</div>
-      </div>
-
-      <div class="settings-content-row">
-        <div class="settings-content-row-label">Lifetime Total Credits Used</div>
-        <div class="settings-content-row-value">0 Full Access (for onboarding), 0 View Access (for auditing)</div>
+          <div class="settings-content-row">
+            <div class="settings-content-row-label">Manage Subscription</div>
+            <div class="settings-content-row-value">
+              <button mat-stroked-button (click)="openPortal()">
+                Open Customer Portal
+              </button>
+            </div>
+          </div>
+        }
       </div>
     </div>
-  </div>
 
+    <div class="billing-period-toggle">
+      <div>Monthly</div>
+      <mat-slide-toggle [checked]="isAnnual()" (change)="billingPeriodChanged($event)" />
+      <div>Annual</div>
+    </div>
 
-  <div class="billing-period-toggle">
-    <div>Monthly</div>
-    <mat-slide-toggle [checked]="isAnnual()" (change)="billingPeriodChanged($event)"/>
-    <div>Annual</div>
-  </div>
-
-  <div class="billing-tiers-container">
-    @for (tier of selectedPeriodTiersArray(); track tier.name) {
-      <app-tier-card [tier]="tier"/>
-    }
-  </div>
+    <div class="billing-tiers-container">
+      @for (plan of selectedPeriodPlans(); track plan._id) {
+        <app-tier-card
+          [tier]="plan"
+          [currentPlanId]="currentPlanId()"
+          (selectTier)="onSelectTier($event)"
+        />
+      }
+    </div>
+  }
 </div>

@@ -27,12 +27,26 @@
   }
 }
 
+.tier-card--popular {
+  border-color: $green-100;
+}
+
+.tier-card--current {
+  border-color: $blue-100;
+  background-color: rgba($blue-100, 0.05);
+}
+
 .tier-card-title {
   text-align: center;
 }
 
 .tier-card-price-container {
   text-align: center;
+}
+
+.tier-card-discount-price {
+  color: $green-100;
+  font-weight: 600;
 }
 
 .tier-card-features {

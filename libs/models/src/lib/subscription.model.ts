@@ -53,7 +53,7 @@ export interface ISubscriptionPlanLimits {
 }
 
 export interface ISubscriptionPlan {
-  id: string;
+  _id: string;
   tierType: TierType;
   name: string;
   stripePriceId: string;
@@ -69,7 +69,7 @@ export interface ISubscriptionPlan {
 }
 
 export interface ICustomerSubscription {
-  id: string;
+  _id: string;
   userId: string; // Only user level - no agency level
   stripeCustomerId: string;
   stripeSubscriptionId: string;
@@ -78,6 +78,7 @@ export interface ICustomerSubscription {
   currentPeriodStart: Date;
   currentPeriodEnd: Date;
   cancelAtPeriodEnd: boolean;
+  cancelAt?: Date;
   canceledAt?: Date;
   trialStart?: Date;
   trialEnd?: Date;
@@ -86,7 +87,7 @@ export interface ICustomerSubscription {
 }
 
 export interface IUsageRecord {
-  id: string;
+  _id: string;
   subscriptionId: string;
   metricType: 'users' | 'agencies' | 'storage' | 'apiCalls';
   quantity: number;

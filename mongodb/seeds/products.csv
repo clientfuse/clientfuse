@@ -1,4 +1,4 @@
-id,Name,Type,Date (UTC),Description,Statement Descriptor,Unit Label,Url,Tax Code
-prod_TEfeUHRC0pgLqy,Clientfuse Gold Plan,service,2025-10-14 17:47,,,,,
-prod_TEfdDPdUbrEcV0,Clientfuse Silver Plan,service,2025-10-14 17:45,,,,,
-prod_TEfaiFJxOVPVas,Clientfuse Bronze Plan,service,2025-10-14 17:43,,,,,
+id,Name,Date (UTC),Description,Url,Tax Code
+prod_TFnI2qJbFzVl4B,Clientfuse Gold Plan,2025-10-17 17:44,,,
+prod_TFnHCPbhKVvEs6,Clientfuse Silver Plan,2025-10-17 17:44,,,
+prod_TFnHRNUCwPoiUw,Clientfuse Bronze Plan,2025-10-17 17:43,,,
