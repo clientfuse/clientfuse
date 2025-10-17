@@ -1,16 +1,17 @@
+import { SubscriptionStatus } from '@clientfuse/models';
+import { secToMs } from '@clientfuse/utils';
 import { Injectable, Logger } from '@nestjs/common';
 import Stripe from 'stripe';
 import { SubscriptionService } from './subscription.service';
-import { SubscriptionStatus } from '@clientfuse/models';
-import { secToMs } from '@clientfuse/utils';
 
 @Injectable()
 export class WebhookService {
   private readonly logger = new Logger(WebhookService.name);
 
   constructor(
-    private subscriptionService: SubscriptionService,
-  ) {}
+    private subscriptionService: SubscriptionService
+  ) {
+  }
 
   async handleEvent(event: Stripe.Event): Promise<void> {
     this.logger.log(`Processing webhook event: ${event.type}`);
@@ -20,31 +21,24 @@ export class WebhookService {
         case 'checkout.session.completed':
           await this.handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
           break;
-
         case 'customer.subscription.created':
           await this.handleSubscriptionCreated(event.data.object as Stripe.Subscription);
           break;
-
         case 'customer.subscription.updated':
           await this.handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
           break;
-
         case 'customer.subscription.deleted':
           await this.handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
           break;
-
         case 'invoice.paid':
           await this.handleInvoicePaid(event.data.object as Stripe.Invoice);
           break;
-
         case 'invoice.payment_failed':
           await this.handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);
           break;
-
         case 'customer.subscription.trial_will_end':
           await this.handleTrialWillEnd(event.data.object as Stripe.Subscription);
           break;
-
         default:
           this.logger.log(`Unhandled event type: ${event.type}`);
       }
@@ -65,7 +59,6 @@ export class WebhookService {
       return;
     }
 
-    // Subscription will be handled by customer.subscription.created event
     this.logger.log(`Subscription ${subscriptionId} will be created via webhook`);
   }
 
@@ -80,8 +73,14 @@ export class WebhookService {
       return;
     }
 
-    // Stripe API returns these fields but TypeScript definitions may not be complete
-    const subData = subscription as any;
+    const { currentPeriodStart, currentPeriodEnd } = this.extractPeriodDates(subscription);
+
+    if (!currentPeriodStart || !currentPeriodEnd) {
+      this.logger.error(
+        `Invalid period dates for subscription ${subscription.id} (status: ${subscription.status})`
+      );
+      throw new Error('Invalid subscription period dates from Stripe');
+    }
 
     await this.subscriptionService.createSubscription({
       userId,
@@ -89,27 +88,32 @@ export class WebhookService {
       stripeSubscriptionId: subscription.id,
       planId,
       status: subscription.status as SubscriptionStatus,
-      // Use secToMs utility for Stripe timestamps (they're in seconds)
-      currentPeriodStart: new Date(secToMs(subData.current_period_start)),
-      currentPeriodEnd: new Date(secToMs(subData.current_period_end)),
+      currentPeriodStart,
+      currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
-      trialStart: subscription.trial_start ? new Date(secToMs(subscription.trial_start)) : undefined,
-      trialEnd: subscription.trial_end ? new Date(secToMs(subscription.trial_end)) : undefined,
+      trialStart: this.convertStripeTimestamp(subscription.trial_start),
+      trialEnd: this.convertStripeTimestamp(subscription.trial_end)
     });
   }
 
   private async handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
     this.logger.log(`Subscription updated: ${subscription.id}`);
 
-    // Stripe API returns these fields but TypeScript definitions may not be complete
-    const subData = subscription as any;
+    const { currentPeriodStart, currentPeriodEnd } = this.extractPeriodDates(subscription);
+
+    if (!currentPeriodStart || !currentPeriodEnd) {
+      this.logger.error(
+        `Invalid period dates for subscription ${subscription.id} (status: ${subscription.status})`
+      );
+      throw new Error('Invalid subscription period dates from Stripe');
+    }
 
     await this.subscriptionService.updateSubscription(subscription.id, {
       status: subscription.status as SubscriptionStatus,
-      currentPeriodStart: new Date(secToMs(subData.current_period_start)),
-      currentPeriodEnd: new Date(secToMs(subData.current_period_end)),
+      currentPeriodStart,
+      currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
-      canceledAt: subscription.canceled_at ? new Date(secToMs(subscription.canceled_at)) : undefined,
+      canceledAt: this.convertStripeTimestamp(subscription.canceled_at)
     });
   }
 
@@ -118,14 +122,13 @@ export class WebhookService {
 
     await this.subscriptionService.updateSubscription(subscription.id, {
       status: SubscriptionStatus.CANCELED,
-      canceledAt: new Date(),
+      canceledAt: new Date()
     });
   }
 
   private async handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
     this.logger.log(`Invoice paid: ${invoice.id}`);
 
-    // Stripe API returns subscription field but TypeScript definitions may not be complete
     const invoiceData = invoice as any;
 
     if (invoiceData.subscription) {
@@ -136,7 +139,7 @@ export class WebhookService {
 
       if (subscription && subscription.status === SubscriptionStatus.PAST_DUE) {
         await this.subscriptionService.updateSubscription(subscriptionId, {
-          status: SubscriptionStatus.ACTIVE,
+          status: SubscriptionStatus.ACTIVE
         });
       }
     }
@@ -145,7 +148,6 @@ export class WebhookService {
   private async handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
     this.logger.log(`Invoice payment failed: ${invoice.id}`);
 
-    // Stripe API returns subscription field but TypeScript definitions may not be complete
     const invoiceData = invoice as any;
 
     if (invoiceData.subscription) {
@@ -153,7 +155,7 @@ export class WebhookService {
         ? invoiceData.subscription
         : invoiceData.subscription.id;
       await this.subscriptionService.updateSubscription(subscriptionId, {
-        status: SubscriptionStatus.PAST_DUE,
+        status: SubscriptionStatus.PAST_DUE
       });
     }
   }
@@ -161,5 +163,37 @@ export class WebhookService {
   private async handleTrialWillEnd(subscription: Stripe.Subscription): Promise<void> {
     this.logger.log(`Trial will end: ${subscription.id}`);
     // TODO: Send email notification to user about trial ending
+  }
+
+  private convertStripeTimestamp(timestamp: number | undefined | null): Date | undefined {
+    if (!timestamp || typeof timestamp !== 'number' || isNaN(timestamp)) {
+      return undefined;
+    }
+    return new Date(secToMs(timestamp));
+  }
+
+  private extractPeriodDates(subscription: Stripe.Subscription): {
+    currentPeriodStart: Date | undefined;
+    currentPeriodEnd: Date | undefined;
+  } {
+    if (subscription.status === 'trialing' && subscription.trial_start && subscription.trial_end) {
+      return {
+        currentPeriodStart: this.convertStripeTimestamp(subscription.trial_start),
+        currentPeriodEnd: this.convertStripeTimestamp(subscription.trial_end)
+      };
+    }
+
+    const firstItem = subscription.items?.data?.[0] as Stripe.SubscriptionItem | undefined;
+    if (firstItem?.current_period_start && firstItem?.current_period_end) {
+      return {
+        currentPeriodStart: this.convertStripeTimestamp(firstItem.current_period_start),
+        currentPeriodEnd: this.convertStripeTimestamp(firstItem.current_period_end)
+      };
+    }
+
+    return {
+      currentPeriodStart: undefined,
+      currentPeriodEnd: undefined
+    };
   }
 }

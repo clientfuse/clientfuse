@@ -6,11 +6,11 @@ export class CreateCheckoutSessionDto implements ICreateCheckoutSessionRequest {
   @IsNotEmpty()
   planId: string;
 
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   @IsNotEmpty()
   successUrl: string;
 
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   @IsNotEmpty()
   cancelUrl: string;
 }

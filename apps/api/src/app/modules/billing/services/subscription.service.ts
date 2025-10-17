@@ -1,15 +1,10 @@
+import { ICustomerSubscription, ISubscriptionPlan, ISubscriptionResponse, SubscriptionStatus } from '@clientfuse/models';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import {
-  ICustomerSubscription,
-  ISubscriptionPlan,
-  ISubscriptionResponse,
-  SubscriptionStatus,
-} from '@clientfuse/models';
-import { Subscription } from '../schemas/subscription.schema';
-import { SubscriptionPlan } from '../schemas/subscription-plan.schema';
+import { Model } from 'mongoose';
 import { ISubscriptionManager } from '../interfaces/subscription-manager.interface';
+import { SubscriptionPlan } from '../schemas/subscription-plan.schema';
+import { Subscription } from '../schemas/subscription.schema';
 
 @Injectable()
 export class SubscriptionService implements ISubscriptionManager {
@@ -19,8 +14,9 @@ export class SubscriptionService implements ISubscriptionManager {
     @InjectModel(Subscription.name)
     private subscriptionModel: Model<Subscription>,
     @InjectModel(SubscriptionPlan.name)
-    private planModel: Model<SubscriptionPlan>,
-  ) {}
+    private planModel: Model<SubscriptionPlan>
+  ) {
+  }
 
   async createSubscription(data: Partial<ICustomerSubscription>): Promise<Subscription> {
     try {
@@ -37,7 +33,7 @@ export class SubscriptionService implements ISubscriptionManager {
   async getSubscriptionByUserId(userId: string): Promise<ISubscriptionResponse | null> {
     try {
       const subscription = await this.subscriptionModel
-        .findOne({ userId: new Types.ObjectId(userId) })
+        .findOne({ userId })
         .populate('planId')
         .exec();
 
@@ -66,14 +62,14 @@ export class SubscriptionService implements ISubscriptionManager {
 
   async updateSubscription(
     stripeSubscriptionId: string,
-    updates: Partial<ICustomerSubscription>,
+    updates: Partial<ICustomerSubscription>
   ): Promise<Subscription> {
     try {
       const subscription = await this.subscriptionModel
         .findOneAndUpdate(
           { stripeSubscriptionId },
           { $set: updates },
-          { new: true },
+          { new: true }
         )
         .populate('planId')
         .exec();
@@ -97,9 +93,9 @@ export class SubscriptionService implements ISubscriptionManager {
         const planObj = plan.toObject();
         return {
           ...planObj,
-          id: planObj._id.toString(),
+          _id: planObj._id.toString(),
           createdAt: (plan as any).createdAt,
-          updatedAt: (plan as any).updatedAt,
+          updatedAt: (plan as any).updatedAt
         } as ISubscriptionPlan;
       });
     } catch (error) {
@@ -131,8 +127,8 @@ export class SubscriptionService implements ISubscriptionManager {
     try {
       const subscription = await this.subscriptionModel
         .findOne({
-          userId: new Types.ObjectId(userId),
-          status: SubscriptionStatus.ACTIVE,
+          userId: userId,
+          status: SubscriptionStatus.ACTIVE
         })
         .exec();
 
@@ -145,7 +141,7 @@ export class SubscriptionService implements ISubscriptionManager {
 
   private transformToResponse(subscription: any): ISubscriptionResponse {
     return {
-      id: subscription._id.toString(),
+      _id: subscription._id.toString(),
       userId: subscription.userId.toString(),
       stripeCustomerId: subscription.stripeCustomerId,
       stripeSubscriptionId: subscription.stripeSubscriptionId,
@@ -159,7 +155,7 @@ export class SubscriptionService implements ISubscriptionManager {
       trialEnd: subscription.trialEnd,
       createdAt: subscription.createdAt,
       updatedAt: subscription.updatedAt,
-      plan: subscription.planId,
+      plan: subscription.planId
     };
   }
 }

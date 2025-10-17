@@ -20,7 +20,6 @@ import { CreatePortalSessionDto } from './dto/create-portal-session.dto';
 import { Public } from '../auth/decorators/is-public.decorator';
 import { ConfigService } from '@nestjs/config';
 import {
-  IResponse,
   ICreateCheckoutSessionResponse,
   ICreatePortalSessionResponse,
   ISubscriptionResponse,
@@ -42,54 +41,42 @@ export class BillingController {
   @Post(ENDPOINTS.billing.checkoutSession)
   @HttpCode(HttpStatus.OK)
   async createCheckoutSession(
-    @Req() req: Request,
+    @Req() req,
     @Body() dto: CreateCheckoutSessionDto,
-  ): Promise<IResponse<ICreateCheckoutSessionResponse>> {
-    const userId = req.user['id'];
+  ): Promise<ICreateCheckoutSessionResponse> {
+    const userId = req.user._id;
     const result = await this.billingService.createCheckoutSession(userId, dto);
 
-    return {
-      statusCode: HttpStatus.OK,
-      payload: result,
-    };
+    return result;
   }
 
   @Post(ENDPOINTS.billing.portalSession)
   @HttpCode(HttpStatus.OK)
   async createPortalSession(
-    @Req() req: Request,
+    @Req() req,
     @Body() dto: CreatePortalSessionDto,
-  ): Promise<IResponse<ICreatePortalSessionResponse>> {
-    const userId = req.user['id'];
+  ): Promise<ICreatePortalSessionResponse> {
+    const userId = req.user._id;
     const result = await this.billingService.createPortalSession(userId, dto);
 
-    return {
-      statusCode: HttpStatus.OK,
-      payload: result,
-    };
+    return result;
   }
 
   @Get(ENDPOINTS.billing.subscription)
   @HttpCode(HttpStatus.OK)
-  async getSubscription(@Req() req: Request): Promise<IResponse<ISubscriptionResponse>> {
-    const userId = req.user['id'];
+  async getSubscription(@Req() req): Promise<ISubscriptionResponse> {
+    const userId = req.user._id;
     const subscription = await this.billingService.getSubscription(userId);
 
-    return {
-      statusCode: HttpStatus.OK,
-      payload: subscription,
-    };
+    return subscription;
   }
 
   @Get(ENDPOINTS.billing.plans)
   @HttpCode(HttpStatus.OK)
-  async getPlans(): Promise<IResponse<ISubscriptionPlan[]>> {
+  async getPlans(): Promise<ISubscriptionPlan[]> {
     const plans = await this.billingService.getPlans();
 
-    return {
-      statusCode: HttpStatus.OK,
-      payload: plans,
-    };
+    return plans;
   }
 
   /**

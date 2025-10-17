@@ -11,6 +11,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AwsModule } from './core/modules/aws/aws.module';
 import { EventBusModule } from './core/modules/event-bus/event-bus.module';
+import { MailModule } from './core/modules/mail/mail.module';
 import { StripeModule } from './core/modules/stripe/stripe.module';
 import { createRetryConfig } from './core/utils/http';
 import { AgenciesModule } from './modules/agencies/agencies.module';
@@ -47,6 +48,7 @@ import { UsersModule } from './modules/users/users.module';
     EventBusModule,
     AwsModule,
     StripeModule,
+    MailModule,
     AuthModule,
     UsersModule,
     AgenciesModule,

@@ -37,6 +37,5 @@ export class SubscriptionPlan extends Document {
 
 export const SubscriptionPlanSchema = SchemaFactory.createForClass(SubscriptionPlan);
 
-SubscriptionPlanSchema.index({ stripePriceId: 1 });
 SubscriptionPlanSchema.index({ tierType: 1, billingPeriod: 1 });
 SubscriptionPlanSchema.index({ isActive: 1 });

@@ -41,7 +41,5 @@ export class Subscription extends Document {
 export const SubscriptionSchema = SchemaFactory.createForClass(Subscription);
 
 SubscriptionSchema.index({ userId: 1 });
-SubscriptionSchema.index({ stripeCustomerId: 1 });
-SubscriptionSchema.index({ stripeSubscriptionId: 1 });
 SubscriptionSchema.index({ status: 1 });
 SubscriptionSchema.index({ userId: 1, status: 1 });

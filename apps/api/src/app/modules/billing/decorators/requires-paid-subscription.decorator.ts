@@ -12,7 +12,7 @@ export const REQUIRES_PAID_SUBSCRIPTION_KEY = 'requiresPaidSubscription';
  *   @RequiresPaidSubscription()
  *   async getAdvancedAnalytics(@Req() req: Request) {
  *     // Only accessible to users with active subscription
- *     const userId = req.user['id'];
+ *     const userId = req.user._id;
  *     return await this.analyticsService.getAdvanced(userId);
  *   }
  * }
