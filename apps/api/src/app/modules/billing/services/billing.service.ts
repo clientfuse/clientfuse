@@ -12,6 +12,7 @@ import {
   ICreatePortalSessionResponse,
   ISubscriptionResponse,
   ISubscriptionPlan,
+  SubscriptionStatus,
   TRIAL_PERIOD_DAYS,
 } from '@clientfuse/models';
 
@@ -44,7 +45,9 @@ export class BillingService {
       const plan = await this.subscriptionService.getPlanById(dto.planId);
 
       const existingSubscription = await this.subscriptionService.getSubscriptionByUserId(userId);
-      if (existingSubscription && existingSubscription.status === 'active') {
+      if (existingSubscription &&
+          (existingSubscription.status === SubscriptionStatus.ACTIVE ||
+           existingSubscription.status === SubscriptionStatus.TRIALING)) {
         throw new BadRequestException('User already has an active subscription');
       }
 
@@ -64,13 +67,16 @@ export class BillingService {
         });
       }
 
+      const hasHistory = await this.subscriptionService.hasSubscriptionHistory(userId);
+      const trialPeriodDays = hasHistory ? undefined : TRIAL_PERIOD_DAYS;
+
       const session = await this.paymentProvider.createCheckoutSession({
         customerId: stripeCustomerId,
         customerEmail: user.email,
         priceId: plan.stripePriceId,
         successUrl: dto.successUrl,
         cancelUrl: dto.cancelUrl,
-        trialPeriodDays: TRIAL_PERIOD_DAYS,
+        trialPeriodDays,
         metadata: {
           userId: userId,
           planId: dto.planId,

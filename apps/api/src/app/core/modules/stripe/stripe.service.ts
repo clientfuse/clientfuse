@@ -125,6 +125,7 @@ export class StripeService implements IPaymentProvider {
         currentPeriodStart: subData.current_period_start || sub.billing_cycle_anchor,
         currentPeriodEnd: subData.current_period_end,
         cancelAtPeriodEnd: sub.cancel_at_period_end,
+        cancelAt: subData.cancel_at || undefined,
         canceledAt: sub.canceled_at || undefined,
       };
     } catch (error) {
@@ -155,6 +156,7 @@ export class StripeService implements IPaymentProvider {
         currentPeriodStart: subData.current_period_start || sub.billing_cycle_anchor,
         currentPeriodEnd: subData.current_period_end,
         cancelAtPeriodEnd: sub.cancel_at_period_end,
+        cancelAt: subData.cancel_at || undefined,
         canceledAt: sub.canceled_at || undefined,
       };
     } catch (error) {

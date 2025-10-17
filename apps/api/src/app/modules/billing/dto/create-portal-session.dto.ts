@@ -1,8 +1,8 @@
-import { IsUrl, IsNotEmpty } from 'class-validator';
 import { ICreatePortalSessionRequest } from '@clientfuse/models';
+import { IsNotEmpty, IsUrl } from 'class-validator';
 
 export class CreatePortalSessionDto implements ICreatePortalSessionRequest {
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   @IsNotEmpty()
   returnUrl: string;
 }

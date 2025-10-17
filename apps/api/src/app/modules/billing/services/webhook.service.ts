@@ -91,6 +91,7 @@ export class WebhookService {
       currentPeriodStart,
       currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      cancelAt: this.convertStripeTimestamp(subscription.cancel_at),
       trialStart: this.convertStripeTimestamp(subscription.trial_start),
       trialEnd: this.convertStripeTimestamp(subscription.trial_end)
     });
@@ -113,6 +114,7 @@ export class WebhookService {
       currentPeriodStart,
       currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      cancelAt: this.convertStripeTimestamp(subscription.cancel_at),
       canceledAt: this.convertStripeTimestamp(subscription.canceled_at)
     });
   }
@@ -165,16 +167,17 @@ export class WebhookService {
     // TODO: Send email notification to user about trial ending
   }
 
-  private convertStripeTimestamp(timestamp: number | undefined | null): Date | undefined {
+
+  private convertStripeTimestamp(timestamp: number | undefined | null): Date | null {
     if (!timestamp || typeof timestamp !== 'number' || isNaN(timestamp)) {
-      return undefined;
+      return null;
     }
     return new Date(secToMs(timestamp));
   }
 
   private extractPeriodDates(subscription: Stripe.Subscription): {
-    currentPeriodStart: Date | undefined;
-    currentPeriodEnd: Date | undefined;
+    currentPeriodStart: Date | null;
+    currentPeriodEnd: Date | null;
   } {
     if (subscription.status === 'trialing' && subscription.trial_start && subscription.trial_end) {
       return {
@@ -192,8 +195,8 @@ export class WebhookService {
     }
 
     return {
-      currentPeriodStart: undefined,
-      currentPeriodEnd: undefined
+      currentPeriodStart: null,
+      currentPeriodEnd: null
     };
   }
 }

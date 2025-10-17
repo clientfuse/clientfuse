@@ -25,8 +25,6 @@ import { User, UsersSchema } from '../users/schemas/users.schema';
 @Module({
   imports: [
     ConfigModule,
-    // StripeModule is global, so no need to import it explicitly
-    // But it's good practice to document the dependency
     MongooseModule.forFeature([
       { name: Subscription.name, schema: SubscriptionSchema },
       { name: SubscriptionPlan.name, schema: SubscriptionPlanSchema },

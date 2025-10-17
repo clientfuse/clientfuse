@@ -101,20 +101,17 @@ export class BillingController {
     }
 
     try {
-      // Get raw body for signature verification
       const rawBody = req.rawBody;
       if (!rawBody) {
         throw new BadRequestException('Missing request body');
       }
 
-      // Verify webhook signature
       const event = this.stripeService.verifyWebhookSignature(
         rawBody,
         signature,
         webhookSecret,
       );
 
-      // Process the event
       await this.webhookService.handleEvent(event as any);
 
       return { received: true };

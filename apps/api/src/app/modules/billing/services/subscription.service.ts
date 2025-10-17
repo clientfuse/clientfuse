@@ -32,10 +32,21 @@ export class SubscriptionService implements ISubscriptionManager {
 
   async getSubscriptionByUserId(userId: string): Promise<ISubscriptionResponse | null> {
     try {
-      const subscription = await this.subscriptionModel
-        .findOne({ userId })
+      let subscription = await this.subscriptionModel
+        .findOne({
+          userId,
+          status: { $in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIALING] }
+        })
         .populate('planId')
         .exec();
+
+      if (!subscription) {
+        subscription = await this.subscriptionModel
+          .findOne({ userId })
+          .sort({ updatedAt: -1 })
+          .populate('planId')
+          .exec();
+      }
 
       if (!subscription) {
         return null;
@@ -119,22 +130,31 @@ export class SubscriptionService implements ISubscriptionManager {
     }
   }
 
-  /**
-   * Check if user has active paid subscription
-   * This is used by the @RequiresPaidSubscription() guard
-   */
   async hasActiveSubscription(userId: string): Promise<boolean> {
     try {
       const subscription = await this.subscriptionModel
         .findOne({
           userId: userId,
-          status: SubscriptionStatus.ACTIVE
+          status: { $in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIALING] }
         })
         .exec();
 
       return !!subscription;
     } catch (error) {
       this.logger.error(`Failed to check subscription for user: ${userId}`, error);
+      return false;
+    }
+  }
+
+  async hasSubscriptionHistory(userId: string): Promise<boolean> {
+    try {
+      const count = await this.subscriptionModel
+        .countDocuments({ userId })
+        .exec();
+
+      return count > 0;
+    } catch (error) {
+      this.logger.error(`Failed to check subscription history for user: ${userId}`, error);
       return false;
     }
   }
@@ -150,6 +170,7 @@ export class SubscriptionService implements ISubscriptionManager {
       currentPeriodStart: subscription.currentPeriodStart,
       currentPeriodEnd: subscription.currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+      cancelAt: subscription.cancelAt,
       canceledAt: subscription.canceledAt,
       trialStart: subscription.trialStart,
       trialEnd: subscription.trialEnd,

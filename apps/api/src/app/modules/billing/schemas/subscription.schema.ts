@@ -7,7 +7,7 @@ export class Subscription extends Document {
   @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
   userId: Types.ObjectId;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   stripeCustomerId: string;
 
   @Prop({ required: true, unique: true })
@@ -29,6 +29,9 @@ export class Subscription extends Document {
   cancelAtPeriodEnd: boolean;
 
   @Prop({ required: false })
+  cancelAt?: Date;
+
+  @Prop({ required: false })
   canceledAt?: Date;
 
   @Prop({ required: false })
@@ -43,3 +46,4 @@ export const SubscriptionSchema = SchemaFactory.createForClass(Subscription);
 SubscriptionSchema.index({ userId: 1 });
 SubscriptionSchema.index({ status: 1 });
 SubscriptionSchema.index({ userId: 1, status: 1 });
+SubscriptionSchema.index({ stripeCustomerId: 1 });

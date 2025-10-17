@@ -1,5 +1,3 @@
-import Stripe from 'stripe';
-
 /**
  * Payment Provider Interface
  *
@@ -83,9 +81,10 @@ export interface IProviderSubscription {
   id: string;
   customerId: string;
   status: string;
-  currentPeriodStart: number; // Unix timestamp in seconds
+  currentPeriodStart: number;
   currentPeriodEnd: number;
   cancelAtPeriodEnd: boolean;
+  cancelAt?: number;
   canceledAt?: number;
 }
 
