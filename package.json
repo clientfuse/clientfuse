@@ -1,6 +1,6 @@
 {
   "name": "@clientfuse/source",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "license": "MIT",
   "scripts": {
     "typecheck:frontend": "nx run frontend:typecheck",
