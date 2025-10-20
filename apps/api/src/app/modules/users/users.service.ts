@@ -64,6 +64,10 @@ export class UsersService {
     return null;
   }
 
+  async findUserByStripeCustomerId(stripeCustomerId: string): Promise<IUserResponse | null> {
+    return this.findUser({ stripeCustomerId });
+  }
+
   async removeUser(id: string): Promise<null> {
     await this.userModel.deleteOne({ _id: id });
     return null;

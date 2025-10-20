@@ -169,6 +169,21 @@ export class SubscriptionService implements ISubscriptionManager {
     }
   }
 
+  async getAllSubscriptions(): Promise<Subscription[]> {
+    try {
+      const subscriptions = await this.subscriptionModel
+        .find()
+        .populate('planId')
+        .exec();
+
+      this.logger.log(`Retrieved ${subscriptions.length} subscriptions from database`);
+      return subscriptions;
+    } catch (error) {
+      this.logger.error('Failed to get all subscriptions', error);
+      throw error;
+    }
+  }
+
   private transformToResponse(subscription: any): ISubscriptionResponse {
     return {
       _id: subscription._id.toString(),

@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { BillingController } from './billing.controller';
 import { BillingService } from './services/billing.service';
+import { BillingSchedulerService } from './services/billing-scheduler.service';
 import { SubscriptionService } from './services/subscription.service';
 import { WebhookService } from './services/webhook.service';
 import { Subscription, SubscriptionSchema } from './schemas/subscription.schema';
@@ -10,6 +11,7 @@ import { SubscriptionPlan, SubscriptionPlanSchema } from './schemas/subscription
 import { UsageRecord, UsageRecordSchema } from './schemas/usage-record.schema';
 import { PaidSubscriptionGuard } from './guards/paid-subscription.guard';
 import { User, UsersSchema } from '../users/schemas/users.schema';
+import { UsersModule } from '../users/users.module';
 
 /**
  * Billing Module
@@ -25,6 +27,7 @@ import { User, UsersSchema } from '../users/schemas/users.schema';
 @Module({
   imports: [
     ConfigModule,
+    UsersModule,
     MongooseModule.forFeature([
       { name: Subscription.name, schema: SubscriptionSchema },
       { name: SubscriptionPlan.name, schema: SubscriptionPlanSchema },
@@ -35,6 +38,7 @@ import { User, UsersSchema } from '../users/schemas/users.schema';
   controllers: [BillingController],
   providers: [
     BillingService,
+    BillingSchedulerService,
     SubscriptionService,
     WebhookService,
     PaidSubscriptionGuard,

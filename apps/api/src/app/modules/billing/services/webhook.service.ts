@@ -1,7 +1,7 @@
 import { ICustomerSubscription, SubscriptionStatus } from '@clientfuse/models';
-import { secToMs } from '@clientfuse/utils';
 import { Injectable, Logger } from '@nestjs/common';
 import Stripe from 'stripe';
+import { convertStripeTimestamp, extractPeriodDates } from '../../../core/modules/stripe/utils/stripe.utils';
 import { SubscriptionService } from './subscription.service';
 
 @Injectable()
@@ -73,7 +73,7 @@ export class WebhookService {
       return;
     }
 
-    const { currentPeriodStart, currentPeriodEnd } = this.extractPeriodDates(subscription);
+    const { currentPeriodStart, currentPeriodEnd } = extractPeriodDates(subscription);
 
     if (!currentPeriodStart || !currentPeriodEnd) {
       this.logger.error(
@@ -91,16 +91,16 @@ export class WebhookService {
       currentPeriodStart,
       currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
-      cancelAt: this.convertStripeTimestamp(subscription.cancel_at),
-      trialStart: this.convertStripeTimestamp(subscription.trial_start),
-      trialEnd: this.convertStripeTimestamp(subscription.trial_end)
+      cancelAt: convertStripeTimestamp(subscription.cancel_at),
+      trialStart: convertStripeTimestamp(subscription.trial_start),
+      trialEnd: convertStripeTimestamp(subscription.trial_end)
     });
   }
 
   private async handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
     this.logger.log(`Subscription updated: ${subscription.id}`);
 
-    const { currentPeriodStart, currentPeriodEnd } = this.extractPeriodDates(subscription);
+    const { currentPeriodStart, currentPeriodEnd } = extractPeriodDates(subscription);
 
     if (!currentPeriodStart || !currentPeriodEnd) {
       this.logger.error(
@@ -127,8 +127,8 @@ export class WebhookService {
       currentPeriodStart,
       currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
-      cancelAt: this.convertStripeTimestamp(subscription.cancel_at),
-      canceledAt: this.convertStripeTimestamp(subscription.canceled_at)
+      cancelAt: convertStripeTimestamp(subscription.cancel_at),
+      canceledAt: convertStripeTimestamp(subscription.canceled_at)
     };
 
     if (planId) {
@@ -184,38 +184,5 @@ export class WebhookService {
   private async handleTrialWillEnd(subscription: Stripe.Subscription): Promise<void> {
     this.logger.log(`Trial will end: ${subscription.id}`);
     // TODO: Send email notification to user about trial ending
-  }
-
-
-  private convertStripeTimestamp(timestamp: number | undefined | null): Date | null {
-    if (!timestamp || typeof timestamp !== 'number' || isNaN(timestamp)) {
-      return null;
-    }
-    return new Date(secToMs(timestamp));
-  }
-
-  private extractPeriodDates(subscription: Stripe.Subscription): {
-    currentPeriodStart: Date | null;
-    currentPeriodEnd: Date | null;
-  } {
-    if (subscription.status === 'trialing' && subscription.trial_start && subscription.trial_end) {
-      return {
-        currentPeriodStart: this.convertStripeTimestamp(subscription.trial_start),
-        currentPeriodEnd: this.convertStripeTimestamp(subscription.trial_end)
-      };
-    }
-
-    const firstItem = subscription.items?.data?.[0] as Stripe.SubscriptionItem | undefined;
-    if (firstItem?.current_period_start && firstItem?.current_period_end) {
-      return {
-        currentPeriodStart: this.convertStripeTimestamp(firstItem.current_period_start),
-        currentPeriodEnd: this.convertStripeTimestamp(firstItem.current_period_end)
-      };
-    }
-
-    return {
-      currentPeriodStart: null,
-      currentPeriodEnd: null
-    };
   }
 }

@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 import { IPaymentProvider, ICheckoutSession, IPortalSession, ICustomer, IProviderSubscription, IWebhookEvent } from './interfaces/payment-provider.interface';
+import { extractPeriodTimestamps } from './utils/stripe.utils';
 
 /**
  * Stripe Service - Payment Provider Implementation
@@ -115,18 +116,21 @@ export class StripeService implements IPaymentProvider {
   async retrieveSubscription(subscriptionId: string): Promise<IProviderSubscription> {
     try {
       const sub = await this.stripe.subscriptions.retrieve(subscriptionId);
-      // Stripe API returns these fields but TypeScript definitions may not be complete
-      const subData = sub as any;
+      const priceId = sub.items?.data?.[0]?.price?.id;
+      const { currentPeriodStart, currentPeriodEnd } = extractPeriodTimestamps(sub);
 
       return {
         id: sub.id,
         customerId: sub.customer as string,
         status: sub.status,
-        currentPeriodStart: subData.current_period_start || sub.billing_cycle_anchor,
-        currentPeriodEnd: subData.current_period_end,
+        currentPeriodStart: currentPeriodStart,
+        currentPeriodEnd: currentPeriodEnd,
         cancelAtPeriodEnd: sub.cancel_at_period_end,
-        cancelAt: subData.cancel_at || undefined,
+        cancelAt: sub.cancel_at || undefined,
         canceledAt: sub.canceled_at || undefined,
+        priceId: priceId || undefined,
+        trialStart: sub.trial_start || undefined,
+        trialEnd: sub.trial_end || undefined,
       };
     } catch (error) {
       this.logger.error(`Failed to retrieve subscription: ${subscriptionId}`, error);
@@ -146,17 +150,16 @@ export class StripeService implements IPaymentProvider {
         sub = await this.stripe.subscriptions.cancel(subscriptionId);
       }
 
-      // Stripe API returns these fields but TypeScript definitions may not be complete
-      const subData = sub as any;
+      const { currentPeriodStart, currentPeriodEnd } = extractPeriodTimestamps(sub);
 
       return {
         id: sub.id,
         customerId: sub.customer as string,
         status: sub.status,
-        currentPeriodStart: subData.current_period_start || sub.billing_cycle_anchor,
-        currentPeriodEnd: subData.current_period_end,
+        currentPeriodStart: currentPeriodStart,
+        currentPeriodEnd: currentPeriodEnd,
         cancelAtPeriodEnd: sub.cancel_at_period_end,
-        cancelAt: subData.cancel_at || undefined,
+        cancelAt: sub.cancel_at || undefined,
         canceledAt: sub.canceled_at || undefined,
       };
     } catch (error) {
@@ -176,6 +179,51 @@ export class StripeService implements IPaymentProvider {
       };
     } catch (error) {
       this.logger.error('Webhook signature verification failed', error);
+      throw error;
+    }
+  }
+
+  async listSubscriptions(): Promise<IProviderSubscription[]> {
+    try {
+      const allSubscriptions: IProviderSubscription[] = [];
+      let hasMore = true;
+      let startingAfter: string | undefined;
+
+      while (hasMore) {
+        const response = await this.stripe.subscriptions.list({
+          limit: 100,
+          starting_after: startingAfter,
+        });
+
+        for (const sub of response.data) {
+          const priceId = sub.items?.data?.[0]?.price?.id;
+          const { currentPeriodStart, currentPeriodEnd } = extractPeriodTimestamps(sub);
+
+          allSubscriptions.push({
+            id: sub.id,
+            customerId: sub.customer as string,
+            status: sub.status,
+            currentPeriodStart: currentPeriodStart,
+            currentPeriodEnd: currentPeriodEnd,
+            cancelAtPeriodEnd: sub.cancel_at_period_end,
+            cancelAt: sub.cancel_at || undefined,
+            canceledAt: sub.canceled_at || undefined,
+            priceId: priceId || undefined,
+            trialStart: sub.trial_start || undefined,
+            trialEnd: sub.trial_end || undefined,
+          });
+        }
+
+        hasMore = response.has_more;
+        if (hasMore && response.data.length > 0) {
+          startingAfter = response.data[response.data.length - 1].id;
+        }
+      }
+
+      this.logger.log(`Retrieved ${allSubscriptions.length} subscriptions from Stripe`);
+      return allSubscriptions;
+    } catch (error) {
+      this.logger.error('Failed to list subscriptions', error);
       throw error;
     }
   }

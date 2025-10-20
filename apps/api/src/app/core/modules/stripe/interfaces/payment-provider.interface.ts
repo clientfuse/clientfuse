@@ -60,6 +60,12 @@ export interface IPaymentProvider {
    * @throws Error if signature is invalid
    */
   verifyWebhookSignature(payload: string | Buffer, signature: string, secret: string): IWebhookEvent;
+
+  /**
+   * List all subscriptions from payment provider
+   * @returns Array of all subscriptions
+   */
+  listSubscriptions(): Promise<IProviderSubscription[]>;
 }
 
 // Generic interfaces that work with any payment provider
@@ -86,6 +92,9 @@ export interface IProviderSubscription {
   cancelAtPeriodEnd: boolean;
   cancelAt?: number;
   canceledAt?: number;
+  priceId?: string;
+  trialStart?: number;
+  trialEnd?: number;
 }
 
 export interface IWebhookEvent {
