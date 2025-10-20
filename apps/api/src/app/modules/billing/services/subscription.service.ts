@@ -159,6 +159,16 @@ export class SubscriptionService implements ISubscriptionManager {
     }
   }
 
+  async findPlanByStripePriceId(stripePriceId: string): Promise<SubscriptionPlan | null> {
+    try {
+      const plan = await this.planModel.findOne({ stripePriceId }).exec();
+      return plan;
+    } catch (error) {
+      this.logger.error(`Failed to find plan by stripe price ID: ${stripePriceId}`, error);
+      return null;
+    }
+  }
+
   private transformToResponse(subscription: any): ISubscriptionResponse {
     return {
       _id: subscription._id.toString(),

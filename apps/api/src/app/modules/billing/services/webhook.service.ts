@@ -1,4 +1,4 @@
-import { SubscriptionStatus } from '@clientfuse/models';
+import { ICustomerSubscription, SubscriptionStatus } from '@clientfuse/models';
 import { secToMs } from '@clientfuse/utils';
 import { Injectable, Logger } from '@nestjs/common';
 import Stripe from 'stripe';
@@ -109,14 +109,33 @@ export class WebhookService {
       throw new Error('Invalid subscription period dates from Stripe');
     }
 
-    await this.subscriptionService.updateSubscription(subscription.id, {
+    const priceId = subscription.items.data[0]?.price.id;
+
+    let planId: string | undefined;
+    if (priceId) {
+      const plan = await this.subscriptionService.findPlanByStripePriceId(priceId);
+      if (plan) {
+        planId = plan._id.toString();
+        this.logger.log(`Detected plan change to: ${plan.name} (${plan.billingPeriod})`);
+      } else {
+        this.logger.warn(`No matching plan found for Stripe price ID: ${priceId}`);
+      }
+    }
+
+    const updates: Partial<ICustomerSubscription> = {
       status: subscription.status as SubscriptionStatus,
       currentPeriodStart,
       currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
       cancelAt: this.convertStripeTimestamp(subscription.cancel_at),
       canceledAt: this.convertStripeTimestamp(subscription.canceled_at)
-    });
+    };
+
+    if (planId) {
+      updates.planId = planId;
+    }
+
+    await this.subscriptionService.updateSubscription(subscription.id, updates);
   }
 
   private async handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {

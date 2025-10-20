@@ -37,6 +37,8 @@ export class SettingsBillingPageComponent implements OnInit {
   readonly isAnnual = computed(() => this.billingPeriod() === BillingPeriod.ANNUAL);
   readonly selectedPeriodPlans = computed(() => this.plansByPeriod()[this.billingPeriod()]);
   readonly currentPlanId = computed(() => this.currentPlan()?._id || null);
+  readonly currentPlanTierType = computed(() => this.currentPlan()?.tierType || null);
+  readonly currentPlanBillingPeriod = computed(() => this.currentPlan()?.billingPeriod || null);
   readonly subscriptionStatusText = computed(() => {
     const sub = this.currentSubscription();
     if (!sub) return 'No active subscription';
@@ -100,7 +102,11 @@ export class SettingsBillingPageComponent implements OnInit {
   }
 
   async onSelectTier(plan: ISubscriptionPlan): Promise<void> {
-    await this.billingStore.startCheckout(plan._id);
+    if (this.hasActiveSubscription()) {
+      await this.openPortal();
+    } else {
+      await this.billingStore.startCheckout(plan._id);
+    }
   }
 
   async openPortal(): Promise<void> {

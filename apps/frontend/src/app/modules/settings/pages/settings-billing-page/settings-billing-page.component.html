@@ -58,6 +58,9 @@
         <app-tier-card
           [tier]="plan"
           [currentPlanId]="currentPlanId()"
+          [hasActiveSubscription]="hasActiveSubscription()"
+          [currentPlanTierType]="currentPlanTierType()"
+          [currentPlanBillingPeriod]="currentPlanBillingPeriod()"
           (selectTier)="onSelectTier($event)"
         />
       }
