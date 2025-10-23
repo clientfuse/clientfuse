@@ -8,6 +8,7 @@ import {
   TPlatformNamesKeys
 } from '@clientfuse/models';
 import { ConnectionResultApiService } from './connection-result-api.service';
+import { ConnectionLinkApiService } from '../connection-link/connection-link-api.service';
 
 export interface ConnectionResultState {
   currentResult: TConnectionResultResponse | null;
@@ -21,6 +22,7 @@ export interface ConnectionResultState {
 })
 export class ConnectionResultStoreService {
   private connectionResultApiService = inject(ConnectionResultApiService);
+  private connectionLinkApiService = inject(ConnectionLinkApiService);
 
   private readonly PLATFORM_USER_ID_KEYS: Record<TPlatformNamesKeys, string> = {
     google: 'googleUserId',
@@ -109,9 +111,17 @@ export class ConnectionResultStoreService {
 
       console.log('No existing connection result found, creating new one...');
 
+      const connectionLinkResponse = await this.connectionLinkApiService.findConnectionLink(connectionLinkId);
+
+      if (!connectionLinkResponse.payload) {
+        this.setError('ConnectionLink not found');
+        return null;
+      }
+
       const newResult: TBaseConnectionResult = {
         agencyId,
         connectionLinkId,
+        connectionLinkSnapshot: connectionLinkResponse.payload,
         [this.getPlatformUserIdKey(platform)]: userId,
         accessType,
         grantedAccesses: {

@@ -1,4 +1,4 @@
-import { TBaseConnectionResult, IGrantAccessResponse, TPlatformNamesKeys, AccessType } from '@clientfuse/models';
+import { TBaseConnectionResult, IGrantAccessResponse, TPlatformNamesKeys, AccessType, TConnectionLinkResponse } from '@clientfuse/models';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 
@@ -11,6 +11,9 @@ export class ConnectionResult implements TBaseConnectionResult {
 
   @Prop({ type: String, ref: 'ConnectionLink', required: true, index: true })
   connectionLinkId: string;
+
+  @Prop({ type: Object, required: true })
+  connectionLinkSnapshot: TConnectionLinkResponse;
 
   @Prop({ type: String, required: false, index: true })
   googleUserId?: string;

@@ -1,4 +1,12 @@
-import { EMPTY_FACEBOOK_INFO, EMPTY_GOOGLE_INFO, IAccessToken, IUserResponse, LocalStorageKey, Role, ServerErrorCode } from '@clientfuse/models';
+import {
+  EMPTY_FACEBOOK_INFO,
+  EMPTY_GOOGLE_INFO,
+  IAccessToken,
+  IUserResponse,
+  LocalStorageKey,
+  Role,
+  ServerErrorCode
+} from '@clientfuse/models';
 import { checkIfNoUserEmail, generateStrongPassword } from '@clientfuse/utils';
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -7,6 +15,7 @@ import { EventType, IFacebookAuthEvent, IGoogleAuthEvent, IUserEmailUpdatedEvent
 import { EventBusService } from '../../core/modules/event-bus/event-bus.service';
 import { AgenciesService } from '../agencies/services/agencies.service';
 import { AgencyMergeService } from '../agencies/services/agency-merge.service';
+import { SubscriptionService } from '../billing/services/subscription.service';
 import { getGoogleTokenExpirationDate } from '../google/utils/google.utils';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UserMergeService } from '../users/user-merge.service';
@@ -24,7 +33,8 @@ export class AuthService {
     private userMergeService: UserMergeService,
     private eventBusService: EventBusService,
     private agenciesService: AgenciesService,
-    private agencyMergeService: AgencyMergeService
+    private agencyMergeService: AgencyMergeService,
+    private subscriptionService: SubscriptionService
   ) {
   }
 
@@ -54,7 +64,7 @@ export class AuthService {
   }
 
   async loginWithGoogle(user: IGoogleUser): Promise<IAccessToken> {
-    const foundUser = await this.usersService.findUser({ email: user.email });
+    const foundUser: IUserResponse | null = await this.usersService.findUser({ email: user.email });
 
     if (foundUser) {
       await this.usersService.updateUser(foundUser._id, {
@@ -69,17 +79,23 @@ export class AuthService {
         isLoggedInWithGoogle: true
       });
 
+      const mergedUserId = await this.mergeUserAccountsByEmail(user.email);
+      const finalUserId = mergedUserId || foundUser._id;
+      const finalUser = mergedUserId
+        ? await this.usersService.findUser({ _id: finalUserId })
+        : foundUser;
+
       await this.eventBusService.emitAsync<IGoogleAuthEvent>(
         EventType.AUTH_LOGIN_GOOGLE,
         {
-          userId: foundUser._id,
+          userId: finalUserId,
           googleAccessToken: user.accessToken,
           googleRefreshToken: user.refreshToken ?? foundUser.google.refreshToken
         },
         AuthService.name
       );
 
-      return this.generateAccessToken(foundUser);
+      return this.generateAccessToken(finalUser);
     }
 
     const createdUser = await this.register({
@@ -104,22 +120,30 @@ export class AuthService {
       role: Role.MANAGER
     });
 
+    const mergedUserId = await this.mergeUserAccountsByEmail(user.email);
+    const finalUser = mergedUserId
+      ? await this.usersService.findUser({ _id: mergedUserId })
+      : createdUser;
+
     await this.eventBusService.emitAsync<IGoogleAuthEvent>(
       EventType.AUTH_REGISTER_GOOGLE,
       {
-        userId: createdUser._id,
+        userId: finalUser._id,
         googleAccessToken: user.accessToken,
         googleRefreshToken: user.refreshToken
       },
       AuthService.name
     );
 
-    return this.generateAccessToken(createdUser);
+    return this.generateAccessToken(finalUser);
   }
 
   async loginWithFacebook(user: IFacebookUser): Promise<IAccessToken> {
     const facebookEmail = checkIfNoUserEmail(user.email) ? null : user.email;
-    const foundUser = await this.usersService.findUser({ 'facebook.userId': user.userId });
+
+    let foundUser: IUserResponse | null;
+    if (facebookEmail) foundUser = await this.usersService.findUser({ email: facebookEmail });
+    if (!foundUser) foundUser = await this.usersService.findUser({ 'facebook.userId': user.userId });
 
     if (foundUser) {
       await this.usersService.updateUser(foundUser._id, {
@@ -132,10 +156,19 @@ export class AuthService {
         isLoggedInWithFacebook: true
       });
 
+      let finalUserId = foundUser._id;
+      if (facebookEmail) {
+        const mergedUserId = await this.mergeUserAccountsByEmail(facebookEmail);
+        if (mergedUserId) {
+          finalUserId = mergedUserId;
+          foundUser = await this.usersService.findUser({ _id: finalUserId });
+        }
+      }
+
       await this.eventBusService.emitAsync<IFacebookAuthEvent>(
         EventType.AUTH_LOGIN_FACEBOOK,
         {
-          userId: foundUser._id,
+          userId: finalUserId,
           facebookAccessToken: user.accessToken
         },
         AuthService.name
@@ -144,7 +177,7 @@ export class AuthService {
       return this.generateAccessToken(foundUser);
     }
 
-    const createdUser = await this.register({
+    let finalUser = await this.register({
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
@@ -163,17 +196,23 @@ export class AuthService {
       isLoggedInWithFacebook: true,
       role: Role.MANAGER
     });
+    if (facebookEmail) {
+      const mergedUserId = await this.mergeUserAccountsByEmail(facebookEmail);
+      if (mergedUserId) {
+        finalUser = await this.usersService.findUser({ _id: mergedUserId });
+      }
+    }
 
     await this.eventBusService.emitAsync<IFacebookAuthEvent>(
       EventType.AUTH_REGISTER_FACEBOOK,
       {
-        userId: createdUser._id,
+        userId: finalUser._id,
         facebookAccessToken: user.accessToken
       },
       AuthService.name
     );
 
-    return this.generateAccessToken(createdUser);
+    return this.generateAccessToken(finalUser);
   }
 
   async register(credentials: CreateUserDto): Promise<IUserResponse> {
@@ -201,11 +240,22 @@ export class AuthService {
 
     await this.usersService.updateUser(foundUser._id, { email });
 
+    const mergedUserId = await this.mergeUserAccountsByEmail(email);
+
+    await this.eventBusService.emitAsync<IUserEmailUpdatedEvent>(EventType.USER_EMAIL_UPDATED, { userId }, AuthService.name);
+
+    if (mergedUserId) {
+      return 'User email was successfully updated and accounts were merged';
+    }
+
+    return 'User email was successfully updated';
+  }
+
+  private async mergeUserAccountsByEmail(email: string): Promise<string | null> {
     const foundUsers = await this.usersService.findUsers({ email });
 
-    if (foundUsers.length === 1) {
-      await this.eventBusService.emitAsync<IUserEmailUpdatedEvent>(EventType.USER_EMAIL_UPDATED, { userId }, AuthService.name);
-      return 'User email was successfully updated';
+    if (foundUsers.length <= 1) {
+      return null;
     }
 
     const userMergeResult = await this.userMergeService.mergeAccountsByEmail(email);
@@ -215,6 +265,11 @@ export class AuthService {
       for (const foundAgency of foundAgencies) {
         await this.agenciesService.updateAgency(foundAgency._id, { userId: userMergeResult.mergedUserId.toString() });
       }
+
+      await this.subscriptionService.updateSubscriptionsUserId(
+        deletedUserId.toString(),
+        userMergeResult.mergedUserId.toString()
+      );
     }
 
     const agencyMergeResult = await this.agencyMergeService.mergeAgenciesByUserId(userMergeResult.mergedUserId.toString());
@@ -223,8 +278,7 @@ export class AuthService {
       await this.agenciesService.updateAgency(agencyMergeResult.mergedAgencyId.toString(), { email });
     }
 
-    await this.eventBusService.emitAsync<IUserEmailUpdatedEvent>(EventType.USER_EMAIL_UPDATED, { userId }, AuthService.name);
-    return 'User email was successfully updated and accounts were merged';
+    return userMergeResult.mergedUserId.toString();
   }
 
   private async checkPassword(

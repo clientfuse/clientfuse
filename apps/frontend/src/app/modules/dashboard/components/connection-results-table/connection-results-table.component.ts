@@ -5,7 +5,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { AccessType, FacebookServiceType, IGrantAccessResponse, TConnectionResultResponse, TPlatformNamesKeys } from '@clientfuse/models';
+import {
+  AccessType,
+  FacebookServiceType,
+  GoogleServiceType,
+  IGrantAccessResponse,
+  TConnectionLinkResponse,
+  TConnectionResultResponse,
+  TPlatformNamesKeys
+} from '@clientfuse/models';
 import { DateTime } from 'luxon';
 import { BadgeComponent } from '../../../../components/badge/badge.component';
 import {
@@ -17,14 +25,28 @@ import {
   getServiceIcon
 } from '../../../../utils';
 
+type RequestStatus = 'granted' | 'failed' | 'not-attempted';
+
+interface RequestedService {
+  service: string;
+  platform: TPlatformNamesKeys;
+  identifier: string;
+}
+
 interface ConnectionResultRow {
   id: string;
   connectionTime: Date;
   accessType: AccessType;
   connectionLink: string;
+  connectionLinkSnapshot: TConnectionLinkResponse | null;
   platforms: TPlatformNamesKeys[];
   grantedAccesses: IGrantAccessResponse[];
+  requestedServices: RequestedService[];
+  successCount: number;
+  failedCount: number;
+  missingCount: number;
 }
+
 
 @Component({
   selector: 'app-connection-results-table',
@@ -48,14 +70,27 @@ export class ConnectionResultsTableComponent {
   expandedRows = new Set<string>();
 
   tableRows = computed(() => {
-    return this.results().map((result): ConnectionResultRow => ({
-      id: result._id,
-      connectionTime: result.createdAt,
-      accessType: result.accessType,
-      connectionLink: result.connectionLinkId,
-      platforms: this.detectPlatforms(result),
-      grantedAccesses: this.getAllGrantedAccesses(result)
-    }));
+    return this.results().map((result): ConnectionResultRow => {
+      const grantedAccesses = this.getAllGrantedAccesses(result);
+      const requestedServices = this.buildRequestedServicesList(result.connectionLinkSnapshot);
+      const successCount = grantedAccesses.filter(a => a.success).length;
+      const failedCount = grantedAccesses.filter(a => !a.success).length;
+      const missingCount = this.calculateMissingCount(requestedServices, grantedAccesses);
+
+      return {
+        id: result._id,
+        connectionTime: result.createdAt,
+        accessType: result.accessType,
+        connectionLink: result.connectionLinkId,
+        connectionLinkSnapshot: result.connectionLinkSnapshot,
+        platforms: this.detectPlatforms(result),
+        grantedAccesses,
+        requestedServices,
+        successCount,
+        failedCount,
+        missingCount
+      };
+    });
   });
 
   toggleRow(rowId: string): void {
@@ -173,5 +208,114 @@ export class ConnectionResultsTableComponent {
     });
 
     return allAccesses;
+  }
+
+  private buildRequestedServicesList(snapshot: TConnectionLinkResponse | null): RequestedService[] {
+    if (!snapshot) return [];
+    const requested: RequestedService[] = [];
+
+    const googleServicesMap: Array<{
+      key: GoogleServiceType;
+      identifierKey: 'email' | 'emailOrId';
+    }> = [
+      { key: GoogleServiceType.ADS, identifierKey: 'email' },
+      { key: GoogleServiceType.ANALYTICS, identifierKey: 'email' },
+      { key: GoogleServiceType.SEARCH_CONSOLE, identifierKey: 'email' },
+      { key: GoogleServiceType.TAG_MANAGER, identifierKey: 'email' },
+      { key: GoogleServiceType.MERCHANT_CENTER, identifierKey: 'email' },
+      { key: GoogleServiceType.MY_BUSINESS, identifierKey: 'emailOrId' }
+    ];
+
+    const facebookServicesMap: FacebookServiceType[] = [
+      FacebookServiceType.AD_ACCOUNT,
+      FacebookServiceType.BUSINESS,
+      FacebookServiceType.PAGE,
+      FacebookServiceType.CATALOG,
+      FacebookServiceType.PIXEL
+    ];
+
+    if (snapshot.google) {
+      googleServicesMap.forEach(({ key, identifierKey }) => {
+        const serviceData = snapshot.google![key];
+        if (serviceData?.isEnabled) {
+          requested.push({
+            service: key,
+            platform: 'google',
+            identifier: (serviceData as any)[identifierKey]
+          });
+        }
+      });
+    }
+
+    if (snapshot.facebook) {
+      facebookServicesMap.forEach(key => {
+        const serviceData = snapshot.facebook![key];
+        if (serviceData?.isEnabled) {
+          requested.push({
+            service: key,
+            platform: 'facebook',
+            identifier: serviceData.businessPortfolioId || ''
+          });
+        }
+      });
+    }
+
+    return requested;
+  }
+
+  private calculateMissingCount(
+    requestedServices: RequestedService[],
+    grantedAccesses: IGrantAccessResponse[]
+  ): number {
+    if (requestedServices.length === 0) return 0;
+
+    const missingServices = requestedServices.filter(requested => {
+      const wasAttempted = grantedAccesses.some(granted => granted.service === requested.service);
+      return !wasAttempted;
+    });
+
+    return missingServices.length;
+  }
+
+  getRequestStatus(row: ConnectionResultRow, requestedService: RequestedService): RequestStatus {
+    const grantResult = row.grantedAccesses.find(access => access.service === requestedService.service);
+
+    if (!grantResult) {
+      return 'not-attempted';
+    }
+
+    return grantResult.success ? 'granted' : 'failed';
+  }
+
+  getRequestStatusTitle(status: RequestStatus): string {
+    const STATUS_TITLES: Record<RequestStatus, string> = {
+      granted: 'Granted',
+      failed: 'Failed',
+      'not-attempted': 'Not Attempted'
+    };
+    return STATUS_TITLES[status];
+  }
+
+  getRequestStatusIcon(status: RequestStatus): string {
+    const STATUS_ICONS: Record<RequestStatus, string> = {
+      granted: 'check_circle',
+      failed: 'warning',
+      'not-attempted': 'remove_circle_outline'
+    };
+    return STATUS_ICONS[status];
+  }
+
+  getRequestStatusClass(status: RequestStatus): string {
+    const STATUS_CLASSES: Record<RequestStatus, string> = {
+      granted: 'status-granted',
+      failed: 'status-failed',
+      'not-attempted': 'status-not-attempted'
+    };
+    return STATUS_CLASSES[status];
+  }
+
+  getErrorMessage(row: ConnectionResultRow, requestedService: RequestedService): string | undefined {
+    const grantResult = row.grantedAccesses.find(access => access.service === requestedService.service);
+    return grantResult?.error;
   }
 }

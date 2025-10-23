@@ -32,6 +32,26 @@
             </td>
             <td>
               <div class="client-accounts">
+                <div class="counts-summary">
+                  @if (row.successCount > 0) {
+                    <app-badge
+                      [text]="row.successCount + ' granted'"
+                      variant="success">
+                    </app-badge>
+                  }
+                  @if (row.failedCount > 0) {
+                    <app-badge
+                      [text]="row.failedCount + ' failed'"
+                      variant="warning">
+                    </app-badge>
+                  }
+                  @if (row.missingCount > 0) {
+                    <app-badge
+                      [text]="row.missingCount + ' not attempted'"
+                      variant="info">
+                    </app-badge>
+                  }
+                </div>
                 @for (access of row.grantedAccesses; track access.entityId) {
                   <div class="account-item">
                     @if (access.success) {
@@ -47,8 +67,7 @@
                     <strong>{{ getServiceDisplayName(access.service) }}</strong>
                     <span class="entity-name">{{ access.entityId }}</span>
                     @if (access.linkId) {
-                      <a
-                        [href]="getDeepLink('facebook', access.service, access.entityId, access.agencyIdentifier)"
+                      <a [href]="getDeepLink('facebook', access.service, access.entityId, access.agencyIdentifier)"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="deep-link"
@@ -97,6 +116,12 @@
                       <span class="label">Connection Link:</span>
                       <span class="value">{{ row.connectionLink }}</span>
                     </div>
+                    @if (row.connectionLinkSnapshot) {
+                      <div class="detail-item">
+                        <span class="label">Link Name:</span>
+                        <span class="value">{{ row.connectionLinkSnapshot.name }}</span>
+                      </div>
+                    }
                     <div class="detail-item">
                       <span class="label">Access Type:</span>
                       <span class="value">{{ row.accessType }}</span>
@@ -106,6 +131,45 @@
                       <span class="value">{{ row.grantedAccesses.length }}</span>
                     </div>
                   </div>
+
+                  @if (row.requestedServices.length > 0) {
+                    <h4 class="subtitle-small comparison-title">Request vs Results Comparison</h4>
+                    <div class="comparison-table">
+                      <div class="comparison-header">
+                        <div class="comparison-cell">Service</div>
+                        <div class="comparison-cell">Requested For</div>
+                        <div class="comparison-cell">Status</div>
+                      </div>
+                      @for (requested of row.requestedServices; track requested.service) {
+                        @let status = getRequestStatus(row, requested);
+                        @let statusClass = getRequestStatusClass(status);
+                        @let statusIcon = getRequestStatusIcon(status);
+                        @let serviceIcon = getServiceIcon(requested.service, requested.platform);
+                        @let statusError = getErrorMessage(row, requested);
+
+                        <div class="comparison-row" [ngClass]="statusClass">
+                          <div class="comparison-cell service-cell">
+                            @if (serviceIcon) {
+                              <img [src]="serviceIcon" [alt]="requested.service" class="service-icon">
+                            }
+                            <span>{{ getServiceDisplayName(requested.service) }}</span>
+                          </div>
+                          <div class="comparison-cell identifier-cell">
+                            <span>{{ requested.identifier }}</span>
+                          </div>
+                          <div class="comparison-cell status-cell">
+                            <mat-icon [class]="statusClass">{{ statusIcon }}</mat-icon>
+                            <span class="status-text">{{ getRequestStatusTitle(status) }}</span>
+                            @if (status === 'failed' && statusError) {
+                              <div class="error-message">{{ statusError }}</div>
+                            }
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <p class="no-snapshot-message body-text">No snapshot data available for this connection.</p>
+                  }
                 </div>
               </td>
             </tr>

@@ -184,6 +184,22 @@ export class SubscriptionService implements ISubscriptionManager {
     }
   }
 
+  async updateSubscriptionsUserId(oldUserId: string, newUserId: string): Promise<void> {
+    try {
+      const result = await this.subscriptionModel
+        .updateMany(
+          { userId: oldUserId },
+          { $set: { userId: newUserId } }
+        )
+        .exec();
+
+      this.logger.log(`Updated ${result.modifiedCount} subscriptions from user ${oldUserId} to ${newUserId}`);
+    } catch (error) {
+      this.logger.error(`Failed to update subscriptions userId from ${oldUserId} to ${newUserId}`, error);
+      throw error;
+    }
+  }
+
   private transformToResponse(subscription: any): ISubscriptionResponse {
     return {
       _id: subscription._id.toString(),

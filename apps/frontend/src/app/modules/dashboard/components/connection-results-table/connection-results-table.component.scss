@@ -130,6 +130,14 @@
   }
 
   .client-accounts {
+    .counts-summary {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-2);
+      margin-bottom: var(--spacing-3);
+      flex-wrap: wrap;
+    }
+
     .account-item {
       display: flex;
       align-items: center;
@@ -253,6 +261,119 @@
           word-break: break-all;
         }
       }
+    }
+
+    .comparison-title {
+      margin-top: var(--spacing-5);
+    }
+
+    .comparison-table {
+      border: 1px solid $dark-20;
+      border-radius: var(--spacing-2);
+      overflow: hidden;
+
+      .comparison-header {
+        display: grid;
+        grid-template-columns: 2fr 2fr 1.5fr;
+        background: $dark-20;
+        border-bottom: 1px solid $dark-40;
+        font-weight: var(--fw-semi-bold);
+        font-size: var(--fs-13);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: $dark-80;
+
+        .comparison-cell {
+          padding: var(--spacing-3) var(--spacing-4);
+        }
+      }
+
+      .comparison-row {
+        display: grid;
+        grid-template-columns: 2fr 2fr 1.5fr;
+        border-bottom: 1px solid $dark-20;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .comparison-cell {
+          padding: var(--spacing-3) var(--spacing-4);
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-2);
+          font-size: var(--fs-14);
+
+          &.service-cell {
+            .service-icon {
+              width: 16px;
+              height: 16px;
+              object-fit: contain;
+            }
+          }
+
+          &.identifier-cell {
+            color: $dark-60;
+          }
+
+          &.status-cell {
+            align-items: center;
+            gap: var(--spacing-1);
+
+            mat-icon {
+              font-size: 1.2rem;
+              width: 1.2rem;
+              height: 1.2rem;
+              margin-right: var(--spacing-1);
+            }
+
+            .status-text {
+              display: flex;
+              align-items: center;
+              gap: var(--spacing-1);
+            }
+
+            .error-message {
+              font-size: var(--fs-12);
+              color: $orange-80;
+              margin-top: var(--spacing-1);
+              padding: var(--spacing-2);
+              background: rgba($orange-60, 0.15);
+              border-radius: var(--spacing-1);
+              width: 100%;
+            }
+          }
+        }
+
+        &.status-granted {
+          .status-cell mat-icon {
+            color: $green-80;
+          }
+        }
+
+        &.status-failed {
+          background-color: rgba($orange-60, 0.08);
+
+          .status-cell mat-icon {
+            color: $orange-80;
+          }
+        }
+
+        &.status-not-attempted {
+          .status-cell mat-icon {
+            color: $dark-40;
+          }
+        }
+      }
+    }
+
+    .no-snapshot-message {
+      margin-top: var(--spacing-4);
+      padding: var(--spacing-4);
+      background: $cloud;
+      border-radius: var(--spacing-2);
+      color: $dark-60;
+      text-align: center;
     }
   }
 }

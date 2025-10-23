@@ -1,4 +1,4 @@
-import { TBaseConnectionResult, IGrantAccessResponse, TPlatformNamesKeys, AccessType } from '@clientfuse/models';
+import { TBaseConnectionResult, IGrantAccessResponse, TPlatformNamesKeys, AccessType, TConnectionLinkResponse } from '@clientfuse/models';
 import { Type } from 'class-transformer';
 import { IsDefined, IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
 
@@ -11,6 +11,11 @@ export class CreateConnectionResultDto implements TBaseConnectionResult {
   @IsString()
   @IsDefined()
   connectionLinkId: string;
+
+  @ValidateNested()
+  @Type(() => Object)
+  @IsDefined()
+  connectionLinkSnapshot: TConnectionLinkResponse;
 
   @IsString()
   @IsOptional()

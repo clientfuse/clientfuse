@@ -1,5 +1,5 @@
 import { TConnectionResultResponse } from '@clientfuse/models';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, SortOrder } from 'mongoose';
 import { CreateConnectionResultDto, FilterConnectionResultDto, UpdateConnectionResultDto } from '../dto';
@@ -7,10 +7,13 @@ import { ConnectionResult, ConnectionResultDocument } from '../schemas/connectio
 
 @Injectable()
 export class ConnectionResultService {
+  private readonly logger = new Logger(ConnectionResultService.name);
+
   constructor(
     @InjectModel(ConnectionResult.name)
     private connectionResultModel: Model<ConnectionResultDocument>
-  ) {}
+  ) {
+  }
 
   async create(dto: CreateConnectionResultDto): Promise<TConnectionResultResponse> {
     const createdResult = await this.connectionResultModel.create(dto);
@@ -80,6 +83,30 @@ export class ConnectionResultService {
     if (!result) {
       throw new NotFoundException('Connection result not found');
     }
+  }
+
+  async transferConnectionResultsToAgency(oldAgencyIds: string[], newAgencyId: string): Promise<number> {
+    const otherAgencyIds = oldAgencyIds.filter(id => id !== newAgencyId);
+
+    if (otherAgencyIds.length === 0) {
+      this.logger.log('No connection results to transfer');
+      return 0;
+    }
+
+    const result = await this.connectionResultModel.updateMany(
+      { agencyId: { $in: otherAgencyIds } },
+      { $set: { agencyId: newAgencyId } }
+    );
+
+    if (result.modifiedCount > 0) {
+      this.logger.log(
+        `Transferred ${result.modifiedCount} connection results from agencies ${otherAgencyIds.join(', ')} to ${newAgencyId}`
+      );
+    } else {
+      this.logger.log(`No connection results found to transfer from agencies ${otherAgencyIds.join(', ')}`);
+    }
+
+    return result.modifiedCount;
   }
 
   private buildMongoQuery(filter: FilterConnectionResultDto & { _id?: string }): FilterQuery<ConnectionResultDocument> {
